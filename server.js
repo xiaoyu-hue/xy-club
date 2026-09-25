@@ -9,9 +9,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 const ROOT = __dirname;
-const DATA_DIR = path.join(ROOT, 'data');
+// 目录可用环境变量覆盖 —— 测试要用临时目录，避免污染真实的 data/db.json
+const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
-const UPLOAD_DIR = path.join(ROOT, 'public', 'uploads');
+const UPLOAD_DIR = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.join(ROOT, 'public', 'uploads');
 
 // 允许上传的图片格式（不含 svg —— SVG 可内嵌脚本，直接访问会被浏览器当文档渲染）
 const ALLOWED_EXTS = ['jpg', 'png', 'webp', 'gif'];
@@ -280,6 +281,32 @@ app.post('/api/upload', (req, res) => {
   res.json({ ok: true, url: '/uploads/' + file });
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`✦ 俱乐部官网已启动: http://localhost:${PORT}  （管理后台: /admin）`);
-});
+/* ---------------- 导出（供测试使用；直接运行时不影响任何行为） ---------------- */
+module.exports = {
+  app,
+  hashPassword,
+  verifyPassword,
+  extractInlineImages,
+  readDB,
+  writeDB,
+  safeSettings,
+  isLocked,
+  noteFailure,
+  loginAttempts,
+  sessions,
+  ALLOWED_EXTS,
+  HASH_PREFIX,
+  MAX_ATTEMPTS,
+  LOCK_MS,
+  ROOT,
+  DATA_DIR,
+  UPLOAD_DIR,
+  DB_FILE
+};
+
+// 仅当直接 `node server.js` 时才监听端口；被测试 require 时不占端口
+if (require.main === module) {
+  app.listen(PORT, HOST, () => {
+    console.log(`✦ 俱乐部官网已启动: http://localhost:${PORT}  （管理后台: /admin）`);
+  });
+}
