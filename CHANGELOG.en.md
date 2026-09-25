@@ -7,6 +7,33 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## 1.3.0 - 2026-09-26 (Security hardening & self-contained config)
+
+### 🔒 Security
+
+- **Admin password is now stored as a scrypt hash** (Node's built-in `crypto`, no new dependency); legacy plaintext passwords are upgraded automatically at startup
+- **Login rate limiting**: 5 consecutive wrong passwords from one IP triggers a 5-minute lockout (HTTP 429)
+- **SVG uploads disabled**: SVG can embed scripts, and visiting `/uploads/*.svg` directly is an XSS vector; the allowlist is now jpg / png / webp / gif
+- Added the `X-Content-Type-Options: nosniff` header for the uploads directory
+- Added `scripts/reset-password.js` for resetting a hashed admin password
+
+### ✨ Added
+
+- **Exported configs inline images** as data URIs; on import the server restores them as real files under `uploads/` — reusing the template no longer loses images
+- When `data/db.json` fails to parse, it is backed up as `.corrupt-*` before falling back to defaults, so real data never vanishes silently
+
+### 🔧 Fixed
+
+- `/api/check` was blocked by the auth middleware and returned 401 when signed out; it now runs before auth and correctly returns `{"ok": false}`
+- The image-type regex `\w+` could not match `svg+xml`, so SVG uploads reported "parse failed" instead of the real reason
+
+### 📝 Documentation
+
+- Corrected the **inaccurate** "uploads have no MIME allowlist" entry under Known Limitations (the code does validate types)
+- Synced both READMEs with the security, rate-limiting, and image-export changes; updated the roadmap
+
+---
+
 ## 1.2.0 - 2026-09-26 (GitHub Pages showcase)
 
 ### ✨ Added

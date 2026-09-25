@@ -80,6 +80,7 @@ refactor: 抽出主题应用逻辑为 applyTheme()
 - 在私有仓库 README 中使用 `github/v/release` 等徽章 —— shields.io 取不到数据，显示 inaccessible，应使用静态徽章
 - 改了 `.stat span` 之类的宽泛选择器导致数字换行 —— 样式选择器要收窄到直接子元素
 - 忘记 `public/uploads/` 与 `data/` 在无持久卷环境下会丢失
+- 直接编辑 `data/db.json` 改密码 —— 密码是 **scrypt 哈希**，必须用 `node scripts/reset-password.js 新密码`
 
 ## 八、交付前自检
 

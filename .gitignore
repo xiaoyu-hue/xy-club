@@ -12,6 +12,9 @@ public/uploads/*
 # 静态快照（由 scripts/build-static.js 生成，属构建产物）
 public/content.json
 
+# 配置文件解析失败时自动留存的现场
+data/*.corrupt-*
+
 # 日志与系统文件
 *.log
 .DS_Store

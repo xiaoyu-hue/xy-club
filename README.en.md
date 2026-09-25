@@ -10,7 +10,7 @@
 
 # 💎 Club Website Template · XY Club
 
-> ⚠️ **Important Notice**: This project is developed with AI assistance. Admin auth is a **single shared password**, stored in plaintext in a local JSON file, and has **NOT undergone a professional security audit**. Change the default password immediately after deploying.
+> ⚠️ **Important Notice**: This project is developed with AI assistance. Admin auth is a **single shared password** and has **NOT undergone a professional security audit**. Change the default password immediately after deploying.
 
 A **reusable club website template**: liquid-glass visuals + micro-interactions, with the public site and admin panel in one package, all content driven by data.
 
@@ -104,8 +104,9 @@ Seven types are available when adding a section; each renders differently on the
 ## 🔐 Data & Privacy
 
 - **All content lives in `data/db.json`** — a single JSON file, survives restarts, no database required
-- **Default admin password `xy888888`** — stored in plaintext; **change it right after deploying**
+- **Default admin password `xy888888`** — stored as a **scrypt hash** (Node's built-in crypto, no extra dependency); **change it right after deploying**
 - **Passwords stay out of git** — `data/db.json` is listed in `.gitignore`
+- **Login rate limiting** — 5 consecutive wrong passwords from one IP triggers a 5-minute lockout
 - **Sessions** — held in server memory, expire after 7 days; the token is kept in browser localStorage
 - **Images** — uploaded to `public/uploads/`, never routed through a third party
 
@@ -113,12 +114,11 @@ Seven types are available when adding a section; each renders differently on the
 
 Being honest: simplicity was chosen deliberately, so the following are **known and unaddressed**:
 
-- **Plaintext password** — `settings.adminPassword` is not hashed or salted; a leaked `db.json` means a leaked password
-- **Single password, single admin** — no multi-user accounts, roles, or permission levels
-- **No rate limiting** — the login endpoint has no brute-force protection; add it at the reverse proxy
+- **Single password, single admin** — no multi-user accounts, roles, permission levels, or per-edit attribution
 - **No CSRF protection** — endpoints assume same-origin calls; harden this yourself if you go cross-origin
 - **Single-process file I/O** — running multiple instances or replicas causes write conflicts; run exactly one process
-- **Uploads size-checked only** — capped at 8MB, with no MIME allowlist or content scanning
+- **Sessions live in memory** — restarting the service signs everyone out
+- **Uploads are type- and size-checked only** — capped at 8MB, limited to jpg / png / webp / gif (**no svg**, since it can embed scripts); no content scanning
 
 ---
 
@@ -132,7 +132,7 @@ This template optimizes for "works out of the box, zero dependencies," and pays 
 - **Teams needing multiple admins** — one shared password means no attribution for edits
 - **High-traffic / high-concurrency sites** — single process with full-file JSON writes, no cache or connection pooling
 - **SEO-critical or SSR-dependent sites** — content is fetched client-side; crawlers may not see rendered output
-- **Storing sensitive user data** — plaintext passwords and an absent audit log cannot carry ID numbers or similar data
+- **Storing sensitive user data** — single-password auth with no audit log cannot carry ID numbers or similar data
 - **Containers without a persistent volume** — restarts lose `data/db.json` and everything under `public/uploads/`
 
 ---
@@ -223,6 +223,8 @@ xy-club/
    - Section content
 4. Pick a theme under Theme, click Save — it takes effect immediately
 
+> Exported configs **inline images as data URIs**, so the file is self-contained: importing into a fresh site restores them as real image files, with **no broken images**.
+
 Want to change the factory defaults instead? Edit `defaults.js`, delete `data/db.json`, and restart.
 
 ---
@@ -247,7 +249,7 @@ Static assets and the API share one port, so there is no CORS setup.
 ## 💾 Data & Backup
 
 - Everything lives in `data/db.json`; **back it up regularly via Export config**
-- Forgot the password? Edit `settings.adminPassword` in `data/db.json` and restart
+- Forgot the password? Run `node scripts/reset-password.js <new-password>` — the password is hashed, so it can no longer be hand-edited as plaintext
 - Back to square one? Delete `data/db.json` and restart, or hit Restore defaults in the admin
 
 ---
@@ -260,15 +262,19 @@ Static assets and the API share one port, so there is no CORS setup.
 - 8 micro-interactions
 - 7 section types with a visual admin
 - Image upload, password change, config import/export
+- Admin password stored as a **scrypt hash** (Node built-in, no new dependency)
+- Login rate limiting: 5 wrong attempts from one IP triggers a 5-minute lockout
+- Upload allowlist: jpg / png / webp / gif (svg disabled)
+- **Exported config inlines images**, restored automatically on import — no broken images
+- Corrupt-config auto-backup with safe fallback
 
 ### Planned 🚀
 
-- Hashed admin password (bcrypt / scrypt)
-- Login rate limiting and CSRF protection
-- MIME allowlist for uploads
+- CSRF protection
 - Bulk upload and an image management panel
 - SEO metadata and Open Graph cards
 - Dockerfile and one-click deploy config
+- Content version history and undo
 
 ---
 

@@ -461,16 +461,62 @@
   });
 
   /* ================= 模板导出 / 导入 / 恢复默认 ================= */
+  /**
+   * 把 /uploads/xxx 内联成 data URI，让导出的配置「自包含」——
+   * 直接导入到另一个站点时图片不会变成裂图。
+   */
+  async function inlineImages(sections, settings) {
+    const urls = new Set();
+    const scan = (v) => {
+      if (typeof v === 'string') { if (v.startsWith('/uploads/')) urls.add(v); return; }
+      if (Array.isArray(v)) return v.forEach(scan);
+      if (v && typeof v === 'object') return Object.values(v).forEach(scan);
+    };
+    scan(sections);
+    scan(settings);
+    if (!urls.size) return { sections, settings, count: 0 };
+
+    const map = new Map();
+    await Promise.all([...urls].map(async (u) => {
+      try {
+        const r = await fetch(u);
+        if (!r.ok) return;
+        const blob = await r.blob();
+        const dataUri = await new Promise((resolve) => {
+          const fr = new FileReader();
+          fr.onload = () => resolve(fr.result);
+          fr.onerror = () => resolve(null);
+          fr.readAsDataURL(blob);
+        });
+        if (dataUri) map.set(u, dataUri);
+      } catch (e) { /* 单张失败不影响整体导出 */ }
+    }));
+
+    const replace = (v) => {
+      if (typeof v === 'string') return map.get(v) || v;
+      if (Array.isArray(v)) return v.map(replace);
+      if (v && typeof v === 'object') {
+        const o = {};
+        for (const k of Object.keys(v)) o[k] = replace(v[k]);
+        return o;
+      }
+      return v;
+    };
+    return { sections: replace(sections), settings: replace(settings), count: map.size };
+  }
+
   $('#exportBtn').addEventListener('click', async () => {
     try {
-      const data = JSON.stringify({ settings: D.settings, sections: D.sections }, null, 2);
-      const blob = new Blob([data], { type: 'application/json' });
+      const { sections, settings, count } = await inlineImages(D.sections, D.settings);
+      const payload = { settings, sections, _exportedAt: new Date().toISOString() };
+      if (count) payload._note = `已内联 ${count} 张图片，可直接导入到另一个站点`;
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `俱乐部官网配置-${(D.settings.siteName || 'site').replace(/\s+/g, '')}-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 3000);
-      toast('✅ 配置已导出');
+      toast(count ? `✅ 配置已导出（含 ${count} 张图片）` : '✅ 配置已导出');
     } catch (e) { toast('导出失败', true); }
   });
 
