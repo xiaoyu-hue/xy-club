@@ -1,0 +1,14 @@
+# 依赖
+node_modules/
+
+# 站点数据（含管理密码，首次启动会自动从 defaults.js 生成）
+data/db.json
+data/*.tmp
+
+# 后台上传的图片
+public/uploads/*
+!public/uploads/.gitkeep
+
+# 日志与系统文件
+*.log
+.DS_Store

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="aurora">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>XY俱乐部 · 有趣的人，都在这里</title>
+  <meta name="description" content="XY俱乐部 —— 游戏陪玩 / 陪聊树洞 / 受气包服务，24小时在线陪伴。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- 液态流光背景 -->
+  <div class="scroll-progress" id="scrollProg"></div>
+  <div class="aurora" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div class="blob b4"></div>
+  </div>
+
+  <!-- 导航 -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner container">
+      <a class="brand" href="#top">
+        <span class="brand-logo" id="brandLogo">💎</span>
+        <span class="brand-name" id="brandName">XY俱乐部</span>
+      </a>
+      <div class="nav-links" id="navLinks"></div>
+      <div class="nav-actions">
+        <button class="btn btn-primary btn-sm nav-cta" id="navCta">立即下单</button>
+        <button class="menu-btn" id="menuBtn" aria-label="菜单"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu"></div>
+  </nav>
+
+  <!-- 首屏 Hero -->
+  <header class="hero container" id="top">
+    <div class="hero-card glass glass-sheen" id="heroCard">
+      <div class="hero-badge" id="heroBadge"></div>
+      <h1 class="hero-title" id="heroTitle"></h1>
+      <p class="hero-sub" id="heroSub"></p>
+      <div class="hero-btns" id="heroBtns"></div>
+      <div class="hero-stats" id="heroStats"></div>
+    </div>
+    <a class="scroll-hint" href="#app" aria-label="向下浏览">
+      <span class="mouse"><span class="dot"></span></span>
+    </a>
+  </header>
+
+  <!-- 公告栏 -->
+  <div class="container">
+    <div class="ticker" id="ticker" hidden>
+      <span class="ticker-icon">📢</span>
+      <div class="ticker-body"><span id="tickerText"></span></div>
+    </div>
+  </div>
+
+  <!-- 动态板块区 -->
+  <main class="container" id="app"></main>
+
+  <!-- 底部下单 CTA -->
+  <section class="container">
+    <div class="cta-card glass glass-sheen" id="ctaCard"></div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container footer-inner" id="footerInner"></div>
+    <div class="container footer-base">
+      <span id="copyright">© 2026 XY俱乐部</span>
+      <a class="admin-link" href="/admin" title="后台管理">管理</a>
+    </div>
+  </footer>
+
+  <!-- 悬浮按钮 -->
+  <button class="to-top glass" id="toTop" aria-label="返回顶部">↑</button>
+  <button class="fab glass" id="fab" aria-label="立即下单">🚀<i>下单</i></button>
+
+  <!-- 下单 / 联系弹窗 -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal-mask" data-close="1"></div>
+    <div class="modal-card glass" id="modalCard"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <noscript><p style="text-align:center;padding:40px">请启用 JavaScript 以浏览本站</p></noscript>
+  <script src="/js/main.js"></script>
+</body>
+</html>

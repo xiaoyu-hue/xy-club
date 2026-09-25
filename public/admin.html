@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>俱乐部官网 · 后台管理</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="aurora" aria-hidden="true">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  </div>
+
+  <!-- 登录 -->
+  <div class="login-wrap" id="loginView">
+    <div class="login-card glass">
+      <div class="login-logo">🛠️</div>
+      <h1>俱乐部官网 · 后台管理</h1>
+      <p class="login-sub">请输入管理密码登录</p>
+      <div class="field">
+        <input type="password" id="pwdInput" placeholder="管理密码" autocomplete="current-password">
+      </div>
+      <p class="login-err" id="loginErr"></p>
+      <button class="btn btn-primary btn-block" id="loginBtn">登 录</button>
+      <a class="back-link" href="/">← 返回官网首页</a>
+    </div>
+  </div>
+
+  <!-- 管理界面 -->
+  <div class="admin-app" id="adminView" hidden>
+    <header class="topbar glass">
+      <div class="topbar-inner">
+        <div class="topbar-brand">💎 俱乐部官网 · 后台管理</div>
+        <div class="topbar-ops">
+          <span class="save-state" id="saveState"></span>
+          <button class="btn btn-primary btn-sm" id="saveBtn" disabled>保存修改</button>
+          <a class="btn btn-ghost btn-sm" href="/" target="_blank">查看官网 ↗</a>
+          <button class="btn btn-ghost btn-sm" id="logoutBtn">退出</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-body">
+      <aside class="sidebar glass">
+        <nav class="side-nav" id="sideNav">
+          <button class="side-item active" data-tab="settings">🏠 网站设置</button>
+          <button class="side-item" data-tab="sections">🧩 板块管理</button>
+          <button class="side-item" data-tab="help">📖 使用说明</button>
+        </nav>
+      </aside>
+
+      <main class="main-area" id="mainArea">
+        <!-- 网站设置 -->
+        <div class="tab-panel" id="tab-settings" hidden>
+          <div class="panel-card glass">
+            <h2 class="panel-title">🎨 主题配色 / 模板复用</h2>
+            <div class="theme-picker" id="themePicker">
+              <button type="button" class="theme-opt" data-theme="aurora"><i class="sw aurora"></i><b>极光紫</b><span>深邃高级</span></button>
+              <button type="button" class="theme-opt" data-theme="ocean"><i class="sw ocean"></i><b>深海蓝</b><span>清透冷静</span></button>
+              <button type="button" class="theme-opt" data-theme="mist"><i class="sw mist"></i><b>晨雾白</b><span>明亮清爽</span></button>
+              <button type="button" class="theme-opt" data-theme="sunset"><i class="sw sunset"></i><b>落日金</b><span>温暖活力</span></button>
+            </div>
+            <div class="tpl-ops">
+              <button class="btn btn-ghost btn-sm" id="exportBtn">⬇️ 导出配置（备份 / 复用模板）</button>
+              <button class="btn btn-ghost btn-sm" id="importBtn">⬆️ 导入配置</button>
+              <button class="btn btn-danger btn-sm" id="resetBtn">♻️ 恢复默认内容</button>
+            </div>
+            <p class="tpl-tip">提示：导出的是整站内容 JSON。给新俱乐部复用时 —— 导入这份配置后，只需改名字、联系方式和板块内容即可。</p>
+          </div>
+
+          <div class="panel-card glass">
+            <h2 class="panel-title">✨ 首屏 / 品牌信息</h2>
+            <div class="form-grid">
+              <label class="form-item"><span>网站名称</span><input data-bind="set:siteName"></label>
+              <label class="form-item"><span>Logo 表情</span><input data-bind="set:logoEmoji" placeholder="🌌"></label>
+              <label class="form-item"><span>一句话标语</span><input data-bind="set:slogan"></label>
+              <label class="form-item"><span>首屏徽章文字</span><input data-bind="set:heroBadge"></label>
+              <label class="form-item form-full"><span>首屏主标题 <em>用 | 分隔上下两行</em></span><input data-bind="set:heroTitle"></label>
+              <label class="form-item form-full"><span>首屏副标题</span><textarea rows="2" data-bind="set:heroSubtitle"></textarea></label>
+              <label class="form-item form-full"><span>首屏数据 <em>逗号分隔，如：5000+开心客户,50+陪玩官</em></span><input data-bind="set:heroStats"></label>
+              <label class="form-item form-full"><span>顶部公告 <em>留空则不显示公告栏</em></span><textarea rows="2" data-bind="set:announcement"></textarea></label>
+            </div>
+          </div>
+
+          <div class="panel-card glass">
+            <h2 class="panel-title">📞 联系方式 / 下单入口</h2>
+            <div class="form-grid">
+              <label class="form-item"><span>微信号 <em>下单弹窗 + 官网展示</em></span><input data-bind="set:wechat"></label>
+              <label class="form-item"><span>QQ 号</span><input data-bind="set:qq"></label>
+              <label class="form-item"><span>电话</span><input data-bind="set:phone"></label>
+              <label class="form-item"><span>邮箱</span><input data-bind="set:email"></label>
+              <label class="form-item form-full"><span>二维码提示语</span><input data-bind="set:qrNote"></label>
+              <label class="form-item"><span>客服二维码</span>
+                <div class="upload-line">
+                  <img class="qr-preview" id="qrPreview" hidden>
+                  <button class="btn btn-ghost btn-sm" id="qrUploadBtn">上传图片</button>
+                  <button class="btn btn-ghost btn-sm" id="qrClearBtn" hidden>移除</button>
+                </div>
+              </label>
+              <label class="form-item"><span>服务时间说明</span><input data-bind="set:serviceTime"></label>
+              <label class="form-item form-full"><span>页脚文字</span><textarea rows="2" data-bind="set:footer"></textarea></label>
+            </div>
+          </div>
+
+          <div class="panel-card glass">
+            <h2 class="panel-title">🔒 修改管理密码</h2>
+            <div class="form-grid">
+              <label class="form-item"><span>原密码</span><input type="password" id="oldPwd" autocomplete="off"></label>
+              <label class="form-item"><span>新密码（至少6位）</span><input type="password" id="newPwd" autocomplete="new-password"></label>
+              <label class="form-item"><span>确认新密码</span><input type="password" id="newPwd2" autocomplete="new-password"></label>
+            </div>
+            <button class="btn btn-primary" id="changePwdBtn">确认修改</button>
+          </div>
+        </div>
+
+        <!-- 板块管理 -->
+        <div class="tab-panel" id="tab-sections" hidden>
+          <div class="sections-toolbar glass">
+            <div>
+              <b>🧩 板块管理</b>
+              <span class="toolbar-hint">调整顺序 / 显隐 / 内容，改完点右上角「保存修改」即刻生效</span>
+            </div>
+            <button class="btn btn-primary" id="addSecBtn">＋ 添加新板块</button>
+          </div>
+          <div id="secList"></div>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="tab-panel" id="tab-help" hidden>
+          <div class="panel-card glass help-panel">
+            <h2 class="panel-title">📖 使用说明</h2>
+            <ol class="help-list">
+              <li><b>改完必保存：</b>所有修改先存在本页，点击右上角「保存修改」后才同步到官网。</li>
+              <li><b>板块管理：</b>官网首页的内容全部由「板块」组成。每个板块可 <em>编辑内容</em>、<em>↑↓排序</em>、<em>👁 显示/隐藏</em>、<em>删除</em>。</li>
+              <li><b>添加新板块：</b>点击「＋ 添加新板块」，选择类型（价目表 / 卡片 / 评价 / 问答 / 须知 / 图集 / 图文），随时扩展官网内容。</li>
+              <li><b>7 种板块类型：</b>
+                <ul>
+                  <li>💰 <b>价目/列表</b>：带价格的条目，适合各种服务报价</li>
+                  <li>🃏 <b>卡片网格</b>：图标+标题+描述，适合优势、活动、团队介绍</li>
+                  <li>💖 <b>客户评价</b>：星级+头像+评语</li>
+                  <li>❓ <b>常见问答</b>：点击展开的 Q&A</li>
+                  <li>📌 <b>须知列表</b>：图标+一句话规则</li>
+                  <li>🖼 <b>图片集</b>：图片墙，可直接上传图片</li>
+                  <li>📝 <b>图文段落</b>：大段文字介绍，自动换行</li>
+                </ul>
+              </li>
+              <li><b>图片上传：</b>客服二维码、图片集中的图片均支持直接上传（≤8MB），上传后保存在服务器。</li>
+              <li><b>换主题：</b>「网站设置 → 主题配色」可一键切换 4 套配色（极光紫 / 深海蓝 / 晨雾白 / 落日金），风格与内容完全分离。</li>
+              <li><b>复用模板：</b>「导出配置」把整站内容存成 JSON；给新俱乐部用时，导入该配置 → 改名字、联系方式、板块内容即可，无需改代码。</li>
+              <li><b>数据存储：</b>内容保存在服务器 data/db.json，重启不丢失。建议定期用「导出配置」备份。</li>
+              <li><b>忘记密码：</b>联系技术人员编辑 data/db.json 中的 adminPassword 字段即可重置。</li>
+            </ol>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- 添加板块弹窗 -->
+  <div class="modal" id="addModal" hidden>
+    <div class="modal-mask" data-close="1"></div>
+    <div class="modal-card glass">
+      <button class="modal-close" data-close="1">✕</button>
+      <h3>＋ 添加新板块</h3>
+      <div class="add-form">
+        <label class="form-item"><span>板块类型</span>
+          <div class="type-grid" id="typeGrid"></div>
+        </label>
+        <label class="form-item"><span>板块标题</span><input id="newSecTitle" placeholder="如：团队风采"></label>
+        <label class="form-item"><span>图标表情</span><input id="newSecIcon" placeholder="🌟" maxlength="4"></label>
+        <label class="form-item"><span>副标题（可选）</span><input id="newSecSub" placeholder="显示在标题下方的小字"></label>
+      </div>
+      <button class="btn btn-primary btn-block" id="createSecBtn">创建板块</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>
