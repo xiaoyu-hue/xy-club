@@ -3,7 +3,32 @@
 All notable changes to the XY Club website template are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-> ⚠️ Notice: This project is developed with AI assistance. Admin auth is a single shared password stored in plaintext and has not undergone a professional security audit. Change the default password right after deploying.
+> ⚠️ Notice: This project is developed with AI assistance. Admin auth is a single shared password (stored as a scrypt hash since 1.3.0) and has not undergone a professional security audit. Change the default password right after deploying.
+
+---
+
+## 1.4.0 - 2026-09-26 (Automated tests)
+
+### ✨ Added
+
+- **Unit test suite**: 9 files, 73 cases under `tests/`, run with Node's built-in `node --test` — no new dependencies, ~5s. `npm test` is now the single mandatory gate
+  - Covers password hashing/verification, login rate limiting, the auth middleware, the upload allowlist, content read/write and inline-image restore, static snapshot sanitisation, data-file resilience, section/theme contracts, and doc sync
+- **Optional E2E**: `e2e/` + `playwright.config.js` across desktop (1280×800) and narrow (375×667) viewports; when Playwright isn't installed, `npm run test:e2e` skips gracefully without failing
+- `docs/TESTING.md`: testing guide with the layering rationale, a file-responsibility table, and discipline rules
+- GitHub Actions workflow `test.yml`: runs the unit suite on Node 18 / 20 / 22
+- `server.js` now honours `DATA_DIR` / `UPLOAD_DIR` environment overrides (for test isolation; default behaviour unchanged)
+
+### 🔧 Fixed
+
+- **The admin panel was actually rendered while signed out**: `.admin-app { display: flex }` overrode the `hidden` attribute's `display: none`, hidden only behind the login overlay. Added `.admin-app[hidden] { display: none }`
+- `/api/health` was blocked by the auth middleware and returned 401, unusable as a probe; it now runs before auth and is public again
+- Both READMEs documented `/api/password` as `PUT` (it is `POST`) and omitted `/api/health`; fixed, plus a new `docs-sync.test.js` that guards against docs drifting from routes
+
+### 📝 Documentation
+
+- Added `docs/TESTING.md`, linked from both READMEs (doc index and project structure)
+- `AGENTS.md` gained a "Testing discipline" section; the pre-delivery checklist now includes `npm test`
+- `CONTRIBUTING.md`: "Testing requirements" changed from a purely manual checklist to "unit gate + optional E2E + what still needs human eyes"
 
 ---
 

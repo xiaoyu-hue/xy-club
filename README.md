@@ -27,6 +27,7 @@
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white)
+![Test](https://github.com/xiaoyu-hue/xy-club/actions/workflows/test.yml/badge.svg)
 
 </div>
 
@@ -172,6 +173,8 @@ xy-club/
 ├── server.js            # Express 服务：静态托管 + REST API + 登录鉴权 + 图片上传
 ├── defaults.js          # 模板默认内容（改这里可改「出厂配置」）
 ├── package.json
+├── tests/               # 单元测试（node --test，零新增依赖）
+├── e2e/                 # E2E 冒烟（可选，需本地装 @playwright/test）
 ├── data/
 │   └── db.json          # 运行时内容数据（自动生成，已 gitignore）
 └── public/
@@ -190,9 +193,10 @@ xy-club/
 | GET | `/api/check` | 校验登录态 |
 | GET | `/api/content` | 获取整站内容（公开） |
 | PUT | `/api/content` | 保存内容与设置（需鉴权） |
-| PUT | `/api/password` | 修改管理密码（需鉴权） |
+| POST | `/api/password` | 修改管理密码（需鉴权） |
 | POST | `/api/upload` | 上传图片，≤8MB（需鉴权） |
 | POST | `/api/reset` | 恢复默认内容（需鉴权） |
+| GET | `/api/health` | 健康检查（公开，探活用） |
 
 ---
 
@@ -205,6 +209,7 @@ xy-club/
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 架构说明：数据流转、主题机制、鉴权、静态回退 |
 | [docs/SECTIONS.md](docs/SECTIONS.md) | 7 种板块类型的字段参考 |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | 部署指南：Node 服务器 / 纯静态托管两条路线 |
+| [docs/TESTING.md](docs/TESTING.md) | 测试指南：单元测试门禁 + 可选 E2E，含纪律约定 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本历史 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南（含代码规范与两条红线） |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | 贡献者行为准则 |
@@ -278,6 +283,25 @@ PORT=8080 node server.js     # 平台会注入 PORT，服务已监听 0.0.0.0
 
 ---
 
+<a id="testing"></a>
+
+## 🧪 测试
+
+```bash
+npm test          # 单元测试：73 项，约 5 秒，零新增依赖（Node 内置 node --test）
+```
+
+`npm test` 是唯一的强制门禁，CI 会在 Node 18 / 20 / 22 上各跑一遍。它覆盖的是真正有风险的层面：密码哈希与登录限流、上传格式白名单、内容读写与数据容错、静态快照不含凭据、以及「文档与代码是否还对齐」。
+
+| 层 | 命令 | 依赖 | 说明 |
+|----|------|------|------|
+| 单元测试 | `npm test` | 无 | 强制门禁，`tests/` |
+| E2E | `npm run test:e2e` | 需本地装 `@playwright/test` | 可选，未安装会自动跳过 |
+
+E2E 在真实浏览器里验证桌面（1280×800）与窄屏（375×667）两种视口：首页渲染、四套主题、后台「改内容 → 保存 → 刷新仍在」闭环。详见 [docs/TESTING.md](docs/TESTING.md)。
+
+---
+
 ## 🤝 贡献指南
 
 欢迎 Issue 与 PR，详见 [CONTRIBUTING.md](CONTRIBUTING.md)；参与前请先阅读 [行为准则](CODE_OF_CONDUCT.md)。
@@ -285,9 +309,10 @@ PORT=8080 node server.js     # 平台会注入 PORT，服务已监听 0.0.0.0
 提交前请确保：
 
 1. Fork 本仓库并创建分支（`git checkout -b feature/xxx`）
-2. 改动保持「零前端框架、零构建」的底线——不要引入 React/Vue 或打包器
-3. 提交信息用简明中文或英文均可
-4. 发起 Pull Request 并说明改动动机
+2. `npm test` 全绿；改动涉及鉴权 / 上传 / 渲染时要补对应用例
+3. 改动保持「零前端框架、零构建」的底线——不要引入 React/Vue 或打包器
+4. 提交信息用简明中文或英文均可
+5. 发起 Pull Request 并说明改动动机
 
 ---
 

@@ -90,6 +90,9 @@ xy888888
 ```bash
 # 生成静态快照（纯静态托管用）
 node scripts/build-static.js
+
+# 跑单元测试（提交前必须全绿）
+npm test
 ```
 
 ### 项目结构
@@ -99,9 +102,12 @@ xy-club/
 ├── server.js            # Express：静态托管 + REST API + 鉴权 + 上传
 ├── defaults.js          # 出厂内容（改这里等于改模板默认值）
 ├── scripts/
-│   └── build-static.js  # 导出 public/content.json 静态快照
+│   ├── build-static.js  # 导出 public/content.json 静态快照
+│   └── reset-password.js# 重置后台密码（密码是哈希，不能直接改 db.json）
+├── tests/               # 单元测试（node --test，零依赖）
+├── e2e/                 # E2E（可选，需本地装 @playwright/test）
 ├── data/db.json         # 运行时内容（自动生成，已 gitignore）
-├── docs/                # 架构、板块字段、部署指南
+├── docs/                # 架构、板块字段、部署、测试指南
 └── public/
     ├── index.html       # 官网
     ├── admin.html       # 后台
@@ -156,15 +162,53 @@ test: 补充后台板块排序的 E2E 用例
 
 ## 测试要求
 
-本项目没有单元测试套件，靠端到端验证。提交前请至少手动确认：
+完整说明见 [docs/TESTING.md](docs/TESTING.md)。这里只讲你提交前必须做的事。
 
-- [ ] 官网首页正常渲染，无控制台报错
-- [ ] 四套主题都能正常切换且对比度可读
-- [ ] 后台登录、新增板块、保存、刷新后内容一致
-- [ ] 移动端窄屏（375px）下布局未破版
+### 必跑：单元测试
+
+```bash
+npm test        # node --test，零新增依赖，约 5 秒
+```
+
+这是**唯一强制门禁**。它用 Node 内置测试运行器，不需要装任何额外东西，CI 会在 Node 18 / 20 / 22 上各跑一遍。
+
+改动了什么，就要补对应的用例：
+
+| 你改了 | 该动哪个文件 |
+|--------|-------------|
+| 密码 / 登录 / 会话 | `tests/auth.test.js`、`tests/password.test.js`、`tests/rate-limit.test.js` |
+| 内容读写 / 导入导出 | `tests/content-api.test.js` |
+| 图片上传 | `tests/upload.test.js` |
+| 静态托管 / 资源路径 | `tests/static-build.test.js` |
+| 数据读写容错 | `tests/resilience.test.js` |
+| 板块类型 / 主题 | `tests/contract-defaults.test.js` |
+| 版本号 / README / API 表 | `tests/docs-sync.test.js` |
+
+用例一律通过 `tests/harness.js` 拿**临时数据目录**，绝不会碰你本地的 `data/db.json`。
+
+### 选跑：E2E
+
+```bash
+npm i -D @playwright test      # 只进 devDependencies
+npx playwright install chromium
+npm run test:e2e
+```
+
+未安装时 `npm run test:e2e` 会打印提示并退出 0（跳过，不算失败），所以你不用担心命令炸掉。
+
+### 仍然要手动确认的部分
+
+自动化覆盖不到的，请自己看一眼：
+
+- [ ] 四套主题下文字对比度都可读（机器只能验证变量非空，读不读得出来得靠眼睛）
 - [ ] 鼠标设备的微交互（高光 / 倾斜）未误触发在触屏上
+- [ ] 改动涉及视觉时，用 Playwright 截图对比桌面与移动端两种视口
 
-改动涉及视觉时，建议用 Playwright 截图对比桌面与移动端两种视口。
+### 纪律
+
+- 现有测试是安全网，**不要因为"更干净"就删**
+- 测试失败时**禁止先改测试逃避**：先判断是真 bug、依赖了废弃实现，还是有意为之，并把判断写进提交信息
+- 文档里写测试数量时必须以 `npm test` 实际输出为准
 
 ---
 

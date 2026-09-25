@@ -49,8 +49,10 @@
 | 新增板块类型 | `defaults.js`（示例数据）+ `main.js` 的 `renderSection` + `admin.js` 的编辑表单 + `docs/SECTIONS.md` |
 | 新增主题 | `style.css` 的 `html[data-theme="xxx"]` 全部变量 + `admin.js` 的主题选项 + README 主题表 |
 | 新增微交互 | `main.js` 新增 `bind*` 函数并在 `init()` 注册 + 尊重 `prefers-reduced-motion` + 触屏降级 |
-| 新增 API | `server.js` + README 的 API 表 + 明确鉴权要求 |
+| 新增 API | `server.js` + README 的 API 表 + 明确鉴权要求（`docs-sync.test.js` 会校验方法名与路径） |
 | 任何行为变更 | `README.md` + `README.en.md` + `CHANGELOG.md` + `CHANGELOG.en.md` |
+| 新增/修改安全相关逻辑 | `tests/` 下对应用例（`auth.test.js` / `upload.test.js` / `content-api.test.js`） |
+| 新增板块类型 | 另需 `defaults.js` 示例数据，`contract-defaults.test.js` 会校验渲染分支是否齐全 |
 
 ## 五、视觉规范
 
@@ -73,7 +75,21 @@ refactor: 抽出主题应用逻辑为 applyTheme()
 - **中英文文档必须同时更新**，章节一一对应，不允许只改一半
 - 提交作者身份：`xiaoyu-hue <220487718+xiaoyu-hue@users.noreply.github.com>`
 
-## 七、常见错误（已发生过，不要重犯）
+## 七、测试纪律
+
+`npm test` 是唯一的强制门禁（`node --test`，零新增依赖，约 5 秒）。提交前必须跑通。
+
+1. **现有测试是安全网，不是旧包袱** —— 不得因为"更干净""重构需要"而删除；旧测试验证的行为仍然有效就保留。
+2. **禁止先改测试来逃避失败**。测试失败时先判断属于哪一种，并把判断写进提交信息：
+   - 真 bug？
+   - 测试依赖了已废弃的内部实现？
+   - 有意的行为改变？
+3. **新增功能必须同时新增测试**；涉及鉴权 / 上传 / 用户输入渲染的改动，必须留下对应用例。
+4. **测试用临时目录**（`tests/harness.js` 已处理），绝不允许用例读写开发者真实的 `data/db.json`。
+5. **文档里的测试数量必须以 `npm test` 实际输出为准**，禁止凭印象写数字。
+6. E2E 是可选层（需要 `@playwright/test`）；未安装时 `npm run test:e2e` 会自动跳过，不算失败。
+
+## 八、常见错误（已发生过，不要重犯）
 
 - 把 `README_EN.md` 写成 `README_EN.md` —— 正确命名是 **`README.en.md`**（小写 `.en`）
 - 在 README 中用 emoji 标题的自动锚点做跳转 —— GitHub 生成的锚点不稳定，必须使用显式 `<a id="...">`
@@ -82,11 +98,17 @@ refactor: 抽出主题应用逻辑为 applyTheme()
 - 忘记 `public/uploads/` 与 `data/` 在无持久卷环境下会丢失
 - 直接编辑 `data/db.json` 改密码 —— 密码是 **scrypt 哈希**，必须用 `node scripts/reset-password.js 新密码`
 
-## 八、交付前自检
+## 九、交付前自检
 
+- [ ] `npm test` 全绿（唯一强制门禁）
 - [ ] 官网首页无控制台报错
 - [ ] 四套主题均正常渲染且文字可读
 - [ ] 后台登录 → 编辑 → 保存 → 刷新，内容一致
 - [ ] 375px 窄屏未破版
 - [ ] 中英文文档已同步，CHANGELOG 已追加条目
 - [ ] 无新增运行时依赖，无引入前端框架
+- [ ] 涉及鉴权 / 上传 / 渲染的改动已补对应测试用例
+
+可选（需要本地装 `@playwright/test`）：
+
+- [ ] `npm run test:e2e` 桌面 + 375px 两个视口通过

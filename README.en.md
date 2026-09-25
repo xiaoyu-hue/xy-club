@@ -27,6 +27,7 @@ A **reusable club website template**: liquid-glass visuals + micro-interactions,
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white)
+![Test](https://github.com/xiaoyu-hue/xy-club/actions/workflows/test.yml/badge.svg)
 
 </div>
 
@@ -172,6 +173,8 @@ xy-club/
 ├── server.js            # Express server: static hosting + REST API + auth + uploads
 ├── defaults.js          # Default template content (edit this to change "factory settings")
 ├── package.json
+├── tests/               # Unit tests (node --test, no new dependencies)
+├── e2e/                 # E2E smoke tests (optional, needs a local @playwright/test)
 ├── data/
 │   └── db.json          # Runtime content (auto-generated, gitignored)
 └── public/
@@ -190,9 +193,10 @@ xy-club/
 | GET | `/api/check` | Validate the session |
 | GET | `/api/content` | Fetch all site content (public) |
 | PUT | `/api/content` | Save content and settings (auth required) |
-| PUT | `/api/password` | Change the admin password (auth required) |
+| POST | `/api/password` | Change the admin password (auth required) |
 | POST | `/api/upload` | Upload an image, ≤8MB (auth required) |
 | POST | `/api/reset` | Restore default content (auth required) |
+| GET | `/api/health` | Health check (public, for probes) |
 
 ---
 
@@ -204,6 +208,7 @@ xy-club/
 |-----|----------|
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture: data flow, theming, auth, static fallback |
 | [docs/SECTIONS.md](docs/SECTIONS.md) | Field reference for the 7 section types |
+| [docs/TESTING.md](docs/TESTING.md) | Testing guide: unit gate + optional E2E, incl. discipline rules |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Deployment: Node server vs. static-only hosting |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contributing guide (code rules and two red lines) |
@@ -278,6 +283,25 @@ Static assets and the API share one port, so there is no CORS setup.
 
 ---
 
+<a id="testing"></a>
+
+## 🧪 Testing
+
+```bash
+npm test          # Unit tests: 73 cases, ~5s, no new dependencies (Node's built-in node --test)
+```
+
+`npm test` is the only mandatory gate; CI runs it on Node 18 / 20 / 22. It covers the parts that actually carry risk: password hashing and login rate limiting, the upload allowlist, content read/write and data resilience, static snapshots staying credential-free, and whether the docs still match the code.
+
+| Layer | Command | Dependencies | Notes |
+|-------|---------|--------------|-------|
+| Unit | `npm test` | none | Mandatory gate, `tests/` |
+| E2E | `npm run test:e2e` | requires a local `@playwright/test` | Optional; skipped automatically if absent |
+
+E2E drives a real browser at desktop (1280×800) and narrow (375×667) viewports: home rendering, all four themes, and the admin loop "edit → save → reload and it's still there". See [docs/TESTING.md](docs/TESTING.md).
+
+---
+
 ## 🤝 Contributing
 
 Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md), and please read the [Code of Conduct](CODE_OF_CONDUCT.md) first.
@@ -285,9 +309,10 @@ Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md), and pleas
 Before submitting:
 
 1. Fork the repo and create a branch (`git checkout -b feature/xxx`)
-2. Keep the "zero frontend framework, zero build" rule — no React/Vue, no bundler
-3. Commit messages in Chinese or English are both fine
-4. Open a Pull Request explaining the motivation
+2. Make sure `npm test` is green; add cases when you touch auth, uploads, or rendering
+3. Keep the "zero frontend framework, zero build" rule — no React/Vue, no bundler
+4. Commit messages in Chinese or English are both fine
+5. Open a Pull Request explaining the motivation
 
 ---
 

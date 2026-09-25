@@ -3,7 +3,32 @@
 本文件记录 XY 俱乐部官网模板的所有重要变更。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/)。
 
-> ⚠️ 提示：本项目由 AI 辅助开发。后台鉴权为单密码机制且密码明文存储，尚未经过专业安全审计，部署后请第一时间修改默认密码。
+> ⚠️ 提示：本项目由 AI 辅助开发。后台鉴权为单密码机制（1.3.0 起密码以 scrypt 哈希存储），尚未经过专业安全审计，部署后请第一时间修改默认密码。
+
+---
+
+## 1.4.0 - 2026-09-26（补上自动化测试）
+
+### ✨ 新增
+
+- **单元测试套件**：`tests/` 下 9 个文件、73 项用例，用 Node 内置的 `node --test` 跑，零新增依赖、约 5 秒；`npm test` 成为唯一的强制门禁
+  - 覆盖密码哈希与校验、登录限流、鉴权中间件、上传白名单、内容读写与内联图片还原、静态快照脱敏、数据文件容错、板块/主题契约、文档同步
+- **可选 E2E**：`e2e/` + `playwright.config.js`，桌面（1280×800）与窄屏（375×667）两个视口；未安装 Playwright 时 `npm run test:e2e` 自动跳过，不影响退出码
+- `docs/TESTING.md`：测试指南，含分层依据、文件职责表与纪律约定
+- GitHub Actions 工作流 `test.yml`：Node 18 / 20 / 22 上各跑一遍单元测试
+- `server.js` 支持用 `DATA_DIR` / `UPLOAD_DIR` 环境变量覆盖存储目录（测试隔离用，不影响默认行为）
+
+### 🔧 修复
+
+- **后台面板在未登录时其实已经渲染出来了**：`.admin-app { display: flex }` 盖掉了 `hidden` 属性的 `display: none`，只是被登录浮层遮住看不见；补上 `.admin-app[hidden] { display: none }`
+- `/api/health` 原本被鉴权中间件拦截返回 401，无法用于探活；现已移到鉴权之前，恢复为公开接口
+- 中英文 README 的 API 表把 `/api/password` 写成 `PUT`（实际是 `POST`），且漏记了 `/api/health`；已修正，并新增 `docs-sync.test.js` 自动守卫「文档与路由不一致」
+
+### 📝 文档
+
+- 新增 `docs/TESTING.md`，并在两份 README 的文档索引与目录结构中同步
+- `AGENTS.md` 新增「测试纪律」章节，交付前自检加入 `npm test`
+- `CONTRIBUTING.md` 的「测试要求」从纯手工清单改为「单元测试门禁 + 可选 E2E + 仍需人工确认的部分」
 
 ---
 
