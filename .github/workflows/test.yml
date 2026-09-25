@@ -1,0 +1,35 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  unit:
+    name: Unit (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['18', '20', '22']
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 准备 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # 仓库里没有 package-lock.json（依赖只有一个 express），用 install 而非 ci
+      - name: 安装依赖
+        run: npm install --no-audit --no-fund
+
+      - name: 运行单元测试
+        run: npm test
+
+# 说明：E2E 不进 CI。它需要下载 Chromium（数分钟），而单元测试已经覆盖了
+# 鉴权 / 上传 / 数据完整性这些真正有风险的层面。E2E 留作本地发布前验证，
+# 见 docs/TESTING.md。
