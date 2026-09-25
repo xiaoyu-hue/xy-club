@@ -20,7 +20,7 @@ A **reusable club website template**: liquid-glass visuals + micro-interactions,
 
 <br>
 
-**[🔗 Live preview](https://af970fefa7bd3dec7.app.workbuddy.host)** · **[🚀 Quick Start](#quick-start)** · **[🔁 Reuse the template](#reuse)** · **[⚠️ Not for](#not-recommended)**
+**[🚀 Quick Start](#quick-start)** · **[🔁 Reuse the template](#reuse)** · **[📚 Docs](docs/README.md)** · **[⚠️ Not for](#not-recommended)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
@@ -94,7 +94,7 @@ Seven types are available when adding a section; each renders differently on the
 | Testimonials | `testimonials` | Feedback / review wall | quote, author, rating |
 | FAQ | `faq` | Q&A (collapsible) | question, answer |
 | Notice list | `notice` | Rules / announcements | item text |
-| Gallery | `gallery` | Photo albums / event shots | image, caption |
+| Gallery | `gallery` | Photo albums / event shots | image URL `url`, caption `caption` |
 | Rich text | `text` | About us / long-form intro | heading, body |
 
 ---
@@ -194,6 +194,20 @@ xy-club/
 
 ---
 
+<a id="docs"></a>
+
+## 📚 Documentation
+
+| Doc | Contents |
+|-----|----------|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture: data flow, theming, auth, static fallback |
+| [docs/SECTIONS.md](docs/SECTIONS.md) | Field reference for the 7 section types |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | Deployment: Node server vs. static-only hosting |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contributing guide (code rules and two red lines) |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Contributor Code of Conduct |
+| [AGENTS.md](AGENTS.md) | AI agent collaboration rules |
+
 <a id="reuse"></a>
 
 ## 🔁 Reuse the Template
@@ -212,6 +226,9 @@ Want to change the factory defaults instead? Edit `defaults.js`, delete `data/db
 ---
 
 ## 📦 Deployment
+
+Two routes are available: **Node server** (full admin) or **static-only hosting** (site only, admin entry auto-hidden).
+See [docs/DEPLOY.md](docs/DEPLOY.md) for platform notes, volume requirements, and troubleshooting.
 
 A single-port HTTP app with no database — any Node.js-capable platform works:
 
@@ -255,7 +272,9 @@ Static assets and the API share one port, so there is no CORS setup.
 
 ## 🤝 Contributing
 
-Issues and PRs are welcome. Before submitting:
+Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md), and please read the [Code of Conduct](CODE_OF_CONDUCT.md) first.
+
+Before submitting:
 
 1. Fork the repo and create a branch (`git checkout -b feature/xxx`)
 2. Keep the "zero frontend framework, zero build" rule — no React/Vue, no bundler

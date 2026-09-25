@@ -364,11 +364,39 @@
     document.documentElement.dataset.theme = ['aurora', 'ocean', 'mist', 'sunset'].includes(t) ? t : 'aurora';
   }
 
-  async function init() {
+  /**
+   * 加载内容。
+   * 1) 优先后端 API —— 本地或服务器部署时走这条，后台改动即时生效
+   * 2) 拿不到 API 时回退静态快照 content.json —— GitHub Pages 等纯静态托管走这条
+   *    静态环境没有 Node 服务，官网照常展示，后台入口会自动隐藏
+   */
+  async function loadContent() {
     try {
       const res = await fetch('/api/content');
-      SITE = await res.json();
-    } catch (e) { console.error('加载内容失败', e); }
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.settings) return data;
+      }
+    } catch (e) { /* 无后端，继续走静态回退 */ }
+
+    try {
+      const res = await fetch('./content.json');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.settings) {
+          document.documentElement.classList.add('static-mode');
+          console.info('[xy-club] 静态预览模式：内容来自 content.json，后台功能不可用。');
+          return data;
+        }
+      }
+    } catch (e) { /* 快照也不存在 */ }
+
+    console.error('加载内容失败：API 与静态快照均不可用');
+    return { settings: {}, sections: [] };
+  }
+
+  async function init() {
+    SITE = await loadContent();
     applyTheme();
     renderNav(); renderHero(); renderTicker(); renderSections(); renderCTA(); renderFooter();
     bindGlobal(); bindReveal(); bindScroll(); bindCountUp(); bindTilt(); bindSpotlight(); bindRipple();

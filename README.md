@@ -20,7 +20,7 @@
 
 <br>
 
-**[🔗 在线预览](https://af970fefa7bd3dec7.app.workbuddy.host)** · **[🚀 快速开始](#quick-start)** · **[🔁 复用模板](#reuse)** · **[⚠️ 不适合什么场景](#not-recommended)**
+**[🚀 快速开始](#quick-start)** · **[🔁 复用模板](#reuse)** · **[📚 文档](docs/README.md)** · **[⚠️ 不适合什么场景](#not-recommended)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
@@ -94,7 +94,7 @@
 | 客户评价 | `testimonials` | 用户反馈 / 好评墙 | 内容、署名、评分 |
 | 常见问答 | `faq` | 疑问解答（可折叠） | 问题、答案 |
 | 须知列表 | `notice` | 规则 / 公告 / 注意事项 | 条目文本 |
-| 图片集 | `gallery` | 相册 / 活动照片 | 图片、说明 |
+| 图片集 | `gallery` | 相册 / 活动照片 | 图片地址 `url`、说明 `caption` |
 | 图文段落 | `text` | 关于我们 / 长文介绍 | 标题、正文 |
 
 ---
@@ -194,6 +194,20 @@ xy-club/
 
 ---
 
+<a id="docs"></a>
+
+## 📚 文档
+
+| 文档 | 内容 |
+|------|------|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 架构说明：数据流转、主题机制、鉴权、静态回退 |
+| [docs/SECTIONS.md](docs/SECTIONS.md) | 7 种板块类型的字段参考 |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | 部署指南：Node 服务器 / 纯静态托管两条路线 |
+| [CHANGELOG.md](CHANGELOG.md) | 版本历史 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南（含代码规范与两条红线） |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | 贡献者行为准则 |
+| [AGENTS.md](AGENTS.md) | AI Agent 协作规则 |
+
 <a id="reuse"></a>
 
 ## 🔁 复用模板（给另一个俱乐部用）
@@ -212,6 +226,9 @@ xy-club/
 ---
 
 ## 📦 部署
+
+两条路线可选：**Node 服务器**（后台完整可用）或**纯静态托管**（仅官网，后台入口自动隐藏）。
+平台对比、持久卷要求与故障排查见 [docs/DEPLOY.md](docs/DEPLOY.md)。
 
 单端口 HTTP 应用，无需数据库，任何支持 Node.js 的平台均可：
 
@@ -255,7 +272,9 @@ PORT=8080 node server.js     # 平台会注入 PORT，服务已监听 0.0.0.0
 
 ## 🤝 贡献指南
 
-欢迎 Issue 与 PR。提交前请确保：
+欢迎 Issue 与 PR，详见 [CONTRIBUTING.md](CONTRIBUTING.md)；参与前请先阅读 [行为准则](CODE_OF_CONDUCT.md)。
+
+提交前请确保：
 
 1. Fork 本仓库并创建分支（`git checkout -b feature/xxx`）
 2. 改动保持「零前端框架、零构建」的底线——不要引入 React/Vue 或打包器

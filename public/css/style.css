@@ -479,6 +479,9 @@ img { max-width: 100%; display: block; }
 .admin-link { opacity: .45; transition: opacity .2s; }
 .admin-link:hover { opacity: 1; }
 
+/* 静态预览模式（GitHub Pages 等纯静态托管）：没有后端，隐藏后台入口 */
+html.static-mode .admin-link { display: none; }
+
 /* ---------------- FAB ---------------- */
 .fab {
   position: fixed; right: 20px; bottom: 26px; z-index: 90;

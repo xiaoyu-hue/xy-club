@@ -9,6 +9,9 @@ data/*.tmp
 public/uploads/*
 !public/uploads/.gitkeep
 
+# 静态快照（由 scripts/build-static.js 生成，属构建产物）
+public/content.json
+
 # 日志与系统文件
 *.log
 .DS_Store
