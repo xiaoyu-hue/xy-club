@@ -15,6 +15,12 @@ public/content.json
 # 配置文件解析失败时自动留存的现场
 data/*.corrupt-*
 
+# Playwright 产物（E2E 为可选工具，产物不入库）
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
 # 日志与系统文件
 *.log
 .DS_Store
