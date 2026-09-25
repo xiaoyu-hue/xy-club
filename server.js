@@ -203,6 +203,9 @@ app.post('/api/login', (req, res) => {
   res.json({ ok: true, token });
 });
 
+// 健康检查（监控 / 探活用，同样不需要登录，放在鉴权中间件之前）
+app.get('/api/health', (req, res) => res.json({ ok: true }));
+
 // 校验登录态（不需要先登录才能问，所以放在鉴权中间件之前）
 app.get('/api/check', (req, res) => {
   const token = req.headers['x-token'];
@@ -276,8 +279,6 @@ app.post('/api/upload', (req, res) => {
   fs.writeFileSync(path.join(UPLOAD_DIR, file), buf);
   res.json({ ok: true, url: '/uploads/' + file });
 });
-
-app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 app.listen(PORT, HOST, () => {
   console.log(`✦ 俱乐部官网已启动: http://localhost:${PORT}  （管理后台: /admin）`);
