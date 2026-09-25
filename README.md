@@ -20,7 +20,7 @@
 
 <br>
 
-**[🚀 快速开始](#quick-start)** · **[🔁 复用模板](#reuse)** · **[📚 文档](docs/README.md)** · **[⚠️ 不适合什么场景](#not-recommended)**
+**[🔗 在线预览（GitHub Pages）](https://xiaoyu-hue.github.io/xy-club/)** · **[🚀 快速开始](#quick-start)** · **[🔁 复用模板](#reuse)** · **[📚 文档](docs/README.md)** · **[⚠️ 不适合什么场景](#not-recommended)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
@@ -37,6 +37,8 @@
 一个俱乐部想有个官网，通常卡在两件事：要么找人开发花钱，要么用建站平台被模板绑死。这个模板想解决的正是这件事——**一套代码，改内容就能给任意俱乐部用**。
 
 官网与后台共用一份 JSON 数据：后台改什么，前台立刻是什么，不需要重新构建、不需要懂代码。
+
+> 顶部「在线预览」是 GitHub Pages 的**纯静态**版本：官网完整可见，**后台不可用**（入口会自动隐藏）。需要后台请按 [docs/DEPLOY.md](docs/DEPLOY.md) 用 Node 服务器部署。
 
 ### ✨ 核心特点
 

@@ -20,7 +20,7 @@ A **reusable club website template**: liquid-glass visuals + micro-interactions,
 
 <br>
 
-**[🚀 Quick Start](#quick-start)** · **[🔁 Reuse the template](#reuse)** · **[📚 Docs](docs/README.md)** · **[⚠️ Not for](#not-recommended)**
+**[🔗 Live preview (GitHub Pages)](https://xiaoyu-hue.github.io/xy-club/)** · **[🚀 Quick Start](#quick-start)** · **[🔁 Reuse the template](#reuse)** · **[📚 Docs](docs/README.md)** · **[⚠️ Not for](#not-recommended)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
@@ -37,6 +37,8 @@ A **reusable club website template**: liquid-glass visuals + micro-interactions,
 A club that wants a website usually gets stuck on one of two things: hiring a developer costs money, or a site builder locks you into its templates. This template addresses exactly that — **one codebase, reusable for any club by changing only the content**.
 
 The site and the admin panel share a single JSON document. Whatever you edit in the admin is what visitors see immediately: no rebuild, no coding.
+
+> The "Live preview" link above is the **static-only** build on GitHub Pages: the site renders fully, but the **admin is unavailable** (its entry hides itself automatically). For the admin, deploy the Node server as described in [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ### ✨ Key Features
 
@@ -286,8 +288,6 @@ Before submitting:
 ## 📄 License
 
 Released under the [MIT License](LICENSE) — free to use, modify, and commercialize, provided the copyright notice is retained.
-
-Swap to Apache-2.0 if you need stronger patent protection.
 
 ---
 

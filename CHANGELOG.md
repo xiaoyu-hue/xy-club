@@ -7,6 +7,24 @@
 
 ---
 
+## 1.2.0 - 2026-09-26（GitHub Pages 展示站）
+
+### ✨ 新增
+
+- **GitHub Pages 自动部署**：新增 `.github/workflows/deploy-pages.yml`，推送 `main` 即自动构建并发布静态站点
+- **Render 蓝图**：新增 `render.yaml`，可在 Render 上一键部署完整版（含后台）用于演示
+
+### 🔧 修复
+
+- 静态资源引用改为相对路径（`/css/style.css` → `css/style.css`），修复子路径托管下样式与脚本 404 导致白屏的问题
+
+### 📝 文档
+
+- 中英文 README 加入 Pages 在线预览链接 <https://xiaoyu-hue.github.io/xy-club/>，并说明静态模式下后台不可用
+- 移除英文 README 中的 Apache-2.0 替换提示，与中文保持一致
+
+---
+
 ## 1.1.0 - 2026-09-26（文档体系与静态导出）
 
 ### ✨ 新增

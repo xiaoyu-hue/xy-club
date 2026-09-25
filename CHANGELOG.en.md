@@ -7,6 +7,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## 1.2.0 - 2026-09-26 (GitHub Pages showcase)
+
+### ✨ Added
+
+- **GitHub Pages auto-deploy** — new `.github/workflows/deploy-pages.yml`; every push to `main` builds and publishes the static site
+- **Render blueprint** — new `render.yaml` for one-click deployment of the full version (admin included) as a demo
+
+### 🔧 Fixed
+
+- Static assets now use relative paths (`/css/style.css` → `css/style.css`), fixing a blank page caused by 404s on sub-path hosting
+
+### 📝 Documentation
+
+- Added the Pages preview link <https://xiaoyu-hue.github.io/xy-club/> to both READMEs, noting that the admin is unavailable in static mode
+- Removed the Apache-2.0 note from the English README to match the Chinese one
+
+---
+
 ## 1.1.0 - 2026-09-26 (Documentation & static export)
 
 ### ✨ Added
