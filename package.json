@@ -1,10 +1,30 @@
 {
-  "name": "nx-club-website",
+  "name": "xy-club",
   "version": "1.0.0",
-  "description": "NX俱乐部官网 · 液态玻璃星空主题 + 后台管理系统",
+  "description": "俱乐部官网模板 · 液态玻璃风格 + 微交互 · 数据驱动官网与可视化后台管理",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
+  },
+  "keywords": [
+    "club",
+    "website",
+    "template",
+    "liquid-glass",
+    "express",
+    "cms"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiaoyu-hue/xy-club.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xiaoyu-hue/xy-club/issues"
+  },
+  "homepage": "https://github.com/xiaoyu-hue/xy-club#readme",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "express": "^4.21.0"

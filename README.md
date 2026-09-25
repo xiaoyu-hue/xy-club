@@ -44,6 +44,8 @@ xy-club/
 ## 🚀 快速开始
 
 ```bash
+git clone https://github.com/xiaoyu-hue/xy-club.git
+cd xy-club
 pnpm install      # 或 npm install
 node server.js    # 默认 http://localhost:3000
 ```

@@ -44,6 +44,8 @@ xy-club/
 ## 🚀 Quick Start
 
 ```bash
+git clone https://github.com/xiaoyu-hue/xy-club.git
+cd xy-club
 pnpm install      # or npm install
 node server.js    # http://localhost:3000 by default
 ```

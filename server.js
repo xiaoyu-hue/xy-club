@@ -1,4 +1,4 @@
-// NX俱乐部官网 · 后端服务（Express + JSON 文件存储）
+// 俱乐部官网模板 · 后端服务（Express + JSON 文件存储）
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -121,5 +121,5 @@ app.post('/api/upload', (req, res) => {
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 app.listen(PORT, HOST, () => {
-  console.log(`✦ NX俱乐部官网已启动: http://localhost:${PORT}  （管理后台: /admin）`);
+  console.log(`✦ 俱乐部官网已启动: http://localhost:${PORT}  （管理后台: /admin）`);
 });
