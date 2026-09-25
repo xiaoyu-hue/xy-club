@@ -1,0 +1,23 @@
+# Render Blueprint —— 一键部署「完整版」（含后台管理）
+#
+# 用法：Render 控制台 → New → Blueprint → 选择本仓库，会自动读取此文件。
+#
+# ⚠️ 重要提醒（免费层限制）：
+#   1. 免费层**没有持久磁盘**，服务重启后 data/db.json 会被重置，
+#      后台改的内容会丢失 —— 仅适合演示，不适合长期真实使用。
+#   2. 免费层闲置 15 分钟会休眠，下次访问冷启动约 30–50 秒。
+#   3. 需要长期保存内容，请升级到带 Disk 的付费方案（或改用有持久卷的 VPS）。
+#
+services:
+  - type: web
+    name: xy-club
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/content
+    envVars:
+      - key: NODE_VERSION
+        value: '20'
