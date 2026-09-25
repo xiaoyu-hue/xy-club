@@ -105,6 +105,8 @@ img { max-width: 100%; }
 
 /* ---------- 管理框架 ---------- */
 .admin-app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+/* display:flex 会盖掉 hidden 属性的 display:none —— 未登录时后台面板必须真的不渲染 */
+.admin-app[hidden] { display: none; }
 .topbar { position: sticky; top: 12px; z-index: 50; margin: 12px 16px 0; padding: 0 8px; }
 .topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 8px; flex-wrap: wrap; }
 .topbar-brand { font-weight: 700; font-size: 15px; padding: 6px 10px; }
