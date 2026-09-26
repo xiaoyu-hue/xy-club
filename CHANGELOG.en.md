@@ -7,6 +7,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## 1.4.4 - 2026-09-26 (Code-review fix list P0–P2)
+
+### 🔒 Security fixes
+
+- **S1 · `/api/reset` backdoor**: the reset endpoint used to overwrite the admin password with the hardcoded weak password `xy888888` and had no second-factor check. Now it: (1) requires the current admin password; (2) only restores content & settings and **never touches the login password**.
+- **S2 · Password change invalidates sessions**: after `/api/password` succeeds, all other sessions are cleared (only the current token is kept); old tokens stop working immediately.
+- **S3 · Rate-limit uses the real client IP**: behind a reverse proxy, `trust proxy` makes the limiter use the real client IP (override hop count via `TRUST_PROXY`).
+
+### 🧩 Quality / Style
+
+- **Q1 · In-process write lock** serializes the read-modify-write critical sections of content/password/reset.
+- **Q2 · Read cache**: `readDB` caches by file mtime; public reads no longer re-parse + re-read every time (cache hits still return a copy).
+- **Q4 · Global error handler** returns a unified 500 instead of leaking hangs.
+- **C1 · Naming unified** from `nx_token` to `xy_token`; all legacy NX branding removed.
+- **C2 · Constants consolidated**; normal JSON limit 64mb → 1mb, upload 16mb (business cap stays 8MB, enforced in route).
+
+### ♿ UI / UX / Tests
+
+- **U1** admin re-render keeps focus & scroll position.
+- **U2** reset moved into a danger zone requiring current-password confirmation.
+- **U3** admin a11y: real `label[for]`, `aria-label` on op buttons, `aria-live` on save state, `role="dialog"` on the add-section modal.
+- **T1 / T2 / T3** new tests for reset security, password-change session invalidation, and frontend `esc` / `TYPES`; **82 tests, 28 suites, 0 fail**.
+
+---
+
 ## 1.4.3 - 2026-09-26 (Completed documentation system modeled on sonder520 / Nymir)
 
 ### 📚 Documentation

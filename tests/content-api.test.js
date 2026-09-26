@@ -121,14 +121,19 @@ describe('PUT /api/content', () => {
 });
 
 describe('POST /api/reset', () => {
-  test('恢复默认内容且密码重新哈希', async () => {
+  test('需当前密码：缺密码被拒、密码正确才恢复默认内容', async () => {
     const token = await login();
-    const res = await request('POST', '/api/reset', { token, body: {} });
+    // 安全修复（S1）：未提供当前密码应被拒，防止被当后门直接调用
+    const denied = await request('POST', '/api/reset', { token, body: {} });
+    assert.equal(denied.status, 400);
+
+    // 提供正确密码才恢复默认内容
+    const res = await request('POST', '/api/reset', { token, body: { currentPassword: 'xy888888' } });
     assert.equal(res.status, 200);
     assert.equal(res.body.settings.siteName, 'XY俱乐部');
 
     const db = readDBFile();
-    assert.ok(db.settings.adminPassword.startsWith('scrypt$'));
-    assert.equal('sections' in db && db.sections.length > 0, true);
+    assert.ok(db.settings.adminPassword.startsWith('scrypt$'), '密码应仍是哈希，未被重置为明文弱密码');
+    assert.equal(db.sections.length > 0, true);
   });
 });

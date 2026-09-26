@@ -1,4 +1,4 @@
-/* NX俱乐部 · 后台管理逻辑 */
+/* XY俱乐部 · 后台管理逻辑 */
 (() => {
   'use strict';
   const $ = (s) => document.querySelector(s);
@@ -7,7 +7,8 @@
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-  let token = localStorage.getItem('nx_token') || '';
+  // C1：鉴权 token 键统一为 xy_token
+  let token = localStorage.getItem('xy_token') || '';
   let D = null;            // 工作副本 { settings, sections }
   let dirty = false;       // 是否有未保存修改
   let expandedId = null;   // 当前展开编辑的板块
@@ -79,7 +80,7 @@
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || '登录失败');
       token = data.token;
-      localStorage.setItem('nx_token', token);
+      localStorage.setItem('xy_token', token);
       await loadContent();
       showApp();
       toast('欢迎回来 👋');
@@ -210,6 +211,13 @@
 
   function renderSecList() {
     const box = $('#secList');
+    // U1：重渲染前记录焦点元素与滚动位置，重渲染后还原，避免连续编辑时焦点/滚动跳失
+    const active = document.activeElement;
+    const focusKey = (active && active.dataset && active.dataset.bind)
+      ? active.dataset.bind
+      : (active && active.id ? active.id : null);
+    const scrollTop = box ? box.scrollTop : 0;
+
     if (!D.sections.length) {
       box.innerHTML = `<div class="panel-card glass" style="text-align:center;color:var(--faint)">还没有任何板块，点击上方「＋ 添加新板块」创建吧</div>`;
       return;
@@ -226,14 +234,21 @@
             <label class="switch" title="显示/隐藏">
               <input type="checkbox" data-bind="sec-vis" data-id="${esc(s.id)}" ${s.visible !== false ? 'checked' : ''}><i></i>
             </label>
-            <button class="op-btn" data-act="up" data-i="${i}" title="上移" ${i === 0 ? 'disabled' : ''}>↑</button>
-            <button class="op-btn" data-act="down" data-i="${i}" title="下移" ${i === D.sections.length - 1 ? 'disabled' : ''}>↓</button>
-            <button class="op-btn wide" data-act="edit" data-id="${esc(s.id)}">${expandedId === s.id ? '收起' : '编辑'}</button>
-            <button class="op-btn wide del" data-act="del" data-id="${esc(s.id)}">删除</button>
+            <button class="op-btn" data-act="up" data-i="${i}" title="上移" aria-label="上移板块" ${i === 0 ? 'disabled' : ''}>↑</button>
+            <button class="op-btn" data-act="down" data-i="${i}" title="下移" aria-label="下移板块" ${i === D.sections.length - 1 ? 'disabled' : ''}>↓</button>
+            <button class="op-btn wide" data-act="edit" data-id="${esc(s.id)}" aria-label="编辑板块">${expandedId === s.id ? '收起' : '编辑'}</button>
+            <button class="op-btn wide del" data-act="del" data-id="${esc(s.id)}" aria-label="删除板块">删除</button>
           </div>
         </div>
         ${expandedId === s.id ? secEditorHTML(s) : ''}
       </div>`).join('');
+
+    // 还原焦点（仅对有稳定 data-bind 的输入框有效；操作按钮无稳定标识，跳过）
+    if (focusKey && (focusKey.startsWith('set:') || focusKey.startsWith('sec:') || focusKey.startsWith('item:'))) {
+      const el = document.querySelector(`[data-bind="${focusKey}"]`);
+      if (el && typeof el.focus === 'function') el.focus();
+    }
+    if (box) box.scrollTop = scrollTop;
   }
 
   /* -------- 单个板块编辑器 -------- */
@@ -241,9 +256,9 @@
     const b = (f) => `data-bind="item:${esc(s.id)}:${i}:${f}"`;
     const v = (x) => esc(x == null ? '' : x);
     const ops = `<div class="item-ops">
-        <button class="op-btn" data-iact="iup" data-i="${i}" title="上移">↑</button>
-        <button class="op-btn" data-iact="idown" data-i="${i}" title="下移">↓</button>
-        <button class="op-btn del" data-iact="idel" data-i="${i}" title="删除">✕</button>
+        <button class="op-btn" data-iact="iup" data-i="${i}" title="上移" aria-label="上移条目">↑</button>
+        <button class="op-btn" data-iact="idown" data-i="${i}" title="下移" aria-label="下移条目">↓</button>
+        <button class="op-btn del" data-iact="idel" data-i="${i}" title="删除" aria-label="删除条目">✕</button>
       </div>`;
     const input = (f, ph) => `<input ${b(f)} value="${v(it[f])}" placeholder="${ph}">`;
 
@@ -369,6 +384,7 @@
     $('#newSecIcon').value = '';
     $('#newSecSub').value = '';
     $('#addModal').hidden = false;
+    $('#newSecTitle').focus(); // U3：弹窗打开时把焦点移到首个输入框
   });
   $('#typeGrid').addEventListener('click', (e) => {
     const opt = e.target.closest('.type-opt');
@@ -428,7 +444,7 @@
     } catch (e) { toast(e.message, true); }
   });
   $('#logoutBtn').addEventListener('click', () => {
-    localStorage.removeItem('nx_token');
+    localStorage.removeItem('xy_token');
     location.reload();
   });
 
@@ -541,12 +557,15 @@
   });
 
   $('#resetBtn').addEventListener('click', async () => {
-    if (!confirm('确定把整个官网内容恢复为模板默认吗？当前所有修改将丢失（可在恢复前先导出备份）。')) return;
+    const pwd = $('#resetPwd') ? $('#resetPwd').value.trim() : '';
+    if (!pwd) { toast('请先输入当前管理密码', true); if ($('#resetPwd')) $('#resetPwd').focus(); return; }
+    if (!confirm('确定把整个官网内容恢复为模板默认吗？当前所有修改将丢失（可在恢复前先导出备份）。此操作需输入管理密码确认。')) return;
     try {
-      const r = await api('/api/reset', { method: 'POST', body: '{}' });
+      const r = await api('/api/reset', { method: 'POST', body: JSON.stringify({ currentPassword: pwd }) });
       D.settings = r.settings; D.sections = r.sections;
       dirty = false; updateSaveState();
       renderSettings(); renderSecList(); renderTheme();
+      if ($('#resetPwd')) $('#resetPwd').value = '';
       toast('♻️ 已恢复为模板默认内容');
     } catch (e) { toast('恢复失败：' + e.message, true); }
   });
@@ -560,4 +579,12 @@
       showApp();
     } catch (e) { /* showLogin 已在 401 时触发 */ }
   })();
+
+  /* ================= 测试导出（T3） =================
+   * 仅当运行环境支持 CommonJS module 时导出纯函数（Node 单测用）。
+   * 浏览器中 module 未定义，跳过导出，不影响线上行为。
+   */
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { esc, TYPES };
+  }
 })();

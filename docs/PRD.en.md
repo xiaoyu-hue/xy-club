@@ -1,6 +1,6 @@
 # Product Requirements Document (PRD) — XY Club Website Template
 
-> Version: 1.4.3
+> Version: 1.4.4
 > Status: Maintained
 > Last updated: 2026-09
 > Scope: This document is the **source of truth for requirements**; implementation details live in `ARCHITECTURE.md` / `API.md`, decisions in `docs/adr/`.

@@ -18,9 +18,10 @@
       <div class="login-logo">🛠️</div>
       <h1>俱乐部官网 · 后台管理</h1>
       <p class="login-sub">请输入管理密码登录</p>
-      <div class="field">
-        <input type="password" id="pwdInput" placeholder="管理密码" autocomplete="current-password">
-      </div>
+      <label class="field" for="pwdInput">
+        <span>管理密码</span>
+        <input type="password" id="pwdInput" autocomplete="current-password">
+      </label>
       <p class="login-err" id="loginErr"></p>
       <button class="btn btn-primary btn-block" id="loginBtn">登 录</button>
       <a class="back-link" href="index.html">← 返回官网首页</a>
@@ -33,7 +34,7 @@
       <div class="topbar-inner">
         <div class="topbar-brand">💎 俱乐部官网 · 后台管理</div>
         <div class="topbar-ops">
-          <span class="save-state" id="saveState"></span>
+          <span class="save-state" id="saveState" aria-live="polite"></span>
           <button class="btn btn-primary btn-sm" id="saveBtn" disabled>保存修改</button>
           <a class="btn btn-ghost btn-sm" href="index.html" target="_blank">查看官网 ↗</a>
           <button class="btn btn-ghost btn-sm" id="logoutBtn">退出</button>
@@ -64,7 +65,6 @@
             <div class="tpl-ops">
               <button class="btn btn-ghost btn-sm" id="exportBtn">⬇️ 导出配置（备份 / 复用模板）</button>
               <button class="btn btn-ghost btn-sm" id="importBtn">⬆️ 导入配置</button>
-              <button class="btn btn-danger btn-sm" id="resetBtn">♻️ 恢复默认内容</button>
             </div>
             <p class="tpl-tip">提示：导出的是整站内容 JSON。给新俱乐部复用时 —— 导入这份配置后，只需改名字、联系方式和板块内容即可。</p>
           </div>
@@ -112,6 +112,15 @@
             </div>
             <button class="btn btn-primary" id="changePwdBtn">确认修改</button>
           </div>
+
+          <div class="panel-card glass danger-zone">
+            <h2 class="panel-title">⚠️ 危险操作</h2>
+            <p class="danger-tip">以下操作不可逆，请谨慎。恢复默认内容前建议先「导出配置」备份。</p>
+            <div class="form-grid">
+              <label class="form-item"><span>当前管理密码（确认）</span><input type="password" id="resetPwd" autocomplete="off"></label>
+            </div>
+            <button class="btn btn-danger" id="resetBtn">♻️ 恢复默认内容（将清空所有板块与设置）</button>
+          </div>
         </div>
 
         <!-- 板块管理 -->
@@ -158,11 +167,11 @@
   </div>
 
   <!-- 添加板块弹窗 -->
-  <div class="modal" id="addModal" hidden>
+  <div class="modal" id="addModal" hidden role="dialog" aria-modal="true" aria-labelledby="addModalTitle">
     <div class="modal-mask" data-close="1"></div>
     <div class="modal-card glass">
-      <button class="modal-close" data-close="1">✕</button>
-      <h3>＋ 添加新板块</h3>
+      <button class="modal-close" data-close="1" aria-label="关闭">✕</button>
+      <h3 id="addModalTitle">＋ 添加新板块</h3>
       <div class="add-form">
         <label class="form-item"><span>板块类型</span>
           <div class="type-grid" id="typeGrid"></div>
