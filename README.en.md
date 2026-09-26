@@ -207,14 +207,19 @@ xy-club/
 
 | Doc | Contents |
 |-----|----------|
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture: data flow, theming, auth, static fallback |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [.en](docs/ARCHITECTURE.en.md) | Architecture: data flow, theming, auth, static fallback |
+| [docs/PRD.md](docs/PRD.md) · [.en](docs/PRD.en.md) | Product requirements: positioning, features, data spec, acceptance |
 | [docs/SECTIONS.md](docs/SECTIONS.md) | Field reference for the 7 section types |
 | [docs/TESTING.md](docs/TESTING.md) | Testing guide: unit gate + optional E2E, incl. discipline rules |
 | [docs/API.md](docs/API.md) | Detailed admin REST API reference (auth, endpoints, error codes) |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Deployment: Node server vs. static-only hosting |
-| [CHANGELOG.md](CHANGELOG.md) | Version history |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Contributing guide (code rules and two red lines) |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Contributor Code of Conduct |
+| [docs/DOC_SYNC.md](docs/DOC_SYNC.md) | Doc & version sync spec: single source of truth, checklist, SemVer, pre-release checks |
+| [docs/DECISION_REVIEW.md](docs/DECISION_REVIEW.md) | Decision review: three questions + five-layer probe (before release / irreversible ops) |
+| [docs/adr/README.md](docs/adr/README.md) | Architecture Decision Records (ADR) index & status convention |
+| [docs/AUTHOR.md](docs/AUTHOR.md) · [.en](docs/AUTHOR.en.md) | About the author |
+| [CHANGELOG.md](CHANGELOG.md) · [.en](CHANGELOG.en.md) | Version history |
+| [CONTRIBUTING.md](CONTRIBUTING.md) · [.en](CONTRIBUTING.en.md) | Contributing guide (code rules and two red lines) |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) · [.en](CODE_OF_CONDUCT.en.md) | Contributor Code of Conduct |
 | [SECURITY.en.md](SECURITY.en.md) | Security policy: reporting, model, known limits |
 | [AGENTS.md](AGENTS.md) | AI agent collaboration rules |
 

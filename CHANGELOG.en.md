@@ -7,6 +7,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## Unreleased
+
+### 📚 Documentation
+
+- **Completed the documentation system modeled on sonder520 / Nymir**: Chinese as baseline with `.en.md` mirrors; added (all based on real implementation, nothing invented):
+  - `docs/DOC_SYNC.md` — doc & version sync spec (single source of truth, sync checklist, SemVer, pre-release checks)
+  - `docs/DECISION_REVIEW.md` — decision review (three questions + five-layer probe, required before release / irreversible ops)
+  - `docs/adr/` — ADR index + 4 seed ADRs (scrypt password hash / JSON-file source of truth / zero-build front-end / contract-fixed tests)
+  - `docs/PRD.md` · `docs/PRD.en.md` — product requirements (positioning, features, data spec, acceptance)
+  - `docs/AUTHOR.md` · `docs/AUTHOR.en.md` — about the author
+  - `docs/ARCHITECTURE.en.md` — architecture write-up in English
+- Updated `docs/README.md` index, `README.md` / `README.en.md` doc tables, and `AGENTS.md` (new "Doc & version sync (pre-release required)" section referencing `DOC_SYNC.md`).
+- Security policy `SECURITY.md` / `SECURITY.en.md`, English contributing guide `CONTRIBUTING.en.md`, and REST API reference `docs/API.md` were added and wired in the previous round.
+
+---
+
 ## 1.4.2 - 2026-09-26 (Actually fix CI red on Node 18)
 
 ### 🔧 Fixed

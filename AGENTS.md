@@ -89,7 +89,19 @@ refactor: 抽出主题应用逻辑为 applyTheme()
 5. **文档里的测试数量必须以 `npm test` 实际输出为准**，禁止凭印象写数字。
 6. E2E 是可选层（需要 `@playwright/test`）；未安装时 `npm run test:e2e` 会自动跳过，不算失败。
 
-## 八、常见错误（已发生过，不要重犯）
+## 八、文档与版本同步（发布必查）
+
+任何发版（bump 版本 + tag + Release）、功能变更、依赖变化、CI 变化、新增文档 / ADR，都必须走 `docs/DOC_SYNC.md` 的同步清单。要点：
+
+1. **版本号问 `package.json`**：它是唯一真源，其他文档（CHANGELOG / PRD / ARCHITECTURE / README 徽章）从它派生。
+2. **数字问测试输出**：测试数（当前 **73 项 / 24 suites**）以 `npm test` 实际输出为准，禁止凭印象写数字、禁止改数字假装一致。
+3. **描述问代码**：功能 / 架构描述不得超出实现；文档声明的能力代码里必须真有。
+4. **中英文档同步**：中文为基准，改中文文档必须同步 `.en.md`（README / CHANGELOG / CODE_OF_CONDUCT / SECURITY / AUTHOR / PRD / ARCHITECTURE）。
+5. **发布前验证必跑**：旧版本号残留 grep、版本一致性、CHANGELOG 转正、中英对查、`npm test` 与 CI 全绿。
+
+涉及"破坏性变更 / 版本号策略 / 引依赖 / 改数据契约"时，先过 `docs/DECISION_REVIEW.md` 的决策三问，重大决定沉淀为 `docs/adr/`。
+
+## 九、常见错误（已发生过，不要重犯）
 
 - 把 `README_EN.md` 写成 `README_EN.md` —— 正确命名是 **`README.en.md`**（小写 `.en`）
 - 在 README 中用 emoji 标题的自动锚点做跳转 —— GitHub 生成的锚点不稳定，必须使用显式 `<a id="...">`
@@ -98,7 +110,7 @@ refactor: 抽出主题应用逻辑为 applyTheme()
 - 忘记 `public/uploads/` 与 `data/` 在无持久卷环境下会丢失
 - 直接编辑 `data/db.json` 改密码 —— 密码是 **scrypt 哈希**，必须用 `node scripts/reset-password.js 新密码`
 
-## 九、交付前自检
+## 十、交付前自检
 
 - [ ] `npm test` 全绿（唯一强制门禁）
 - [ ] 官网首页无控制台报错

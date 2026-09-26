@@ -207,15 +207,20 @@ xy-club/
 
 | 文档 | 内容 |
 |------|------|
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 架构说明：数据流转、主题机制、鉴权、静态回退 |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [.en](docs/ARCHITECTURE.en.md) | 架构说明：数据流转、主题机制、鉴权、静态回退 |
+| [docs/PRD.md](docs/PRD.md) · [.en](docs/PRD.en.md) | 产品需求文档：定位、功能、数据规范、验收标准 |
 | [docs/SECTIONS.md](docs/SECTIONS.md) | 7 种板块类型的字段参考 |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | 部署指南：Node 服务器 / 纯静态托管两条路线 |
 | [docs/TESTING.md](docs/TESTING.md) | 测试指南：单元测试门禁 + 可选 E2E，含纪律约定 |
 | [docs/API.md](docs/API.md) | 后台 REST API 详细参考（鉴权、各端点、错误码） |
-| [CHANGELOG.md](CHANGELOG.md) | 版本历史 |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南（含代码规范与两条红线） |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | 贡献者行为准则 |
-| [SECURITY.md](SECURITY.md) | 安全政策：漏洞报告、安全模型与已知局限 |
+| [docs/DOC_SYNC.md](docs/DOC_SYNC.md) | 文档与版本同步规范：唯一真源、同步清单、SemVer、发布前验证 |
+| [docs/DECISION_REVIEW.md](docs/DECISION_REVIEW.md) | 决策审查清单：决策三问 + 五层追问（发版 / 不可逆操作前必过） |
+| [docs/adr/README.md](docs/adr/README.md) | 架构决策记录（ADR）索引与状态约定 |
+| [docs/AUTHOR.md](docs/AUTHOR.md) · [.en](docs/AUTHOR.en.md) | 关于作者 |
+| [CHANGELOG.md](CHANGELOG.md) · [.en](CHANGELOG.en.md) | 版本历史 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) · [.en](CONTRIBUTING.en.md) | 贡献指南（含代码规范与两条红线） |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) · [.en](CODE_OF_CONDUCT.en.md) | 贡献者行为准则 |
+| [SECURITY.md](SECURITY.md) · [.en](SECURITY.en.md) | 安全政策：漏洞报告、安全模型与已知局限 |
 | [AGENTS.md](AGENTS.md) | AI Agent 协作规则 |
 
 <a id="reuse"></a>

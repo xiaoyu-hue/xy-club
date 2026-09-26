@@ -7,6 +7,22 @@
 
 ---
 
+## 未发布
+
+### 📚 文档
+
+- **补全与 sonder520 / Nymir 同构的文档体系**：以中文为基准、`.en.md` 镜像，新增以下文档（均基于真实实现，未凭空编造）：
+  - `docs/DOC_SYNC.md` — 文档与版本同步规范（唯一真源、同步清单、SemVer 判定、发布前验证）
+  - `docs/DECISION_REVIEW.md` — 决策审查清单（决策三问 + 五层追问，发版 / 不可逆操作前必过）
+  - `docs/adr/` — 架构决策记录索引 + 4 篇种子 ADR（scrypt 密码哈希 / JSON 文件真源 / 零构建前端 / 契约固化式测试）
+  - `docs/PRD.md` · `docs/PRD.en.md` — 产品需求文档（定位、功能、数据规范、验收标准）
+  - `docs/AUTHOR.md` · `docs/AUTHOR.en.md` — 关于作者
+  - `docs/ARCHITECTURE.en.md` — 架构说明英文版
+- 更新 `docs/README.md` 索引、`README.md` / `README.en.md` 文档表、`AGENTS.md`（新增「文档与版本同步（发布必查）」章节，引用 `DOC_SYNC.md`）。
+- 安全政策 `SECURITY.md` / `SECURITY.en.md`、英文贡献指南 `CONTRIBUTING.en.md`、REST API 参考 `docs/API.md` 已于上一轮补建并接入。
+
+---
+
 ## 1.4.2 - 2026-09-26（真正修复 CI 在 Node 18 红色）
 
 ### 🔧 修复
