@@ -7,6 +7,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## 1.4.1 - 2026-09-26 (Fix CI red on Node 18)
+
+### 🔧 Fixed
+
+- **`test.yml` was red on Node 18**: `npm test` previously relied on `node --test` auto-discovering the `tests/` directory, but directory auto-discovery only landed in Node 20; on Node 18 the no-argument run exits non-zero with "no test files found".
+  Changed to an explicit `node --test tests/*.test.js` — the shell expands the glob into the 9 file names, and `--test` accepting explicit file arguments has worked since Node 18, so 18 / 20 / 22 now all pass.
+- Verified locally: 73 cases green, 24 suites, 0 fail.
+
+### 📝 Documentation
+
+- `docs/TESTING.md` line 19 already documented the case location as `tests/*.test.js`, matching the new command — no change needed.
+
+---
+
 ## 1.4.0 - 2026-09-26 (Automated tests)
 
 ### ✨ Added
