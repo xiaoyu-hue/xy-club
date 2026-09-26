@@ -65,6 +65,37 @@ describe('PUT /api/content', () => {
     assert.equal(readDBFile().settings.siteName, '测试俱乐部', '应已写入 data/db.json');
   });
 
+  test('保存全局自定义字段 custom 并读回（settings 开放合并）', async () => {
+    const token = await login();
+    const current = await request('GET', '/api/content');
+    const settings = Object.assign({}, current.body.settings, {
+      custom: { 营业时间: '9:00-24:00', 活动标语: '新客立减 10 元' }
+    });
+    const save = await request('PUT', '/api/content', { token, body: { settings, sections: current.body.sections } });
+    assert.equal(save.status, 200);
+
+    const again = await request('GET', '/api/content');
+    assert.deepEqual(again.body.settings.custom, { 营业时间: '9:00-24:00', 活动标语: '新客立减 10 元' });
+    assert.deepEqual(readDBFile().settings.custom, { 营业时间: '9:00-24:00', 活动标语: '新客立减 10 元' }, 'custom 应已落盘');
+  });
+
+  test('价目条目支持 original 划线原价并读回', async () => {
+    const token = await login();
+    const current = await request('GET', '/api/content');
+    const sections = current.body.sections.map(s => {
+      if (s.type !== 'services') return s;
+      const items = (s.items || []).map(it => Object.assign({}, it, { original: '39.9' }));
+      return Object.assign({}, s, { items });
+    });
+    const save = await request('PUT', '/api/content', { token, body: { settings: current.body.settings, sections } });
+    assert.equal(save.status, 200);
+
+    const again = await request('GET', '/api/content');
+    const svc = again.body.sections.find(s => s.type === 'services');
+    assert.equal(svc.items[0].original, '39.9');
+    assert.equal(readDBFile().sections.find(s => s.type === 'services').items[0].original, '39.9');
+  });
+
   test('不能通过保存接口篡改管理密码', async () => {
     const token = await login();
     const before = readDBFile().settings.adminPassword;

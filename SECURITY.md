@@ -4,7 +4,7 @@
 
 ## 📌 支持版本
 
-安全修复只进**最新稳定版**。当前受支持版本：**v1.4.4**（[Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)）。
+安全修复只进**最新稳定版**。当前受支持版本：**v1.5.0**（[Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)）。
 
 旧版本不再接收安全补丁，请尽快升级。
 
@@ -27,7 +27,7 @@
 - **恢复默认内容需二次校验**：`/api/reset` 必须提供当前管理密码，且仅恢复内容与设置、**绝不改动登录密码**（杜绝把密码重置为弱密码 `xy888888` 的后门）。
 - **改密码即时失效会话**：修改管理密码后清空所有其它会话，仅保留本次会话，旧 token 不再有效。
 - **上传白名单**：仅 `jpg / png / webp / gif`（`jpeg` 归一为 `jpg`），**禁用 svg**（可内嵌脚本），单文件 ≤ 8MB；不经过任何第三方。
-- **用户输入转义**：渲染到 DOM 前统一转义，防存储型 XSS。
+- **用户输入转义**：渲染到 DOM 前统一转义，防存储型 XSS；新增的「全局自定义字段」及其 `{{custom.键名}}` 占位符同样先插值后转义，自定义值里的 HTML 不会被执行。
 
 **已知且未处理的局限**（详见 [README · 数据与隐私](README.md) 与 [AGENTS.md](AGENTS.md)）：
 

@@ -7,6 +7,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## 1.5.0 - 2026-09-26 (Global customization: custom fields + free-text section + strikethrough price)
+
+### ✨ Added
+- **Global custom fields**: Admin → Site Settings → Global custom fields lets you add/remove arbitrary `key → value` pairs for copy reused across sections (e.g. business hours, promo slogans).
+- **Free-text section** (new section type `custom`): body supports `{{custom.key}}` placeholders referencing global custom fields; rendered via `esc()`, so any HTML in custom values is not executed (no XSS).
+- **Strikethrough price**: services items gain an optional `original` field, shown as a strikethrough comparison price (promo scenarios).
+
+### 🧩 Notes
+- `PUT /api/content` shallow-merges `settings`, so custom fields persist with zero backend changes; `safeSettings` only strips `adminPassword`, custom values are returned normally.
+
 ## 1.4.4 - 2026-09-26 (Code-review fix list P0–P2)
 
 ### 🔒 Security fixes

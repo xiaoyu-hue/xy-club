@@ -4,7 +4,7 @@
 
 ## 📌 Supported Versions
 
-Security fixes go only into the **latest stable release**. Currently supported: **v1.4.4** ([Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)).
+Security fixes go only into the **latest stable release**. Currently supported: **v1.5.0** ([Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)).
 
 Older versions no longer receive security patches — please upgrade.
 
@@ -25,7 +25,7 @@ This is a solo-maintained project with no SLA, but we'll confirm and handle repo
 - **Login rate limiting**: 5 consecutive wrong passwords from one IP triggers a 5-minute lockout.
 - **Session expiry**: sessions live in server memory, token valid for 7 days.
 - **Upload allowlist**: only `jpg / png / webp / gif` (`jpeg` normalized to `jpg`), **no svg** (can embed scripts), ≤ 8MB each; never routed through a third party.
-- **User-input escaping**: all input is escaped before rendering to the DOM, preventing stored XSS.
+- **User-input escaping**: all input is escaped before rendering to the DOM, preventing stored XSS; the new "global custom fields" and their `{{custom.key}}` placeholders are also interpolated-then-escaped, so any HTML in custom values is not executed.
 
 **Known and unaddressed limitations** (see [README · Data & Privacy](README.md) and [AGENTS.md](AGENTS.md)):
 

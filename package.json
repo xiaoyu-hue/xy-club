@@ -1,6 +1,6 @@
 {
   "name": "xy-club",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "俱乐部官网模板 · 液态玻璃风格 + 微交互 · 数据驱动官网与可视化后台管理",
   "main": "server.js",
   "scripts": {

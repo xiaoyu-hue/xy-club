@@ -346,6 +346,10 @@ img { max-width: 100%; display: block; }
 .pr-price { text-align: right; white-space: nowrap; }
 .pr-price .num { display: inline-block; font-size: 17px; font-weight: 800; transition: transform .38s var(--ease); }
 .pr-price .unit { display: block; margin-top: 2px; font-size: 11.5px; color: var(--faint); }
+/* 划线原价（促销对比） */
+.pr-original { text-decoration: line-through; color: var(--faint); font-size: 13px; margin-left: 6px; font-weight: 600; }
+/* 自由文本板块：继承 text-wrap 的换行与玻璃卡样式 */
+.custom-wrap { white-space: pre-line; }
 
 /* 卡片 */
 .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; max-width: 980px; margin: 0 auto; }

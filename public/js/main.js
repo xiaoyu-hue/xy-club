@@ -5,6 +5,13 @@
   const esc = (str) => String(str == null ? '' : str)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  // 占位符插值：{{custom.键名}} → settings.custom[键名]；键不存在返回空。
+  // 调用方需先 interp 再 esc，因此自定义值里的 HTML 会被转义，无 XSS 风险。
+  const interp = (text, custom) => {
+    const c = custom || {};
+    return String(text == null ? '' : text)
+      .replace(/\{\{\s*custom\.([\w.\-]+)\s*\}\}/g, (m, k) => (k in c ? c[k] : ''));
+  };
   const fine = matchMedia('(pointer:fine)').matches;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let SITE = { settings: {}, sections: [] };
@@ -72,7 +79,7 @@
         <div class="pr-name">${esc(it.name)}</div>
         ${it.desc ? `<div class="pr-desc">${esc(it.desc)}</div>` : ''}
       </div>
-      <div class="pr-price"><span class="num gold-text">${esc(it.price)}</span><span class="unit">${esc(it.unit)}</span></div>
+      <div class="pr-price"><span class="num gold-text">${esc(it.price)}</span>${it.original ? `<span class="pr-original">${esc(it.original)}</span>` : ''}<span class="unit">${esc(it.unit)}</span></div>
     </div>`;
   }
   function stars(n) {
@@ -81,6 +88,7 @@
   }
 
   function sectionHTML(s) {
+    const st = SITE.settings;
     const head = `<div class="sec-head reveal">
         <span class="sec-icon">${esc(s.icon || '✦')}</span>
         <h2 class="grad-text">${esc(s.title)}</h2>
@@ -128,6 +136,9 @@
         break;
       case 'text':
         body = `<div class="text-wrap reveal">${esc(s.content)}</div>`;
+        break;
+      case 'custom':
+        body = `<div class="text-wrap custom-wrap reveal">${esc(interp(s.content, st.custom))}</div>`;
         break;
       default: body = '';
     }
@@ -402,4 +413,7 @@
     bindGlobal(); bindReveal(); bindScroll(); bindCountUp(); bindTilt(); bindSpotlight(); bindRipple();
   }
   init();
+
+  // 供 Node 测试复用纯函数（浏览器中 module 未定义，自动跳过）
+  if (typeof module !== 'undefined' && module.exports) module.exports = { esc, interp };
 })();

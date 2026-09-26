@@ -104,6 +104,13 @@
           </div>
 
           <div class="panel-card glass">
+            <h2 class="panel-title">🧩 全局自定义字段</h2>
+            <p class="tpl-tip">任意「键 → 值」的全局文案，可用于跨板块复用。在「自由文本」板块正文里用 <code>{{custom.键名}}</code> 引用，例如把营业时间、活动标语定义一次、多处显示。</p>
+            <div id="customFields"></div>
+            <button class="btn btn-ghost btn-sm" id="addCustomBtn">＋ 添加自定义字段</button>
+          </div>
+
+          <div class="panel-card glass">
             <h2 class="panel-title">🔒 修改管理密码</h2>
             <div class="form-grid">
               <label class="form-item"><span>原密码</span><input type="password" id="oldPwd" autocomplete="off"></label>
@@ -152,6 +159,7 @@
                   <li>📌 <b>须知列表</b>：图标+一句话规则</li>
                   <li>🖼 <b>图片集</b>：图片墙，可直接上传图片</li>
                   <li>📝 <b>图文段落</b>：大段文字介绍，自动换行</li>
+                  <li>🧩 <b>自由文本</b>：任意自定义介绍，正文支持 <code>{{custom.键名}}</code> 引用「全局自定义字段」</li>
                 </ul>
               </li>
               <li><b>图片上传：</b>客服二维码、图片集中的图片均支持直接上传（≤8MB），上传后保存在服务器。</li>

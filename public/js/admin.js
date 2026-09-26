@@ -22,7 +22,8 @@
     faq:          { label: '❓ 常见问答',   desc: '点击展开的 Q&A', itemLabel: '问答' },
     notice:       { label: '📌 须知列表',   desc: '图标+一句话规则', itemLabel: '条目' },
     gallery:      { label: '🖼 图片集',     desc: '图片墙，可上传图片', itemLabel: '图片' },
-    text:         { label: '📝 图文段落',   desc: '大段文字介绍，自动换行', itemLabel: '' }
+    text:         { label: '📝 图文段落',   desc: '大段文字介绍，自动换行', itemLabel: '' },
+    custom:       { label: '🧩 自由文本',   desc: '任意自定义介绍，支持 {{custom.键名}} 占位符', itemLabel: '' }
   };
 
   function blankItem(type) {
@@ -33,6 +34,7 @@
       case 'faq':          return { q: '新问题？', a: '' };
       case 'notice':       return { icon: '⭐', text: '' };
       case 'gallery':      return { url: '', caption: '' };
+      case 'custom':       return { content: '' };
       default:             return {};
     }
   }
@@ -95,6 +97,7 @@
 
   async function loadContent() {
     D = await api('/api/content');
+    D.settings.custom = D.settings.custom || {};
     dirty = false;
     updateSaveState();
     renderSettings();
@@ -132,7 +135,43 @@
       inp.value = D.settings[f] || '';
     });
     renderQrPreview();
+    renderCustomFields();
   }
+  // 全局自定义字段：任意「键 → 值」，供「自由文本」板块用 {{custom.键名}} 引用
+  function renderCustomFields() {
+    const box = $('#customFields');
+    if (!box) return;
+    D.settings.custom = D.settings.custom || {};
+    const keys = Object.keys(D.settings.custom);
+    if (!keys.length) {
+      box.innerHTML = `<p class="empty-hint">还没有自定义字段。点下方「＋ 添加自定义字段」，例如：键 <code>营业时间</code> → 值 <code>9:00-24:00</code></p>`;
+      return;
+    }
+    box.innerHTML = keys.map(k => `
+      <div class="custom-row" data-key="${esc(k)}">
+        <input class="cf-key" value="${esc(k)}" readonly title="字段键名（不可修改，删除后重建）">
+        <input class="cf-val" data-bind="custom:${esc(k)}" value="${esc(D.settings.custom[k])}" placeholder="字段值">
+        <button class="op-btn del" data-cdel="${esc(k)}" aria-label="删除字段">✕</button>
+      </div>`).join('');
+  }
+  $('#addCustomBtn').addEventListener('click', () => {
+    D.settings.custom = D.settings.custom || {};
+    let base = '自定义字段', n = 1, key = base;
+    while (key in D.settings.custom) { n++; key = base + n; }
+    D.settings.custom[key] = '';
+    markDirty(); renderCustomFields();
+    const el = document.querySelector(`.custom-row[data-key="${esc(key)}"] .cf-val`);
+    if (el) el.focus();
+  });
+  $('#customFields').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-cdel]');
+    if (!btn) return;
+    const k = btn.dataset.cdel;
+    if (confirm(`确定删除自定义字段「${k}」吗？`)) {
+      delete D.settings.custom[k];
+      markDirty(); renderCustomFields();
+    }
+  });
   function renderQrPreview() {
     const img = $('#qrPreview');
     if (D.settings.qrImage) { img.src = D.settings.qrImage; img.hidden = false; $('#qrClearBtn').hidden = false; }
@@ -153,6 +192,9 @@
     } else if (kind === 'item') {
       const s = D.sections.find(x => x.id === id);
       if (s && s.items && s.items[+f3]) s.items[+f3][f4] = el.value;
+    } else if (kind === 'custom') {
+      D.settings.custom = D.settings.custom || {};
+      D.settings.custom[id] = el.value;
     }
     markDirty();
   });
@@ -265,7 +307,7 @@
     switch (s.type) {
       case 'services':
         return `<div class="item-row">
-          ${input('name', '项目名称')}${input('price', '价格 如 19.9-29.9')}${input('unit', '单位 如 元/小时')}${input('desc', '一句说明（可选）')}
+          ${input('name', '项目名称')}${input('price', '价格 如 19.9-29.9')}${input('unit', '单位 如 元/小时')}${input('original', '原价（划线，可选）')}${input('desc', '一句说明（可选）')}
           ${ops}</div>`;
       case 'cards':
         return `<div class="item-row v4">
@@ -303,8 +345,11 @@
         <label class="form-item form-full"><span>副标题（可选）</span><input ${b('subtitle')} value="${v(s.subtitle)}"></label>
       </div>`;
     let itemsPart = '';
-    if (s.type === 'text') {
-      itemsPart = `<div class="items-count">正文内容（自动换行）</div>
+    if (s.type === 'text' || s.type === 'custom') {
+      const tip = s.type === 'custom'
+        ? '正文内容（支持 {{custom.键名}} 引用全局自定义字段，自动换行）'
+        : '正文内容（自动换行）';
+      itemsPart = `<div class="items-count">${tip}</div>
         <textarea rows="8" data-bind="sec:${esc(s.id)}:content" style="width:100%;padding:12px 15px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);font-size:14px;outline:none;line-height:1.8">${v(s.content)}</textarea>`;
     } else {
       const t = TYPES[s.type];
@@ -402,7 +447,7 @@
     const sub = $('#newSecSub').value.trim();
     const id = 'sec-' + Date.now().toString(36);
     const sec = { id, type: newSecType, icon, title, subtitle: sub, visible: true };
-    if (newSecType === 'text') sec.content = '';
+    if (newSecType === 'text' || newSecType === 'custom') sec.content = '';
     else sec.items = [blankItem(newSecType)];
     D.sections.push(sec);
     expandedId = id;
@@ -548,6 +593,7 @@
         const obj = JSON.parse(text);
         if (!obj.settings || !Array.isArray(obj.sections)) throw new Error('格式不符：需要 settings + sections');
         D.settings = { ...D.settings, ...obj.settings };
+        D.settings.custom = D.settings.custom || {};
         D.sections = obj.sections;
         renderSettings(); renderSecList(); renderTheme(); markDirty();
         toast('✅ 配置已载入，请点「保存修改」生效');
