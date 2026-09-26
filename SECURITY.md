@@ -4,7 +4,7 @@
 
 ## 📌 支持版本
 
-安全修复只进**最新稳定版**。当前受支持版本：**v1.4.2**（[Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)）。
+安全修复只进**最新稳定版**。当前受支持版本：**v1.4.3**（[Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)）。
 
 旧版本不再接收安全补丁，请尽快升级。
 

@@ -4,7 +4,7 @@
 
 ## 📌 Supported Versions
 
-Security fixes go only into the **latest stable release**. Currently supported: **v1.4.2** ([Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)).
+Security fixes go only into the **latest stable release**. Currently supported: **v1.4.3** ([Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)).
 
 Older versions no longer receive security patches — please upgrade.
 

@@ -1,6 +1,6 @@
 # 产品需求文档（PRD）— XY 俱乐部官网模板
 
-> 版本：1.4.2
+> 版本：1.4.3
 > 状态：维护中
 > 最后更新：2026-09
 > 定位：本文档是功能的**需求真源**；实现细节以 `ARCHITECTURE.md` / `API.md` 为准，决策以 `docs/adr/` 为准。
@@ -90,6 +90,7 @@
 
 | 版本 | 类型 | 一言 |
 |------|------|------|
+| 1.4.3 | patch | 文档体系补全：DOC_SYNC / DECISION_REVIEW / ADR×4 / PRD / AUTHOR / 架构英文版 |
 | 1.4.2 | patch | CI 修复：移除 Node 18 不支持的 `--test-timeout`，Node 18/20/22 矩阵全绿 |
 | 1.4.0 | minor | 补全自动化测试：73 项 `node --test` 门禁 + 可选 E2E（Playwright 不进依赖） |
 | 1.3.0 | minor | 安全加固：管理密码 scrypt 哈希、后台未登录不渲染、README API 表修正 |

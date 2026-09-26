@@ -1,6 +1,6 @@
 # Product Requirements Document (PRD) — XY Club Website Template
 
-> Version: 1.4.2
+> Version: 1.4.3
 > Status: Maintained
 > Last updated: 2026-09
 > Scope: This document is the **source of truth for requirements**; implementation details live in `ARCHITECTURE.md` / `API.md`, decisions in `docs/adr/`.
@@ -90,6 +90,7 @@ Source of truth: `data/db.json`, shaped by `DEFAULT_DB` in `defaults.js`.
 
 | Version | Type | Summary |
 |---------|------|---------|
+| 1.4.3 | patch | Doc system completion: DOC_SYNC / DECISION_REVIEW / ADR×4 / PRD / AUTHOR / architecture EN |
 | 1.4.2 | patch | CI fix: drop Node 18-unsupported `--test-timeout`; Node 18/20/22 matrix green |
 | 1.4.0 | minor | Add automated tests: 73-case `node --test` gate + optional E2E (Playwright not a dependency) |
 | 1.3.0 | minor | Security hardening: scrypt admin password, admin not rendered before login, README API table fix |
