@@ -7,17 +7,27 @@
 
 ---
 
-## 1.4.1 - 2026-09-26（修复 CI 在 Node 18 红色）
+## 1.4.2 - 2026-09-26（真正修复 CI 在 Node 18 红色）
 
 ### 🔧 修复
 
-- **`test.yml` 在 Node 18 上跑红**：`npm test` 原先用 `node --test` 无参自动发现 `tests/` 目录，而目录自动发现是 Node 20 才有的能力；Node 18 上无参运行会因「找不到测试文件」非零退出。
-  改为显式 `node --test tests/*.test.js`——由 shell 把通配符展开成 9 个文件名传入，而 `--test` 接收显式文件参数自 Node 18 起就支持，18 / 20 / 22 现在统一跑通。
-- 本地验证：73 项全绿、24 suites、0 fail。
+- **`test.yml` 在 Node 18 上依旧红色的根因**：`npm test` 脚本里的 `--test-timeout=20000` 是 **Node 20 才加入的 CLI 参数**，Node 18 不认识它，启动即报 `bad option: --test-timeout=20000` 并非零退出。Node 20 / 22 不受影响，所以只有 Node 18 挂。
+  已从 `test` 脚本移除该参数。
+- 作为替代的防挂保护，给 `test.yml` 的 `unit` 作业加了 `timeout-minutes: 10`（作业级超时对所有 Node 版本都生效，避免某个用例意外卡死把 CI 挂成无期限）。
+- 本地用 Node 18.20.4 与 Node 22 双验证：73 项全绿、24 suites、0 fail（Node 18 约 1.3s）。
 
 ### 📝 文档
 
-- `docs/TESTING.md` 第 19 行原本就记录用例位置为 `tests/*.test.js`，与新命令一致，无需改动。
+- 本条目修正了 1.4.1 的错误判断（当时误以为是「目录自动发现」，实际上显式 glob 也没修好）。
+
+---
+
+## 1.4.1 - 2026-09-26（CI 脚本调整，未彻底修复）
+
+### 🔧 修复
+
+- `npm test` 由 `node --test` 无参改为显式 `node --test tests/*.test.js`：shell 把通配符展开成 9 个文件名传入，`--test` 接收显式文件参数自 Node 18 起就支持。
+  这一改动本身没问题，但**当时误以为它修好了 CI 红色**——其实 Node 18 真正的失败原因是 `--test-timeout`（见 1.4.2），所以本次发布后 `test.yml` 在 Node 18 仍是红色。
 
 ---
 

@@ -7,17 +7,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## 1.4.1 - 2026-09-26 (Fix CI red on Node 18)
+## 1.4.2 - 2026-09-26 (Actually fix CI red on Node 18)
 
 ### 🔧 Fixed
 
-- **`test.yml` was red on Node 18**: `npm test` previously relied on `node --test` auto-discovering the `tests/` directory, but directory auto-discovery only landed in Node 20; on Node 18 the no-argument run exits non-zero with "no test files found".
-  Changed to an explicit `node --test tests/*.test.js` — the shell expands the glob into the 9 file names, and `--test` accepting explicit file arguments has worked since Node 18, so 18 / 20 / 22 now all pass.
-- Verified locally: 73 cases green, 24 suites, 0 fail.
+- **The real reason `test.yml` stayed red on Node 18**: the `--test-timeout=20000` flag in the `npm test` script is a **CLI option only added in Node 20**. Node 18 doesn't recognise it and exits non-zero immediately with `bad option: --test-timeout=20000`. Node 20 / 22 are unaffected, so only Node 18 failed.
+  Removed the flag from the `test` script.
+- As a replacement hang-guard, added `timeout-minutes: 10` to the `unit` job in `test.yml` (job-level timeout works on every Node version, so a stuck test can't hang CI indefinitely).
+- Verified locally on both Node 18.20.4 and Node 22: 73 cases green, 24 suites, 0 fail (Node 18 ~1.3s).
 
 ### 📝 Documentation
 
-- `docs/TESTING.md` line 19 already documented the case location as `tests/*.test.js`, matching the new command — no change needed.
+- This entry corrects the wrong diagnosis in 1.4.1 (which blamed "directory auto-discovery" — the explicit glob alone didn't fix it).
+
+---
+
+## 1.4.1 - 2026-09-26 (CI script tweak, not fully fixed)
+
+### 🔧 Fixed
+
+- `npm test` changed from bare `node --test` to explicit `node --test tests/*.test.js` — the shell expands the glob into the 9 file names, and `--test` accepting explicit file arguments has worked since Node 18.
+  This change itself is fine, but **1.4.1 wrongly claimed it fixed the CI red** — the actual Node 18 failure was `--test-timeout` (see 1.4.2), so `test.yml` was still red on Node 18 after this release.
 
 ---
 

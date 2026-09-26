@@ -10,6 +10,9 @@ jobs:
   unit:
     name: Unit (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    # 防挂保护：去掉了 Node 18 不支持的 --test-timeout 后，用作业级超时兜底，
+    # 避免某个用例意外卡死把整个 CI 跑成无期限挂起。对所有 Node 版本都生效。
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:

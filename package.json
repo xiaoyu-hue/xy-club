@@ -1,11 +1,11 @@
 {
   "name": "xy-club",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "俱乐部官网模板 · 液态玻璃风格 + 微交互 · 数据驱动官网与可视化后台管理",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test --test-timeout=20000 tests/*.test.js",
+    "test": "node --test tests/*.test.js",
     "test:e2e": "node e2e/run.js"
   },
   "keywords": [
