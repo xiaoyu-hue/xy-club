@@ -211,9 +211,11 @@ xy-club/
 | [docs/SECTIONS.md](docs/SECTIONS.md) | 7 种板块类型的字段参考 |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | 部署指南：Node 服务器 / 纯静态托管两条路线 |
 | [docs/TESTING.md](docs/TESTING.md) | 测试指南：单元测试门禁 + 可选 E2E，含纪律约定 |
+| [docs/API.md](docs/API.md) | 后台 REST API 详细参考（鉴权、各端点、错误码） |
 | [CHANGELOG.md](CHANGELOG.md) | 版本历史 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南（含代码规范与两条红线） |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | 贡献者行为准则 |
+| [SECURITY.md](SECURITY.md) | 安全政策：漏洞报告、安全模型与已知局限 |
 | [AGENTS.md](AGENTS.md) | AI Agent 协作规则 |
 
 <a id="reuse"></a>

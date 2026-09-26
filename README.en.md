@@ -210,10 +210,12 @@ xy-club/
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture: data flow, theming, auth, static fallback |
 | [docs/SECTIONS.md](docs/SECTIONS.md) | Field reference for the 7 section types |
 | [docs/TESTING.md](docs/TESTING.md) | Testing guide: unit gate + optional E2E, incl. discipline rules |
+| [docs/API.md](docs/API.md) | Detailed admin REST API reference (auth, endpoints, error codes) |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Deployment: Node server vs. static-only hosting |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contributing guide (code rules and two red lines) |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Contributor Code of Conduct |
+| [SECURITY.en.md](SECURITY.en.md) | Security policy: reporting, model, known limits |
 | [AGENTS.md](AGENTS.md) | AI agent collaboration rules |
 
 <a id="reuse"></a>

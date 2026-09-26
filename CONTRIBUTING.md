@@ -8,7 +8,7 @@
 
 ## 行为准则
 
-参与本项目即表示你同意遵守 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
+参与本项目即表示你同意遵守 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。涉及安全相关的改动，请先阅读 [SECURITY.md](SECURITY.md)。
 
 ---
 
