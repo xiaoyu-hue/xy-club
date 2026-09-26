@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test --test-timeout=20000",
+    "test": "node --test --test-timeout=20000 tests/*.test.js",
     "test:e2e": "node e2e/run.js"
   },
   "keywords": [
