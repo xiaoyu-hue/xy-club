@@ -5,6 +5,7 @@
 <img src="https://img.shields.io/badge/Express-4-000000?style=for-the-badge&logo=express&logoColor=white" alt="express">
 <img src="https://img.shields.io/badge/前端-零框架-4FC08D?style=for-the-badge" alt="frontend">
 <img src="https://img.shields.io/badge/存储-JSON%20文件-6B728C?style=for-the-badge" alt="storage">
+<img src="https://img.shields.io/github/v/release/xiaoyu-hue/xy-club?style=for-the-badge" alt="release">
 
 **[English](./README.en.md) · 中文**
 
