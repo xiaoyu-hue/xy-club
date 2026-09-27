@@ -21,7 +21,7 @@
 
 <br>
 
-**[🔗 在线预览（GitHub Pages）](https://xiaoyu-hue.github.io/xy-club/)** · **[🚀 快速开始](#quick-start)** · **[🔁 复用模板](#reuse)** · **[📚 文档](docs/README.md)** · **[⚠️ 不适合什么场景](#not-recommended)**
+**[🔗 在线预览（GitHub Pages）](https://xiaoyu-hue.github.io/xy-club/)** · **[🚀 快速开始](#quick-start)** · **[🔁 复用模板](#reuse)** · **[📚 文档](docs/README.md)** · **[⚠️ 不适合什么场景](#not-recommended)** · **[🧩 配套工具](#companion)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
@@ -241,6 +241,21 @@ xy-club/
 想直接改出厂配置？编辑 `defaults.js` 后删除 `data/db.json` 重启即可。
 
 ---
+<a id="companion"></a>
+
+## 🧩 配套工具：成员个人名片
+
+官网搭好后，成员自己的个人介绍卡可以用姊妹项目 **[XY 个人介绍模板工具](https://github.com/xiaoyu-hue/xy-intro-card)** 生成：
+
+- **同一家族**：与本项目同属 XY 系列，液态玻璃视觉同源，四套主题色（落日金 / 深海蓝 / 极光紫 / 晨雾白）同名同色
+- **零依赖单文件**：填内容即出卡，导出一张独立 HTML，发给别人就能打开，不联网、不上传数据
+- **两种模式**：「人设卡」（名字·年龄·星座·技能·签名）与「通用名片」（姓名·头衔·简介·联系方式）可切换
+- **[🔗 在线体验（GitHub Pages）](https://xiaoyu-hue.github.io/xy-intro-card/)**
+
+> 典型用法：用本项目搭好俱乐部官网 → 用配套工具为每位成员生成统一风格的名片 → 名片可挂到官网的「团队成员」类板块。
+
+---
+
 
 ## 📦 部署
 
