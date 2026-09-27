@@ -22,4 +22,12 @@ Most club websites are either ugly, uneditable, or hard to deploy. This project 
 - Engineering: no dependency if avoidable; no build if avoidable; let people edit directly, no detours.
 - Docs: Chinese as baseline, English mirrored (`.en.md`) in sync; decisions and changes are recorded.
 
+---
+
+## The full story
+
+The author's full self-introduction, the list of all four original projects, and the record of this ongoing experiment — **how far an AI Agent can push the production boundary for a non-programmer** — live at:
+
+**→ [github.com/xiaoyu-hue/xiaoyu-hue](https://github.com/xiaoyu-hue/xiaoyu-hue)**
+
 > XY Club — every club deserves its own good website.
