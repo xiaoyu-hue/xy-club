@@ -21,7 +21,7 @@ A **reusable club website template**: liquid-glass visuals + micro-interactions,
 
 <br>
 
-**[🔗 Live preview (GitHub Pages)](https://xiaoyu-hue.github.io/xy-club/)** · **[🚀 Quick Start](#quick-start)** · **[🔁 Reuse the template](#reuse)** · **[📚 Docs](docs/README.md)** · **[⚠️ Not for](#not-recommended)**
+**[🔗 Live preview (GitHub Pages)](https://xiaoyu-hue.github.io/xy-club/)** · **[🚀 Quick Start](#quick-start)** · **[🔁 Reuse the template](#reuse)** · **[📚 Docs](docs/README.md)** · **[⚠️ Not for](#not-recommended)** · **[🧩 Companion Tool](#companion)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
@@ -241,6 +241,21 @@ xy-club/
 Want to change the factory defaults instead? Edit `defaults.js`, delete `data/db.json`, and restart.
 
 ---
+<a id="companion"></a>
+
+## 🧩 Companion Tool: Member Intro Cards
+
+Once the site is up, members' own intro cards can be made with the sibling project **[XY Personal Intro Card Toolkit](https://github.com/xiaoyu-hue/xy-intro-card)**:
+
+- **Same family**: part of the XY series, sharing the liquid-glass look and the same four theme names/colors (Sunset Gold / Ocean Blue / Aurora Purple / Morning Mist)
+- **Zero-dependency single file**: fill in content, export one standalone HTML that opens anywhere — no network, no uploads
+- **Two modes**: "Character Card" (name · age · zodiac · skills · signature) and "General Card" (name · title · bio · contact)
+- **[🔗 Try it online (GitHub Pages)](https://xiaoyu-hue.github.io/xy-intro-card/)**
+
+> Typical flow: build the club site with this project → generate uniformly styled cards for each member with the companion tool → put those cards into a "Team"-style section on the site.
+
+---
+
 
 ## 📦 Deployment
 
