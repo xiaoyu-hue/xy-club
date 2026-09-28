@@ -124,6 +124,36 @@ describe('输入验证（Phase 1）', () => {
       assert.equal(res.status, 200);
       assert.ok(res.body.ok);
     });
+
+    test('custom 自由文本板块（v1.5.0）应正常通过', async () => {
+      const token = await login();
+      const res = await request('PUT', '/api/content', {
+        token,
+        body: {
+          settings: { siteName: 'Test' },
+          sections: [
+            { type: 'custom', content: '自定义内容 {{custom.键名}}', items: [] }
+          ]
+        }
+      });
+      assert.equal(res.status, 200);
+      assert.ok(res.body.ok);
+    });
+
+    test('gallery 图片集板块（v1.0.0 起）应正常通过', async () => {
+      const token = await login();
+      const res = await request('PUT', '/api/content', {
+        token,
+        body: {
+          settings: { siteName: 'Test' },
+          sections: [
+            { type: 'gallery', items: [{ url: 'uploads/a.jpg', caption: '活动照片' }] }
+          ]
+        }
+      });
+      assert.equal(res.status, 200);
+      assert.ok(res.body.ok);
+    });
   });
 
   describe('deepClone 函数', () => {

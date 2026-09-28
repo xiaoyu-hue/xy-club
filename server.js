@@ -81,8 +81,9 @@ const ALLOWED_SETTINGS_KEYS = new Set([
   'title' // Phase 1: 兼容通用字段
 ]);
 
-// sections 类型白名单
-const ALLOWED_SECTION_TYPES = new Set(['cards', 'services', 'testimonials', 'notice', 'faq', 'text']);
+// sections 类型白名单（须与前端 admin.js 的 TYPES 一致：8 种。
+// custom = v1.5.0 自由文本板块，gallery = 图片集——Phase 1 曾遗漏导致这两类板块无法保存）
+const ALLOWED_SECTION_TYPES = new Set(['cards', 'services', 'testimonials', 'notice', 'faq', 'text', 'gallery', 'custom']);
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
