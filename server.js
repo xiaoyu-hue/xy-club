@@ -52,6 +52,38 @@ app.use((req, res, next) => {
   next();
 });
 
+/* ---------------- Phase 1: 输入验证强化（零依赖） ---------------- */
+// 防御原型链污染、深度注入、畸形数据
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+function isSafeKey(key) {
+  return !FORBIDDEN_KEYS.has(key);
+}
+
+function deepClone(obj) {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(deepClone);
+  // 使用普通对象，但过滤危险键名
+  const clone = {};
+  for (const key of Object.keys(obj)) {
+    if (!isSafeKey(key)) continue;
+    clone[key] = deepClone(obj[key]);
+  }
+  return clone;
+}
+
+// settings 白名单（严格校验）
+const ALLOWED_SETTINGS_KEYS = new Set([
+  'siteName', 'logoEmoji', 'slogan', 'theme', 'heroBadge',
+  'heroTitle', 'heroSubtitle', 'heroStats', 'announcement',
+  'wechat', 'qq', 'phone', 'email', 'qrImage', 'qrNote',
+  'serviceTime', 'footer', 'adminPassword', 'custom',
+  'title' // Phase 1: 兼容通用字段
+]);
+
+// sections 类型白名单
+const ALLOWED_SECTION_TYPES = new Set(['cards', 'services', 'testimonials', 'notice', 'faq', 'text']);
+
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 if (!fs.existsSync(DB_PATH)) {
@@ -341,10 +373,25 @@ app.put('/api/content', jsonSmall, (req, res) => {
   const { settings, sections } = req.body || {};
   if (!settings || !Array.isArray(sections)) return res.status(400).json({ error: '数据格式错误' });
 
-  // 字段级校验（Q5）：畸形板块写入后前端渲染可能崩溃
-  for (const s of sections) {
+  // Phase 1: 深拷贝防御原型链污染
+  const clonedSettings = deepClone(settings);
+  const clonedSections = deepClone(sections);
+
+  // Phase 1: 字段白名单校验
+  const settingsKeys = Object.keys(clonedSettings);
+  for (const key of settingsKeys) {
+    if (!ALLOWED_SETTINGS_KEYS.has(key)) {
+      return res.status(400).json({ error: `非法设置字段: ${key}` });
+    }
+  }
+
+  // Phase 1: sections 结构校验
+  for (const s of clonedSections) {
     if (!s || typeof s !== 'object' || typeof s.type !== 'string') {
       return res.status(400).json({ error: '板块结构非法：缺少 type' });
+    }
+    if (!ALLOWED_SECTION_TYPES.has(s.type)) {
+      return res.status(400).json({ error: `非法板块类型: ${s.type}` });
     }
     if (!Array.isArray(s.items || [])) {
       return res.status(400).json({ error: `板块「${s.id || s.type}」的 items 必须为数组` });
@@ -353,17 +400,24 @@ app.put('/api/content', jsonSmall, (req, res) => {
 
   withDBLock(() => {
     // 导入的配置可能带着内联图片，先还原成文件
-    const s1 = extractInlineImages(settings);
-    const s2 = extractInlineImages(sections);
+    // 注意：extractInlineImages 内部会做 JSON.parse/stringify，会自动处理 null prototype 对象
+    const s1 = extractInlineImages(clonedSettings);
+    const s2 = extractInlineImages(clonedSections);
 
     const db = readDB();
-    db.settings = { ...db.settings, ...s1.value, adminPassword: db.settings.adminPassword };
+    // Phase 1: 合并设置时确保使用普通对象（避免 null prototype 导致展开运算符问题）
+    const mergedSettings = Object.assign({}, db.settings, s1.value);
+    mergedSettings.adminPassword = db.settings.adminPassword; // 保留原密码
+    db.settings = mergedSettings;
     db.sections = s2.value;
     db.updatedAt = new Date().toISOString();
     writeDB(db);
     return { settings: safeSettings(db), sections: db.sections, restoredImages: s1.changed || s2.changed };
   }).then(r => res.json({ ok: true, ...r }))
-    .catch(() => res.status(500).json({ error: '保存失败，请重试' }));
+    .catch((e) => {
+      console.error('保存失败:', e.message);
+      res.status(500).json({ error: '保存失败，请重试' });
+    });
 });
 
 app.post('/api/password', jsonSmall, (req, res) => {
@@ -457,7 +511,14 @@ module.exports = {
   ROOT,
   DATA_DIR,
   UPLOAD_DIR,
-  DB_FILE: DB_PATH
+  DB_FILE: DB_PATH,
+  // Phase 1: 导出输入验证工具
+  deepClone,
+  isSafeKey,
+  ALLOWED_SETTINGS_KEYS,
+  ALLOWED_SECTION_TYPES,
+  // 导出 withDBLock 用于测试
+  get dbWriteChain() { return dbWriteChain; }
 };
 
 // 仅当直接 `node server.js` 时才监听端口；被测试 require 时不占端口
