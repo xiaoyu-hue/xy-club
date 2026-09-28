@@ -60,6 +60,7 @@ function verifyPassword(pw, stored) {
     if (calc.length !== expected.length) return false;
     return crypto.timingSafeEqual(calc, expected);
   } catch (e) {
+    console.warn('scrypt 验证失败:', e && e.message);
     return false;
   }
 }
@@ -77,12 +78,13 @@ function readDB() {
     return data;
   } catch (e) {
     // 解析失败时先留一份现场，别让真实数据悄无声息地消失
+    console.warn('db.json 解析失败:', e && e.message);
     try {
       if (fs.existsSync(DB_PATH)) {
         fs.copyFileSync(DB_PATH, `${DB_PATH}.corrupt-${Date.now()}`);
         console.error('⚠️  data/db.json 解析失败，已备份原文件为 .corrupt-*，当前回退到默认内容');
       }
-    } catch (_) { /* 备份失败也不影响启动 */ }
+    } catch (backupErr) { /* 备份失败也不影响启动 */ console.warn('备份失败:', backupErr && backupErr.message); }
     return JSON.parse(JSON.stringify(DEFAULT_DB));
   }
 }
@@ -95,7 +97,7 @@ function writeDB(db) {
 }
 
 function safeSettings(db) {
-  const { adminPassword, ...settings } = db.settings;
+  const { adminPassword: _, ...settings } = db.settings;
   return settings;
 }
 
@@ -203,6 +205,20 @@ const jsonUpload = express.json({ limit: UPLOAD_JSON_LIMIT });
 // 上传目录：禁止浏览器嗅探类型，降低把上传文件当 HTML 执行的风险
 app.use('/uploads', (req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  next();
+});
+
+/* ---------------- CSP 安全响应头（S8） ---------------- */
+// 放在最前面，确保所有响应都携带安全头。
+// 防止 XSS 攻击：限制脚本来源、禁止内联脚本执行（admin 除外）、限制资源加载来源。
+// 注意：后台 admin.html 含内联 script，因此 script-src 需保留 'unsafe-inline'；
+// 若未来拆分为独立构建产物，可去掉 unsafe-inline 获得更强保护。
+const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', CSP);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   next();
 });
 
@@ -386,7 +402,7 @@ app.post('/api/reset', jsonSmall, (req, res) => {
 /* ---------------- 图片上传（base64） ---------------- */
 app.post('/api/upload', jsonUpload, (req, res) => {
   const { data } = req.body || {};
-  if (!data || !/^data:image\//.test(data)) return res.status(400).json({ error: '仅支持图片文件' });
+  if (!data || !data.startsWith('data:image/')) return res.status(400).json({ error: '仅支持图片文件' });
   const m = /^data:image\/([\w+.-]+);base64,(.+)$/.exec(data);
   if (!m) return res.status(400).json({ error: '图片解析失败' });
   let ext = m[1].toLowerCase();
@@ -401,7 +417,7 @@ app.post('/api/upload', jsonUpload, (req, res) => {
 
 /* ---------------- 全局错误处理（Q4） ---------------- */
 // 路由内抛出的异常统一捕获，避免异步异常泄漏为挂起连接或进程级未处理
-app.use((err, req, res, next) => {
+app.use( (err, req, res, __next) => {
   console.error('⚠️ 未处理的请求异常：', err && err.message);
   if (!res.headersSent) res.status(500).json({ error: '服务器内部错误' });
 });

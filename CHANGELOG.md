@@ -7,6 +7,27 @@
 
 ---
 
+## 1.5.2 - 2026-09-28（安全加固 + 代码质量修复）
+
+### 🔒 安全增强
+
+- **CSP 安全响应头**：所有响应统一设置 `Content-Security-Policy`，限制脚本来源、禁止框架嵌入、禁止 MIME 嗅探
+- 新增 `X-Frame-Options: DENY`、`Referrer-Policy: strict-origin-when-cross-origin`
+- CSP 配置考虑了后台内联 script 的需求（保留 `unsafe-inline`）
+
+### 🛠️ 代码质量
+
+- 修复 15 个 oxlint 警告：未使用 catch 参数、无用转义字符、冗余 spread fallback
+- 所有 catch 块改为记录警告日志而非静默忽略
+
+### 🧪 测试
+
+- 新增 `tests/csp.test.js`（7 项 CSP 测试）
+- 更新 `tests/upload.test.js`：适配 nosniff 作用域变更
+- 全量测试：107 项全部通过
+
+---
+
 ## 1.5.1 - 2026-09-28（CSRF 安全防护 + 代码审查修复）
 
 ### 🔒 安全

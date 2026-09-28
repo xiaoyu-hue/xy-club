@@ -10,7 +10,7 @@
   const interp = (text, custom) => {
     const c = custom || {};
     return String(text == null ? '' : text)
-      .replace(/\{\{\s*custom\.([\w.\-]+)\s*\}\}/g, (m, k) => (k in c ? c[k] : ''));
+      .replace(/\{\{\s*custom\.([\w.-]+)\s*\}\}/g, (m, k) => (k in c ? c[k] : ''));
   };
   const fine = matchMedia('(pointer:fine)').matches;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -200,7 +200,7 @@
       ta.style.cssText = 'position:fixed;opacity:0;top:0';
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand('copy'); done(); } catch (e) { toast('复制失败，请手动复制'); }
+      try { document.execCommand('copy'); done(); } catch (copyErr) { console.warn('剪贴板复制失败:', copyErr && copyErr.message); toast('复制失败，请手动复制'); }
       ta.remove();
     };
     if (navigator.clipboard && window.isSecureContext) {
@@ -388,7 +388,7 @@
         const data = await res.json();
         if (data && data.settings) return data;
       }
-    } catch (e) { /* 无后端，继续走静态回退 */ }
+    } catch (fetchErr) { /* 无后端，继续走静态回退 */ console.warn('API 加载失败，使用静态快照:', fetchErr && fetchErr.message); }
 
     try {
       const res = await fetch('./content.json');
@@ -400,7 +400,7 @@
           return data;
         }
       }
-    } catch (e) { /* 快照也不存在 */ }
+    } catch (snapErr) { /* 快照也不存在 */ console.warn('静态快照加载失败:', snapErr && snapErr.message); }
 
     console.error('加载内容失败：API 与静态快照均不可用');
     return { settings: {}, sections: [] };

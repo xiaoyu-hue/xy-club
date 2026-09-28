@@ -44,7 +44,7 @@
   async function api(path, opts = {}) {
     const res = await fetch(path, {
       ...opts,
-      headers: { 'Content-Type': 'application/json', 'x-token': token, 'x-csrf-token': csrfToken || '', ...(opts.headers || {}) }
+      headers: { 'Content-Type': 'application/json', 'x-token': token, 'x-csrf-token': csrfToken || '', ...((opts.headers)) }
     });
     if (res.status === 401) { showLogin(); throw new Error('未登录'); }
     const data = await res.json().catch(() => ({}));
@@ -58,7 +58,7 @@
     try {
       const data = await api('/api/csrf-token');
       csrfToken = data.csrfToken || '';
-    } catch (e) { /* CSRF token 获取失败不影响主流程 */ }
+    } catch (csrfErr) { /* CSRF token 获取失败不影响主流程 */ console.warn('CSRF token 获取失败:', csrfErr && csrfErr.message); }
   }
 
   function toast(msg, isErr) {
@@ -561,7 +561,7 @@
           fr.readAsDataURL(blob);
         });
         if (dataUri) map.set(u, dataUri);
-      } catch (e) { /* 单张失败不影响整体导出 */ }
+      } catch (imgErr) { /* 单张失败不影响整体导出 */ console.warn('图片内联失败:', imgErr && imgErr.message); }
     }));
 
     const replace = (v) => {
@@ -589,7 +589,7 @@
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 3000);
       toast(count ? `✅ 配置已导出（含 ${count} 张图片）` : '✅ 配置已导出');
-    } catch (e) { toast('导出失败', true); }
+    } catch (exportErr) { toast('导出失败: ' + (exportErr && exportErr.message), true); }
   });
 
   $('#importBtn').addEventListener('click', () => {
@@ -635,7 +635,7 @@
       await fetchCsrfToken();
       await loadContent();
       showApp();
-    } catch (e) { /* showLogin 已在 401 时触发 */ }
+    } catch (bootErr) { /* showLogin 已在 401 时触发 */ console.warn('启动失败:', bootErr && bootErr.message); }
   })();
 
   /* ================= 测试导出（T3） =================

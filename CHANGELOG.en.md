@@ -7,6 +7,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## 1.5.2 - 2026-09-28 (Security hardening + code quality fixes)
+
+### 🔒 Security Enhancements
+
+- **CSP security headers**: All responses set `Content-Security-Policy`, restricting script sources, preventing frame embedding, blocking MIME sniffing
+- Added `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`
+- CSP config accounts for admin inline scripts (retains `unsafe-inline`)
+
+### 🛠️ Code Quality
+
+- Fixed 15 oxlint warnings: unused catch params, unnecessary escape chars, redundant spread fallbacks
+- All catch blocks now log warnings instead of silently ignoring
+
+### 🧪 Tests
+
+- Added `tests/csp.test.js` (7 CSP tests)
+- Updated `tests/upload.test.js`: adapted for nosniff scope change
+- Full suite: 107 tests passing
+
+---
+
 ## 1.5.1 - 2026-09-28 (CSRF protection + code review fixes)
 
 ### 🔒 Security
