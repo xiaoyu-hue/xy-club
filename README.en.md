@@ -192,11 +192,12 @@ xy-club/
 |--------|------|-------------|
 | POST | `/api/login` | Password login, returns a token |
 | GET | `/api/check` | Validate the session |
+| GET | `/api/csrf-token` | Get CSRF token (requires login) |
 | GET | `/api/content` | Fetch all site content (public) |
-| PUT | `/api/content` | Save content and settings (auth required) |
-| POST | `/api/password` | Change the admin password (auth required) |
-| POST | `/api/upload` | Upload an image, ≤8MB (auth required) |
-| POST | `/api/reset` | Restore default content (auth required) |
+| PUT | `/api/content` | Save content and settings (auth + CSRF required) |
+| POST | `/api/password` | Change the admin password (auth + CSRF required) |
+| POST | `/api/upload` | Upload an image, ≤8MB (auth + CSRF required) |
+| POST | `/api/reset` | Restore default content (auth + CSRF required) |
 | GET | `/api/health` | Health check (public, for probes) |
 
 ---

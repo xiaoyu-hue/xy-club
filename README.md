@@ -192,11 +192,12 @@ xy-club/
 |------|------|------|
 | POST | `/api/login` | 密码登录，返回 token |
 | GET | `/api/check` | 校验登录态 |
+| GET | `/api/csrf-token` | 获取 CSRF token（需登录） |
 | GET | `/api/content` | 获取整站内容（公开） |
-| PUT | `/api/content` | 保存内容与设置（需鉴权） |
-| POST | `/api/password` | 修改管理密码（需鉴权） |
-| POST | `/api/upload` | 上传图片，≤8MB（需鉴权） |
-| POST | `/api/reset` | 恢复默认内容（需鉴权） |
+| PUT | `/api/content` | 保存内容与设置（需鉴权 + CSRF） |
+| POST | `/api/password` | 修改管理密码（需鉴权 + CSRF） |
+| POST | `/api/upload` | 上传图片，≤8MB（需鉴权 + CSRF） |
+| POST | `/api/reset` | 恢复默认内容（需鉴权 + CSRF） |
 | GET | `/api/health` | 健康检查（公开，探活用） |
 
 ---

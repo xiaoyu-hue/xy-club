@@ -259,6 +259,51 @@ app.use('/api', (req, res, next) => {
   res.status(401).json({ error: '登录已过期，请重新登录' });
 });
 
+/* ---------------- CSRF 防护（S7） ---------------- */
+// CSRF token 存储在 session Map 中，登录时下发，写入时校验。
+// 与 x-token 同源同源：攻击者无法读取前端 localStorage 中的 token，
+// 也就无法构造合法的 CSRF 请求。
+const csrfTokens = new Map(); // sessionId -> { token, expiresAt }
+
+function generateCsrfToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+app.get('/api/csrf-token', (req, res) => {
+  const token = req.headers['x-token'];
+  const exp = token && sessions.get(token);
+  if (!exp || exp <= Date.now()) {
+    return res.status(401).json({ error: '未登录' });
+  }
+  const csrf = generateCsrfToken();
+  csrfTokens.set(token, { token: csrf, expiresAt: Date.now() + SESSION_TTL_MS });
+  res.json({ csrfToken: csrf });
+});
+
+function csrfProtect(req, res, next) {
+  // 跳过不需要 CSRF 的路径
+  if (req.path === '/login' || req.path === '/api/csrf-token' || req.path === '/api/health') {
+    return next();
+  }
+  const csrf = req.headers['x-csrf-token'];
+  const token = req.headers['x-token'];
+  if (!csrf || !token) {
+    return res.status(403).json({ error: '缺少 CSRF token' });
+  }
+  const stored = csrfTokens.get(token);
+  if (!stored || stored.token !== csrf || stored.expiresAt < Date.now()) {
+    return res.status(403).json({ error: 'CSRF token 无效或已过期' });
+  }
+  next();
+}
+
+// 在鉴权中间件之后，对写操作追加 CSRF 校验
+app.use((req, res, next) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+  if (req.path === '/login' || req.path === '/api/csrf-token') return next();
+  csrfProtect(req, res, next);
+});
+
 /* ---------------- 内容 API ---------------- */
 app.get('/api/content', (req, res) => {
   const db = readDB();
@@ -374,6 +419,7 @@ module.exports = {
   noteFailure,
   clientIp,
   loginAttempts,
+  csrfTokens,
   sessions,
   ALLOWED_EXTS,
   HASH_PREFIX,

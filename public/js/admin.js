@@ -9,6 +9,7 @@
 
   // C1：鉴权 token 键统一为 xy_token
   let token = localStorage.getItem('xy_token') || '';
+  let csrfToken = '';      // CSRF token，登录后从服务端获取
   let D = null;            // 工作副本 { settings, sections }
   let dirty = false;       // 是否有未保存修改
   let expandedId = null;   // 当前展开编辑的板块
@@ -43,12 +44,21 @@
   async function api(path, opts = {}) {
     const res = await fetch(path, {
       ...opts,
-      headers: { 'Content-Type': 'application/json', 'x-token': token, ...(opts.headers || {}) }
+      headers: { 'Content-Type': 'application/json', 'x-token': token, 'x-csrf-token': csrfToken || '', ...(opts.headers || {}) }
     });
     if (res.status === 401) { showLogin(); throw new Error('未登录'); }
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || '请求失败');
     return data;
+  }
+
+  /* ================= CSRF Token ================= */
+  async function fetchCsrfToken() {
+    if (!token) return;
+    try {
+      const data = await api('/api/csrf-token');
+      csrfToken = data.csrfToken || '';
+    } catch (e) { /* CSRF token 获取失败不影响主流程 */ }
   }
 
   function toast(msg, isErr) {
@@ -83,6 +93,7 @@
       if (!r.ok) throw new Error(data.error || '登录失败');
       token = data.token;
       localStorage.setItem('xy_token', token);
+      await fetchCsrfToken();
       await loadContent();
       showApp();
       toast('欢迎回来 👋');
@@ -621,6 +632,7 @@
     if (!token) return showLogin();
     try {
       await api('/api/check');
+      await fetchCsrfToken();
       await loadContent();
       showApp();
     } catch (e) { /* showLogin 已在 401 时触发 */ }

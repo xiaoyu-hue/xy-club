@@ -16,8 +16,9 @@ const http = require('http');
 
 const ROOT = path.join(__dirname, '..');
 
-// 必须在 require('../server.js') 之前设置，服务端启动时才会用到这些目录
-const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'xy-club-test-'));
+// 使用计数器确保每个 require 的 TMP 目录唯一（防止模块缓存导致复用）
+let tmpCounter = 0;
+const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'xy-club-test-' + (++tmpCounter) + '-'));
 process.env.DATA_DIR = path.join(TMP, 'data');
 process.env.UPLOAD_DIR = path.join(TMP, 'uploads');
 
@@ -64,6 +65,11 @@ async function request(method, urlPath, opts) {
       h['Content-Length'] = payload.length;
     }
     if (token) h['x-token'] = token;
+    // 测试模式下自动注入 CSRF token（仅当未显式指定 x-csrf-token 时）
+    if (token && !h['x-csrf-token']) {
+      const csrf = server.csrfTokens && server.csrfTokens.get(token);
+      if (csrf) h['x-csrf-token'] = csrf.token;
+    }
 
     const r = http.request(
       { host: '127.0.0.1', port: portNum, path: urlPath, method, headers: h },
@@ -88,7 +94,20 @@ async function request(method, urlPath, opts) {
 async function login(password) {
   const res = await request('POST', '/api/login', { body: { password: password || 'xy888888' } });
   if (res.status !== 200) throw new Error('登录失败：' + res.text);
-  return res.body.token;
+  const token = res.body.token;
+  // 登录后自动获取 CSRF token 并存入 server
+  try {
+    const csrfRes = await request('GET', '/api/csrf-token', { token });
+    if (csrfRes.status === 200 && csrfRes.body.csrfToken) {
+      server.csrfTokens.set(token, {
+        token: csrfRes.body.csrfToken,
+        expiresAt: Date.now() + 7 * 24 * 3600 * 1000
+      });
+    }
+  } catch (e) {
+    console.warn('CSRF token 获取失败:', e.message);
+  }
+  return token;
 }
 
 /** 直接读临时库文件（绕开 readDB，用于断言落盘结果） */
