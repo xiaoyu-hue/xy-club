@@ -25,6 +25,33 @@ const SESSION_TTL_MS = 7 * 24 * 3600 * 1000;  // token 有效期 7 天
 const MAX_ATTEMPTS = 5;                        // 登录限流：连续错误次数
 const LOCK_MS = 5 * 60 * 1000;                // 登录限流：锁定时长 5 分钟
 
+/* ---------------- Phase 0: HTTP 安全头（零依赖） ---------------- */
+// 防御常见浏览器攻击：MIME 嗅探、点击劫持、XSS、信息泄露
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '0'); // 现代浏览器不用这个，设为 0 禁用
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.removeHeader('X-Powered-By'); // 移除 Express 版本信息
+  next();
+});
+
+// CSP 头（独立配置，便于后续调整）
+const CSP_DIRECTIVES = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'"
+].join('; ');
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', CSP_DIRECTIVES);
+  next();
+});
+
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 if (!fs.existsSync(DB_PATH)) {

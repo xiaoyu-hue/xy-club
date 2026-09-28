@@ -81,10 +81,11 @@ describe('上传目录安全响应头', () => {
     assert.equal(res.headers['x-content-type-options'], 'nosniff');
   });
 
-  test('nosniff 只作用于上传目录，不污染其它静态资源', async () => {
+  test('nosniff 作用于所有静态资源（Phase 0 全局安全头）', async () => {
+    // Phase 0: 全局安全头，所有静态资源都包含 nosniff
     const res = await request('GET', '/css/style.css');
     assert.equal(res.status, 200);
-    assert.equal(res.headers['x-content-type-options'], undefined);
+    assert.equal(res.headers['x-content-type-options'], 'nosniff');
   });
 
   test('落盘文件确实在受控目录内（不发生路径穿越）', async () => {
