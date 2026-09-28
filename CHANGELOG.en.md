@@ -7,6 +7,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## 1.5.1 - 2026-09-28 (CSRF protection + code review fixes)
+
+### 🔒 Security
+
+- **CSRF protection (S7)**: New `/api/csrf-token` endpoint; all write operations (POST/PUT) require CSRF token validation
+- Tokens are bound to sessions — cross-session reuse is rejected
+- Frontend admin.js auto-fetches and attaches CSRF token after login
+
+### 🧪 Tests
+
+- Full suite: 100 tests (+11 new cases covering CSRF scenarios)
+
+---
+
 ## 1.5.0 - 2026-09-26 (Global customization: custom fields + free-text section + strikethrough price)
 
 ### ✨ Added

@@ -312,7 +312,7 @@ Static assets and the API share one port, so there is no CORS setup.
 ## 🧪 Testing
 
 ```bash
-npm test          # Unit tests: 73 cases, ~5s, no new dependencies (Node's built-in node --test)
+npm test          # Unit tests: 100 cases, ~11s, no new dependencies (Node's built-in node --test)
 ```
 
 `npm test` is the only mandatory gate; CI runs it on Node 18 / 20 / 22. It covers the parts that actually carry risk: password hashing and login rate limiting, the upload allowlist, content read/write and data resilience, static snapshots staying credential-free, and whether the docs still match the code.
