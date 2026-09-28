@@ -94,9 +94,25 @@ x-token: <登录时返回的 token>
 
 > `settings` 中**不含** `adminPassword`，前端拿不到密码哈希。
 
+### GET /api/csrf-token
+
+获取 CSRF token（**需鉴权**）。登录成功后前端会自动调用，之后所有写操作都带 `x-csrf-token` 头。
+
+成功 `200`：
+
+```json
+{ "csrfToken": "a1b2c3..." }
+```
+
+错误：
+
+- `401 { "error": "未登录" }` — 缺 `x-token` 或登录已过期
+
+> CSRF token 与 session 绑定，随 session 一起过期；跨 session 使用会被拒绝。
+
 ### PUT /api/content
 
-保存整站内容与设置（**需鉴权**）。
+保存整站内容与设置（**需鉴权 + CSRF**）。
 
 请求体：
 
@@ -107,7 +123,11 @@ x-token: <登录时返回的 token>
 }
 ```
 
-- `settings` 与 `sections` 均为必填，缺失或 `sections` 非数组返回 `400 { "error": "数据格式错误" }`。
+- `settings` 与 `sections` 均为必填，缺失或 `sections` 非数组返回 `400 { "error": "数据格式错误" }`
+- **输入验证（白名单）**：
+  - `settings` 仅接受已知字段，未知字段返回 `400 { "error": "非法设置字段: xxx" }`
+  - 每个板块的 `type` 必须在 8 种类型白名单内（`cards` / `services` / `testimonials` / `notice` / `faq` / `text` / `gallery` / `custom`），否则返回 `400 { "error": "非法板块类型: xxx" }`
+  - 请求体先经 `deepClone` 深拷贝并剔除 `__proto__` / `constructor` / `prototype` 等危险键，防御原型链污染
 - 导入配置中内联的图片（data URI）会被自动还原为 `public/uploads/` 下的真实文件。
 
 成功 `200`：
@@ -120,7 +140,7 @@ x-token: <登录时返回的 token>
 
 ### POST /api/password
 
-修改管理密码（**需鉴权**）。
+修改管理密码（**需鉴权 + CSRF**）。
 
 请求体：
 
@@ -139,7 +159,7 @@ x-token: <登录时返回的 token>
 
 ### POST /api/reset
 
-恢复为模板默认内容（**需鉴权**）。换俱乐部复用时可先恢复默认再改内容。
+恢复为模板默认内容（**需鉴权 + CSRF**）。换俱乐部复用时可先恢复默认再改内容。
 
 成功 `200`：
 
@@ -149,7 +169,7 @@ x-token: <登录时返回的 token>
 
 ### POST /api/upload
 
-上传图片（**需鉴权**）。图片以 base64 data URI 形式随请求体提交。
+上传图片（**需鉴权 + CSRF**）。图片以 base64 data URI 形式随请求体提交。
 
 请求体：
 
@@ -175,8 +195,9 @@ x-token: <登录时返回的 token>
 
 | 状态码 | 含义 | 常见触发 |
 |--------|------|----------|
-| 400 | 请求格式错误 | 缺少必填字段、密码过短、图片格式/大小不符 |
+| 400 | 请求格式错误 | 缺少必填字段、密码过短、非法设置字段、非法板块类型、图片格式/大小不符 |
 | 401 | 未登录或登录已过期 | 缺 `x-token`、token 失效 |
+| 403 | CSRF 校验失败 | 写操作缺 `x-csrf-token`、token 无效或已过期 |
 | 429 | 触发限流 | 同一 IP 连续 5 次密码错误 |
 
 ---

@@ -7,6 +7,26 @@
 
 ---
 
+## 1.5.2 - 2026-09-28（HTTP 安全头 + 输入验证强化 + custom 板块修复）
+
+### 🔒 安全
+
+- **HTTP 安全头（Phase 0，零依赖）**：全局响应新增 `X-Content-Type-Options: nosniff`（防 MIME 嗅探）、`X-Frame-Options: DENY`（防点击劫持）、`Referrer-Policy: strict-origin-when-cross-origin`、`Permissions-Policy`（禁用 camera/mic/geolocation）与 `Content-Security-Policy`（脚本/样式/图片白名单）；并移除 `X-Powered-By` 隐藏 Express 版本
+- **输入验证强化（Phase 1，零依赖）**：`PUT /api/content` 新增
+  - `deepClone` 深拷贝并过滤 `__proto__` / `constructor` / `prototype` 危险键，防御原型链污染
+  - `settings` 字段白名单（`ALLOWED_SETTINGS_KEYS`），非法字段返回 `400 非法设置字段`
+  - 板块类型白名单（`ALLOWED_SECTION_TYPES`），非法类型返回 `400 非法板块类型`
+
+### 🔧 修复
+
+- **自由文本板块与图片集无法保存**：Phase 1 的板块类型白名单遗漏了 `custom`（v1.5.0 自由文本板块）与 `gallery`（图片集，上线即有）两个类型，导致后台保存含这两类板块的内容被 400 拒绝；已补入白名单并各新增回归测试用例
+
+### 🧪 测试
+
+- 全量测试：**123 项 / 39 suites** 全绿（Phase 0 新增 9 项安全头用例、Phase 1 新增 14 项输入验证用例，其中 2 项为 custom / gallery 回归用例）
+
+---
+
 ## 1.5.1 - 2026-09-28（CSRF 安全防护 + 代码审查修复）
 
 ### 🔒 安全

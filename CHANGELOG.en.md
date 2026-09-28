@@ -7,6 +7,26 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## 1.5.2 - 2026-09-28 (HTTP security headers + input validation hardening + custom section fix)
+
+### 🔒 Security
+
+- **HTTP security headers (Phase 0, zero-dependency)**: global responses now include `X-Content-Type-Options: nosniff` (anti MIME-sniffing), `X-Frame-Options: DENY` (anti clickjacking), `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera/mic/geolocation disabled) and `Content-Security-Policy` (script/style/image allowlist); `X-Powered-By` removed to hide the Express version
+- **Input validation hardening (Phase 1, zero-dependency)**: `PUT /api/content` now adds
+  - `deepClone` that strips `__proto__` / `constructor` / `prototype` keys, defending against prototype pollution
+  - a settings key allowlist (`ALLOWED_SETTINGS_KEYS`); unknown fields return `400`
+  - a section-type allowlist (`ALLOWED_SECTION_TYPES`); unknown types return `400`
+
+### 🔧 Fixed
+
+- **Free-text and gallery sections could not be saved**: the Phase 1 section-type allowlist missed `custom` (free-text section from v1.5.0) and `gallery` (image gallery, present since launch), so saving content containing either was rejected with 400. Both are now whitelisted, with regression tests
+
+### 🧪 Tests
+
+- Full suite: **123 tests / 39 suites** green (Phase 0 added 9 security-header cases; Phase 1 added 14 input-validation cases, 2 of which are the custom / gallery regressions)
+
+---
+
 ## 1.5.1 - 2026-09-28 (CSRF protection + code review fixes)
 
 ### 🔒 Security

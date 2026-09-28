@@ -89,17 +89,18 @@ The glass look is built in three layers: a translucent gradient base, `backdrop-
 
 ## 📋 Section Types
 
-Seven types are available when adding a section; each renders differently on the front end:
+Eight types are available when adding a section; each renders differently on the front end:
 
 | Type | `type` | Use for | Fields per item |
 |------|--------|---------|-----------------|
-| Pricing list | `services` | Service packages / price lists | name, description, price, tag |
+| Pricing list | `services` | Service packages / price lists | name, description, price, strikethrough original price (optional), tag |
 | Card grid | `cards` | Features / team members | title, description, icon |
 | Testimonials | `testimonials` | Feedback / review wall | quote, author, rating |
 | FAQ | `faq` | Q&A (collapsible) | question, answer |
 | Notice list | `notice` | Rules / announcements | item text |
 | Gallery | `gallery` | Photo albums / event shots | image URL `url`, caption `caption` |
 | Rich text | `text` | About us / long-form intro | heading, body |
+| Free text | `custom` | Any copy block; supports `{{custom.key}}` placeholders referencing global custom fields | heading, body |
 
 ---
 
@@ -109,6 +110,9 @@ Seven types are available when adding a section; each renders differently on the
 - **Default admin password `xy888888`** — stored as a **scrypt hash** (Node's built-in crypto, no extra dependency); **change it right after deploying**
 - **Passwords stay out of git** — `data/db.json` is listed in `.gitignore`
 - **Login rate limiting** — 5 consecutive wrong passwords from one IP triggers a 5-minute lockout
+- **CSRF protection** — all write operations (save / password change / upload / reset) require a valid CSRF token
+- **HTTP security headers** — global responses carry `nosniff` / `X-Frame-Options: DENY` / a CSP (script & style allowlist), defending against MIME sniffing, clickjacking and injection
+- **Input validation** — content saves go through field allowlists and strip dangerous keys like `__proto__`, defending against prototype pollution and malformed data
 - **Sessions** — held in server memory, expire after 7 days; the token is kept in browser localStorage
 - **Images** — uploaded to `public/uploads/`, never routed through a third party
 
@@ -117,7 +121,6 @@ Seven types are available when adding a section; each renders differently on the
 Being honest: simplicity was chosen deliberately, so the following are **known and unaddressed**:
 
 - **Single password, single admin** — no multi-user accounts, roles, permission levels, or per-edit attribution
-- **No CSRF protection** — endpoints assume same-origin calls; harden this yourself if you go cross-origin
 - **Single-process file I/O** — running multiple instances or replicas causes write conflicts; run exactly one process
 - **Sessions live in memory** — restarting the service signs everyone out
 - **Uploads are type- and size-checked only** — capped at 8MB, limited to jpg / png / webp / gif (**no svg**, since it can embed scripts); no content scanning
@@ -289,17 +292,18 @@ Static assets and the API share one port, so there is no CORS setup.
 
 - Liquid-glass visual system and 4 themes
 - 8 micro-interactions
-- 7 section types with a visual admin
+- 8 section types with a visual admin
 - Image upload, password change, config import/export
 - Admin password stored as a **scrypt hash** (Node built-in, no new dependency)
 - Login rate limiting: 5 wrong attempts from one IP triggers a 5-minute lockout
 - Upload allowlist: jpg / png / webp / gif (svg disabled)
 - **Exported config inlines images**, restored automatically on import — no broken images
 - Corrupt-config auto-backup with safe fallback
+- CSRF protection: write operations require a session-bound token
+- HTTP security headers (nosniff / X-Frame-Options / CSP) and input-validation hardening (field allowlists, prototype-pollution defense)
 
 ### Planned 🚀
 
-- CSRF protection
 - Bulk upload and an image management panel
 - SEO metadata and Open Graph cards
 - Dockerfile and one-click deploy config
@@ -312,10 +316,10 @@ Static assets and the API share one port, so there is no CORS setup.
 ## 🧪 Testing
 
 ```bash
-npm test          # Unit tests: 100 cases, ~11s, no new dependencies (Node's built-in node --test)
+npm test          # Unit tests: 123 cases, no new dependencies (Node's built-in node --test)
 ```
 
-`npm test` is the only mandatory gate; CI runs it on Node 18 / 20 / 22. It covers the parts that actually carry risk: password hashing and login rate limiting, the upload allowlist, content read/write and data resilience, static snapshots staying credential-free, and whether the docs still match the code.
+`npm test` is the only mandatory gate; CI runs it on Node 18 / 20 / 22. It covers the parts that actually carry risk: password hashing and login rate limiting, CSRF tokens, HTTP security headers, input validation and prototype-pollution defense, the upload allowlist, content read/write and data resilience, static snapshots staying credential-free, and whether the docs still match the code.
 
 | Layer | Command | Dependencies | Notes |
 |-------|---------|--------------|-------|

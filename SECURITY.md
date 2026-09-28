@@ -4,7 +4,7 @@
 
 ## 📌 支持版本
 
-安全修复只进**最新稳定版**。当前受支持版本：**v1.5.0**（[Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)）。
+安全修复只进**最新稳定版**。当前受支持版本：**v1.5.2**（[Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)）。
 
 旧版本不再接收安全补丁，请尽快升级。
 
@@ -24,6 +24,9 @@
 - **密码哈希存储**：管理密码以 **scrypt 哈希**（Node 内置 `crypto`，零新增依赖）存入 `data/db.json`，不存明文；遗留明文会在登录时自动升级为哈希。
 - **登录限流**：同一 IP 连续 5 次密码错误后锁定 5 分钟（反向代理后通过 `trust proxy` 取真实客户端 IP）。
 - **会话过期**：登录态存于服务端内存，token 有效期 7 天。
+- **CSRF 防护**：所有写操作（保存 / 改密码 / 上传 / 恢复默认）强制校验与 session 绑定的 CSRF token，缺失或无效返回 403。
+- **HTTP 安全头**：全局响应带 `nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy` 与 CSP 白名单，并移除 `X-Powered-By`。
+- **输入验证**：保存接口对 settings 字段与板块类型做白名单校验，深拷贝剔除 `__proto__` 等危险键，防御原型链污染与畸形数据。
 - **恢复默认内容需二次校验**：`/api/reset` 必须提供当前管理密码，且仅恢复内容与设置、**绝不改动登录密码**（杜绝把密码重置为弱密码 `xy888888` 的后门）。
 - **改密码即时失效会话**：修改管理密码后清空所有其它会话，仅保留本次会话，旧 token 不再有效。
 - **上传白名单**：仅 `jpg / png / webp / gif`（`jpeg` 归一为 `jpg`），**禁用 svg**（可内嵌脚本），单文件 ≤ 8MB；不经过任何第三方。
@@ -32,7 +35,6 @@
 **已知且未处理的局限**（详见 [README · 数据与隐私](README.md) 与 [AGENTS.md](AGENTS.md)）：
 
 - 🔓 **单密码单管理员**：无多用户、角色或权限分级，无法区分「谁改了什么」。
-- 🚫 **无 CSRF 防护**：接口依赖同源调用；跨域部署需自行加固。
 - 🧩 **单进程文件读写**：多实例 / 多副本部署会出现写冲突，请只跑一个进程。
 - 💨 **会话存内存**：服务重启后所有登录态失效。
 - 🔑 **后台 token 存于 `localStorage`**：一旦前端出现 XSS，token 可被脚本读取外传。当前为常见取舍（配合统一转义降低风险）；如需更强保护可后续评估迁移为 `httpOnly` + `SameSite=Strict` Cookie。

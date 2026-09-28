@@ -17,7 +17,8 @@ npm test
 | 运行器 | `node --test`（Node 内置） |
 | 依赖 | 无（只需 `express` 跑起来，测试本身零依赖） |
 | 用例位置 | `tests/*.test.js` |
-| 耗时参考 | 约 5 秒 |
+| 用例规模 | 123 项 / 39 suites |
+| 耗时参考 | 约 10–40 秒（视机器性能） |
 
 ### 文件与职责
 
@@ -26,12 +27,18 @@ npm test
 | `tests/password.test.js` | scrypt 哈希格式、校验、旧明文兼容、损坏输入 | 对应 README「密码不以明文存储」的声明 |
 | `tests/auth.test.js` | 登录、token、会话过期、鉴权中间件、改密码 | 这是全站唯一的安全边界 |
 | `tests/rate-limit.test.js` | 5 次失败锁定、成功后清零、锁定自动解除 | 防暴力破解 |
+| `tests/csrf.test.js` | token 签发、未登录拒发、写操作强制校验、错误 token 返回 403 | 写操作的第二道锁 |
+| `tests/security-headers.test.js` | nosniff / X-Frame-Options / CSP 等全局安全头、X-Powered-By 移除 | 防 MIME 嗅探与点击劫持的回归防线 |
+| `tests/input-validation.test.js` | 字段白名单、板块类型白名单、原型链污染过滤、deepClone | 恶意 / 畸形输入进不了存储层 |
+| `tests/password-session.test.js` | 改密码后其余旧会话失效 | 防改密码后旧 token 在 7 天内继续可用 |
 | `tests/content-api.test.js` | 内容读写落盘、密码不可被篡改、内联图片还原 | 数据完整性 |
 | `tests/upload.test.js` | 格式白名单（SVG 必须被拒）、8MB 上限、nosniff | 上传是唯一"把外部字节写进磁盘"的入口 |
 | `tests/static-build.test.js` | 静态快照不含凭据、资源用相对路径 | GitHub Pages 子路径托管白屏 / 泄密的防线 |
 | `tests/resilience.test.js` | `db.json` 损坏时备份现场并回退默认 | 第一原则：不破坏用户已有数据 |
 | `tests/contract-defaults.test.js` | 板块类型 ↔ 渲染分支 ↔ 主题 ↔ 后台选项 | 防"加了类型忘了渲染""加了主题后台没选项" |
 | `tests/docs-sync.test.js` | 版本号漂移、中英 README 断链、API 表与路由不一致 | 把「改了行为必须同步文档」自动化 |
+| `tests/frontend-util.test.js` | `esc()` 转义与 `TYPES` 板块类型定义（前端纯函数） | XSS 第一防线 + 类型定义一致性 |
+| `tests/harness.js` | （非测试文件）临时目录隔离 + 内存服务器启动 | 所有测试的公共底座 |
 
 ### 隔离机制
 

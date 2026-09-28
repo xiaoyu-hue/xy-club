@@ -62,7 +62,13 @@
 
 **限流**：同一 IP 连续 5 次密码错误后锁定 5 分钟（HTTP 429）。计数存在内存，重启即清空。
 
-**已知局限**：无 CSRF 防护；单密码单管理员；会话存内存（重启即登出）。详见 README 的「已知局限」。
+**CSRF 防护**：写操作（POST/PUT）在鉴权之后追加 CSRF 校验——前端登录后调 `GET /api/csrf-token` 拿 token，之后每次写请求带 `x-csrf-token` 头；token 与 session 绑定、随 session 过期，校验失败返回 HTTP 403。登录、`/api/csrf-token`、`/api/health` 三个只读/启动路径豁免。
+
+**HTTP 安全头**：全局响应中间件统一追加 `X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy: strict-origin-when-cross-origin`、`Permissions-Policy` 与 `Content-Security-Policy`（脚本/样式/图片白名单），并移除 `X-Powered-By`。
+
+**输入验证**：`PUT /api/content` 的请求体先经 `deepClone` 深拷贝（剔除 `__proto__` / `constructor` / `prototype` 危险键，防原型链污染），再过两层白名单——`ALLOWED_SETTINGS_KEYS`（settings 字段）与 `ALLOWED_SECTION_TYPES`（8 种板块类型，须与前端 `admin.js` 的 `TYPES` 保持一致），非法输入返回 400。
+
+**已知局限**：单密码单管理员；会话存内存（重启即登出）。详见 README 的「已知局限」。
 
 ## 主题机制
 

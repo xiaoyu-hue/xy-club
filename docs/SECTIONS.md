@@ -13,8 +13,8 @@
 | `subtitle` | string | — | 板块副标题 |
 | `tip` | string | — | 板块底部的补充说明（`services` 类型常用） |
 | `visible` | boolean | ✅ | 是否在官网显示（后台 👁 按钮切换） |
-| `items` | array | 视类型 | 条目列表；`text` 类型不用此字段 |
-| `content` | string | 视类型 | 仅 `text` 类型使用，支持 `\n` 换行 |
+| `items` | array | 视类型 | 条目列表；`text` / `custom` 类型不用此字段 |
+| `content` | string | 视类型 | 仅 `text` / `custom` 类型使用，支持 `\n` 换行 |
 
 ## 各类型的条目字段
 
@@ -29,6 +29,7 @@
 | `name` | 项目名 |
 | `price` | 价格（字符串，支持区间写法） |
 | `unit` | 计价单位 |
+| `original` | 可选，划线原价（促销对比价，展示为删除线） |
 | `desc` | 一句话说明 |
 
 ### `cards` 卡片网格
@@ -97,12 +98,21 @@
 
 `content` 为纯文本，`\n` 表示换行，**不支持 HTML**（渲染时会被转义，以防 XSS）。
 
-## 新增一种板块类型要改四处
+### `custom` 自由文本板块
+
+```json
+{ "id": "s-note", "type": "custom", "title": "温馨提示", "content": "营业时间：{{custom.营业时间}}" }
+```
+
+与 `text` 的区别：`custom` 的 `content` 支持 `{{custom.键名}}` 占位符，渲染时替换为「网站设置 → 全局自定义字段」里对应的值，适合把营业时间、活动标语这类多处复用的文案集中管理。占位符解析后同样经过 `esc()` 转义，不支持 HTML。
+
+## 新增一种板块类型要改五处
 
 1. `defaults.js` — 提供默认示例数据
 2. `public/js/main.js` — 在 `renderSection` 的 `switch` 中新增 `case`
 3. `public/js/admin.js` — 新增对应的编辑表单字段
-4. 本文档 — 补充字段说明
+4. `server.js` — 把新类型加进 `ALLOWED_SECTION_TYPES` 白名单（否则保存会被 400 拒绝）
+5. 本文档 — 补充字段说明
 
 ## 注意事项
 

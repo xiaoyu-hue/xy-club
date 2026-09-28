@@ -4,7 +4,7 @@
 
 ## 📌 Supported Versions
 
-Security fixes go only into the **latest stable release**. Currently supported: **v1.5.0** ([Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)).
+Security fixes go only into the **latest stable release**. Currently supported: **v1.5.2** ([Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)).
 
 Older versions no longer receive security patches — please upgrade.
 
@@ -25,12 +25,14 @@ This is a solo-maintained project with no SLA, but we'll confirm and handle repo
 - **Login rate limiting**: 5 consecutive wrong passwords from one IP triggers a 5-minute lockout.
 - **Session expiry**: sessions live in server memory, token valid for 7 days.
 - **Upload allowlist**: only `jpg / png / webp / gif` (`jpeg` normalized to `jpg`), **no svg** (can embed scripts), ≤ 8MB each; never routed through a third party.
+- **CSRF protection**: all write operations (save / password change / upload / reset) require a session-bound CSRF token; missing or invalid tokens get a 403.
+- **HTTP security headers**: global responses carry `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` and a CSP allowlist; `X-Powered-By` removed.
+- **Input validation**: the save endpoint validates settings fields and section types against allowlists and deep-clones the body, stripping dangerous keys like `__proto__` to prevent prototype pollution and malformed data.
 - **User-input escaping**: all input is escaped before rendering to the DOM, preventing stored XSS; the new "global custom fields" and their `{{custom.key}}` placeholders are also interpolated-then-escaped, so any HTML in custom values is not executed.
 
 **Known and unaddressed limitations** (see [README · Data & Privacy](README.md) and [AGENTS.md](AGENTS.md)):
 
 - 🔓 **Single password, single admin**: no multi-user accounts, roles, or permission tiers; no per-edit attribution.
-- 🚫 **No CSRF protection**: endpoints assume same-origin calls; harden yourself for cross-origin.
 - 🧩 **Single-process file I/O**: multiple instances or replicas cause write conflicts — run exactly one process.
 - 💨 **Sessions in memory**: restarting the service signs everyone out.
 - 🔍 **No content scanning on uploads**: type and size only, no inspection of actual image contents.

@@ -60,7 +60,13 @@ The shape of `db.json` is the shape of `DEFAULT_DB` in `defaults.js`:
 
 **Rate limit**: same IP locked for 5 minutes after 5 wrong passwords (HTTP 429). Counter is in memory, cleared on restart.
 
-**Known limits**: no CSRF protection; single password / single admin; session in memory (logout on restart). See README "Known limits".
+**CSRF protection**: write operations (POST/PUT) get an extra CSRF check after auth — the frontend fetches a token from `GET /api/csrf-token` after login, then sends it as the `x-csrf-token` header on every write. The token is bound to the session and expires with it; failures return HTTP 403. Login, `/api/csrf-token` and `/api/health` are exempt.
+
+**HTTP security headers**: a global response middleware adds `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` and `Content-Security-Policy` (script/style/image allowlist), and removes `X-Powered-By`.
+
+**Input validation**: the `PUT /api/content` body first goes through `deepClone` (stripping `__proto__` / `constructor` / `prototype` keys to prevent prototype pollution), then two allowlists — `ALLOWED_SETTINGS_KEYS` (settings fields) and `ALLOWED_SECTION_TYPES` (8 section types, kept in sync with `TYPES` in `admin.js`). Invalid input returns 400.
+
+**Known limits**: single password / single admin; session in memory (logout on restart). See README "Known limits".
 
 ## Theme mechanism
 

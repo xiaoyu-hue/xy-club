@@ -94,7 +94,7 @@ refactor: 抽出主题应用逻辑为 applyTheme()
 任何发版（bump 版本 + tag + Release）、功能变更、依赖变化、CI 变化、新增文档 / ADR，都必须走 `docs/DOC_SYNC.md` 的同步清单。要点：
 
 1. **版本号问 `package.json`**：它是唯一真源，其他文档（CHANGELOG / PRD / ARCHITECTURE / README 徽章）从它派生。
-2. **数字问测试输出**：测试数（当前 **73 项 / 24 suites**）以 `npm test` 实际输出为准，禁止凭印象写数字、禁止改数字假装一致。
+2. **数字问测试输出**：测试数（当前 **123 项 / 39 suites**）以 `npm test` 实际输出为准，禁止凭印象写数字、禁止改数字假装一致。
 3. **描述问代码**：功能 / 架构描述不得超出实现；文档声明的能力代码里必须真有。
 4. **中英文档同步**：中文为基准，改中文文档必须同步 `.en.md`（README / CHANGELOG / CODE_OF_CONDUCT / SECURITY / AUTHOR / PRD / ARCHITECTURE）。
 5. **发布前验证必跑**：旧版本号残留 grep、版本一致性、CHANGELOG 转正、中英对查、`npm test` 与 CI 全绿。

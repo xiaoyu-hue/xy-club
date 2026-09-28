@@ -1,8 +1,8 @@
 # Product Requirements Document (PRD) — XY Club Website Template
 
-> Version: 1.5.0
+> Version: 1.5.2
 > Status: Maintained
-> Last updated: 2026-09
+> Last updated: 2026-09-28
 > Scope: This document is the **source of truth for requirements**; implementation details live in `ARCHITECTURE.md` / `API.md`, decisions in `docs/adr/`.
 
 ---
@@ -29,7 +29,7 @@ It is a **ready-to-use template**, not a custom site for one club — anyone can
 ## 3. Feature Modules
 
 ### 3.1 Site (data-driven render)
-- 7 section types (field reference in `docs/SECTIONS.md`): services / members / events / news / gallery, etc.
+- 8 section types (field reference in `docs/SECTIONS.md`): services / members / events / news / gallery / free text, etc.
 - 4 themes (aurora / ocean / mist / sunset) via one CSS + variables
 - 8 micro-interactions (`bind*`): cursor spotlight, card tilt, ripple, count-up, scroll progress, reveal, etc. — all respect `prefers-reduced-motion`, touch-degrade
 
@@ -72,12 +72,12 @@ Source of truth: `data/db.json`, shaped by `DEFAULT_DB` in `defaults.js`.
 | Persistence | `data/` and `public/uploads/` on a persistent volume |
 | Responsive | No breakage at 375px |
 | Accessibility | Animations respect `prefers-reduced-motion` |
-| Security | Escape user input before DOM; limit upload size; API auth explicitly required |
+| Security | Escape user input before DOM; limit upload size; API auth explicitly required; CSRF tokens on all writes; HTTP security headers; input validation (field allowlists + prototype-pollution defense) |
 | Cross-version | `node >= 18` (CI matrix 18/20/22) |
 
 ## 6. Acceptance Criteria
 
-- [ ] `npm test` green (currently **73 cases / 24 suites**, the only mandatory gate)
+- [ ] `npm test` green (currently **123 cases / 39 suites**, the only mandatory gate)
 - [ ] No console errors on the home page
 - [ ] All 4 themes render correctly with readable text
 - [ ] Admin login → edit → save → refresh keeps content consistent
@@ -90,6 +90,9 @@ Source of truth: `data/db.json`, shaped by `DEFAULT_DB` in `defaults.js`.
 
 | Version | Type | Summary |
 |---------|------|---------|
+| 1.5.2 | patch | Security hardening: HTTP security headers + input validation; fixed custom / gallery sections rejected by the allowlist |
+| 1.5.1 | patch | Security hardening: CSRF protection (token required on all writes) |
+| 1.5.0 | minor | Global customization: custom fields + free-text section + strikethrough original price |
 | 1.4.3 | patch | Doc system completion: DOC_SYNC / DECISION_REVIEW / ADR×4 / PRD / AUTHOR / architecture EN |
 | 1.4.2 | patch | CI fix: drop Node 18-unsupported `--test-timeout`; Node 18/20/22 matrix green |
 | 1.4.0 | minor | Add automated tests: 73-case `node --test` gate + optional E2E (Playwright not a dependency) |
