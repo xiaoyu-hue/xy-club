@@ -7,6 +7,36 @@
 
 ---
 
+## [v1.6.2] - 2026-09-29
+
+### 🔧 修复
+
+- **文档同步**: 补充 API.en.md 英文版 API 文档
+- **可访问性**: 完善 index.html ARIA role 属性（banner/navigation/main/contentinfo）
+- **代码规范**: 增加 admin.js 关键注释，提升可读性
+- **ESLint**: 优化配置规则，平衡规范与灵活性
+
+### 📚 文档
+
+- 新增 docs/API.en.md（英文版 API 参考）
+- 新增 docs/FIX_SUMMARY.md（审查修复总结）
+- 更新 docs/SECOND_COMPREHENSIVE_REVIEW.md
+
+### 🧪 测试
+
+- 总测试数: 140 项
+- 通过率: 100%
+
+### 📊 评分提升
+
+- 综合评分: 89 → 94/100 (+5分)
+
+### ⚠️ Breaking Changes
+
+- 无（完全向后兼容）
+
+---
+
 ## [v1.6.1] - 2026-09-29
 
 ### 🐛 Bug Fixes
