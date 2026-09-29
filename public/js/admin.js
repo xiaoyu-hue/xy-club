@@ -1,4 +1,14 @@
-/* XY俱乐部 · 后台管理逻辑 */
+/* XY俱乐部 · 后台管理逻辑
+ *
+ * 职责：
+ * 1. 登录认证（scrypt 密码验证）
+ * 2. 内容编辑（板块增删改、排序、显隐）
+ * 3. 主题切换
+ * 4. 配置导入/导出
+ * 5. 图片上传
+ *
+ * 架构：IIFE 封装，零全局变量污染
+ */
 (() => {
   'use strict';
   const $ = (s) => document.querySelector(s);
@@ -7,7 +17,8 @@
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-  // C1：鉴权 token 键统一为 xy_token
+  // ========== 状态管理 ==========
+  // C1：鉴权 token 键统一为 xy_token（与 server.js 保持一致）
   let token = localStorage.getItem('xy_token') || '';
   let csrfToken = '';      // CSRF token，登录后从服务端获取
   let D = null;            // 工作副本 { settings, sections }
@@ -40,19 +51,22 @@
     }
   }
 
-  /* ================= API ================= */
+  /* ================= API 请求封装 ================= */
+  // api: 统一的 fetch 封装，自动附加 token 和 CSRF token
   async function api(path, opts = {}) {
     const res = await fetch(path, {
       ...opts,
       headers: { 'Content-Type': 'application/json', 'x-token': token, 'x-csrf-token': csrfToken || '', ...(opts.headers || {}) }
     });
+    // 401 表示 token 失效，跳转登录页
     if (res.status === 401) { showLogin(); throw new Error('未登录'); }
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || '请求失败');
     return data;
   }
 
-  /* ================= CSRF Token ================= */
+  /* ================= CSRF Token 管理 ================= */
+  // fetchCsrfToken: 登录后获取 CSRF token，用于后续写操作
   async function fetchCsrfToken() {
     if (!token) return;
     try {
