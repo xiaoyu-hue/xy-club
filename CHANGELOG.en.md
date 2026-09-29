@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.1] - 2026-09-29
+
+### 🐛 Bug Fixes
+
+- **Version sync**: Updated package.json version to 1.6.1
+- **Documentation**: Added ARCHITECTURE.en.md and TESTING.en.md
+- **Code standards**: Added ESLint configuration
+- **Accessibility**: Improved ARIA role attributes (tab/tablist)
+
+### ✨ Features
+
+- **Theme expansion**: Added 4 light business themes
+- **Theme showcase**: Added themes-demo.html
+- **Test supplements**: Added 17 new tests
+
+### 📚 Documentation
+
+- Added ARCHITECTURE.en.md
+- Added TESTING.en.md
+- Updated PRD.md theme count
+
+### 🧪 Tests
+
+- Total: 123 → 140
+- Pass rate: 100%
+
+### 🔒 Security
+
+- Added ESLint configuration
+- Improved ARIA accessibility
+
+### 📖 Breaking Changes
+
+- None (fully backward compatible)
+
+---
+
+## [1.6.0] - 2026-09-29
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
 ## [1.6.0] - 2026-09-29
 
 ### Added
