@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test tests/*.test.js",
-    "test:e2e": "node e2e/run.js"
+    "test:e2e": "node e2e/run.js",
+    "lint": "eslint ."
   },
   "keywords": [
     "club",
@@ -30,5 +31,8 @@
   },
   "dependencies": {
     "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.11.0"
   }
 }
