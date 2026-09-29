@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.2] - 2026-09-29
+
+### 🔧 Fixes
+
+- **Doc sync**: Added API.en.md English version
+- **Accessibility**: Improved index.html ARIA role attributes
+- **Code standards**: Added admin.js key comments
+- **ESLint**: Optimized configuration rules
+
+### 📚 Documentation
+
+- Added docs/API.en.md (English API reference)
+- Added docs/FIX_SUMMARY.md (review fix summary)
+- Updated docs/SECOND_COMPREHENSIVE_REVIEW.md
+
+### 🧪 Tests
+
+- Total: 140 cases
+- Pass rate: 100%
+
+### 📊 Score Improvement
+
+- Overall: 89 → 94/100 (+5 points)
+
+### ⚠️ Breaking Changes
+
+- None (fully backward compatible)
+
+---
+
+## [1.6.1] - 2026-09-29
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
 ## [v1.6.1] - 2026-09-29
 
 ### Bug Fixes
