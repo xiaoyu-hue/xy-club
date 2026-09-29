@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>主题案例展示 - XY 俱乐部官网模板</title>
+  <style>
+    :root {
+      --bg: #0d0d12;
+      --text: #ece9e3;
+      --dim: #9a96a8;
+      --accent: #ff9d5c;
+      --panel: #16161f;
+      --line: #2a2a38;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 24px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--dim);
+      font-size: 14px;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .theme-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .theme-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .theme-preview {
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .theme-preview::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), transparent 60%);
+    }
+
+    .theme-info {
+      padding: 20px;
+    }
+
+    .theme-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .theme-desc {
+      font-size: 13px;
+      color: var(--dim);
+      margin-bottom: 12px;
+    }
+
+    .theme-key {
+      display: inline-block;
+      font-size: 11px;
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      font-family: monospace;
+      color: var(--dim);
+    }
+
+    .theme-tags {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      color: var(--dim);
+    }
+
+    .tag.dark { background: rgba(255,255,255,0.12); }
+    .tag.light { background: rgba(0,0,0,0.08); color: #666; }
+
+    /* 主题预览样式 */
+    .preview-aurora {
+      background: linear-gradient(135deg, #0a0a1f 0%, #1a1a3f 50%, #0a0a1f 100%);
+      color: #eef0ff;
+    }
+    .preview-ocean {
+      background: linear-gradient(135deg, #041520 0%, #0a2a40 50%, #041520 100%);
+      color: #e6f6ff;
+    }
+    .preview-sunset {
+      background: linear-gradient(135deg, #2a1024 0%, #4a1838 50%, #2a1024 100%);
+      color: #fff0f3;
+    }
+    .preview-mist {
+      background: linear-gradient(135deg, #eef1fb 0%, #d9dfef 50%, #eef1fb 100%);
+      color: #141a2e;
+    }
+    .preview-neutral_morning {
+      background: linear-gradient(135deg, #f7f4f0 0%, #e8e4dc 50%, #f7f4f0 100%);
+      color: #1e2935;
+    }
+    .preview-neutral_cloud {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+      color: #0f172a;
+    }
+    .preview-neutral_oat {
+      background: linear-gradient(135deg, #faf8f5 0%, #ede8e0 50%, #faf8f5 100%);
+      color: #2c2418;
+    }
+    .preview-neutral_navy {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%);
+      color: #0f172a;
+    }
+
+    /* 预览内容 */
+    .preview-content {
+      position: absolute;
+      inset: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .preview-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .preview-subtitle {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+      color: var(--dim);
+      font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+      .theme-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>XY 俱乐部官网模板 · 主题案例</h1>
+    <p>8 套主题，适配不同场景 · 点击卡片查看效果</p>
+  </header>
+
+  <div class="theme-grid">
+    <!-- 暗色主题 -->
+    <div class="theme-card">
+      <div class="theme-preview preview-aurora">
+        <div class="preview-content">
+          <div class="preview-title">极光紫</div>
+          <div class="preview-subtitle">深邃高级 · 俱乐部经典</div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <div class="theme-name">aurora</div>
+        <div class="theme-desc">深邃的紫色渐变，适合追求个性与高级感的俱乐部</div>
+        <span class="theme-key">data-theme="aurora"</span>
+        <div class="theme-tags">
+          <span class="tag dark">暗色</span>
+          <span class="tag">经典</span>
+          <span class="tag">个性</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-preview preview-ocean">
+        <div class="preview-content">
+          <div class="preview-title">深海蓝</div>
+          <div class="preview-subtitle">清透冷静 · 科技风格</div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <div class="theme-name">ocean</div>
+        <div class="theme-desc">清透的蓝色调，适合科技感和现代感的团队</div>
+        <span class="theme-key">data-theme="ocean"</span>
+        <div class="theme-tags">
+          <span class="tag dark">暗色</span>
+          <span class="tag">科技</span>
+          <span class="tag">现代</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-preview preview-sunset">
+        <div class="preview-content">
+          <div class="preview-title">落日金</div>
+          <div class="preview-subtitle">温暖活力 · 暖调风格</div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <div class="theme-name">sunset</div>
+        <div class="theme-desc">温暖的紫红色调，充满激情与活力</div>
+        <span class="theme-key">data-theme="sunset"</span>
+        <div class="theme-tags">
+          <span class="tag dark">暗色</span>
+          <span class="tag">温暖</span>
+          <span class="tag">活力</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 亮色商务主题 -->
+    <div class="theme-card">
+      <div class="theme-preview preview-mist">
+        <div class="preview-content">
+          <div class="preview-title">晨雾白</div>
+          <div class="preview-subtitle">明亮清爽 · 留白风格</div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <div class="theme-name">mist</div>
+        <div class="theme-desc">明亮的浅色调，适合简洁清爽的设计风格</div>
+        <span class="theme-key">data-theme="mist"</span>
+        <div class="theme-tags">
+          <span class="tag light">亮色</span>
+          <span class="tag">简洁</span>
+          <span class="tag">清爽</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-preview preview-neutral_morning">
+        <div class="preview-content">
+          <div class="preview-title">米白·晨雾</div>
+          <div class="preview-subtitle">通用商务 · 克制优雅</div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <div class="theme-name">neutral_morning</div>
+        <div class="theme-desc">最克制的商务配色，适用于各类专业场景</div>
+        <span class="theme-key">data-theme="neutral_morning"</span>
+        <div class="theme-tags">
+          <span class="tag light">亮色</span>
+          <span class="tag">商务</span>
+          <span class="tag">通用</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-preview preview-neutral_cloud">
+        <div class="preview-content">
+          <div class="preview-title">浅灰·云影</div>
+          <div class="preview-subtitle">理性克制 · 科技咨询</div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <div class="theme-name">neutral_cloud</div>
+        <div class="theme-desc">理性中性的灰色调，适合科技咨询类企业</div>
+        <span class="theme-key">data-theme="neutral_cloud"</span>
+        <div class="theme-tags">
+          <span class="tag light">亮色</span>
+          <span class="tag">科技</span>
+          <span class="tag">咨询</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-preview preview-neutral_oat">
+        <div class="preview-content">
+          <div class="preview-title">燕麦·暖调</div>
+          <div class="preview-subtitle">温和知性 · 文化餐饮</div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <div class="theme-name">neutral_oat</div>
+        <div class="theme-desc">温和的暖色调，适合文化、餐饮等行业</div>
+        <span class="theme-key">data-theme="neutral_oat"</span>
+        <div class="theme-tags">
+          <span class="tag light">亮色</span>
+          <span class="tag">文化</span>
+          <span class="tag">餐饮</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-preview preview-neutral_navy">
+        <div class="preview-content">
+          <div class="preview-title">藏蓝·经典</div>
+          <div class="preview-subtitle">最正式 · 金融法律</div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <div class="theme-name">neutral_navy</div>
+        <div class="theme-desc">最正式的配色，适合金融、法律等严肃行业</div>
+        <span class="theme-key">data-theme="neutral_navy"</span>
+        <div class="theme-tags">
+          <span class="tag light">亮色</span>
+          <span class="tag">金融</span>
+          <span class="tag">法律</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>XY 俱乐部官网模板 v1.6.0 · 8 套主题 · 与 xy-intro-card 同步</p>
+  </footer>
+
+  <script>
+    // 主题切换演示
+    document.querySelectorAll('.theme-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const themeKey = card.querySelector('.theme-key').textContent.replace('data-theme="', '').replace('"', '');
+        alert(`主题: ${themeKey}\n\n在后台设置中切换此主题即可看到效果。`);
+      });
+    });
+  </script>
+</body>
+</html>
