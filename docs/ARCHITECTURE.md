@@ -72,14 +72,32 @@
 
 ## 主题机制
 
-主题不是多套 CSS，而是**同一套 CSS + 4 组变量**：
+主题不是多套 CSS，而是**同一套 CSS + 8 组变量**（与 xy-intro-card 同步）：
 
 ```css
-html[data-theme="aurora"] { --bg-a: ...; --ink: ...; --glass-1: ...; --accent: ...; }
-html[data-theme="ocean"]  { ... }
-html[data-theme="mist"]   { ... }   /* 浅色 */
-html[data-theme="sunset"] { ... }
+/* 暗色主题（4套） */
+html[data-theme="aurora"]   { --bg-a: ...; --ink: ...; --accent: #8b7cf6; }
+html[data-theme="ocean"]    { --bg-a: ...; --ink: ...; --accent: #38bdf8; }
+html[data-theme="sunset"]   { --bg-a: ...; --ink: ...; --accent: #fb7185; }
+
+/* 亮色商务主题（4套） */
+html[data-theme="mist"]     { --bg-a: #eef1fb; --ink: #141a2e; --accent: #6d5df0; }
+html[data-theme="neutral_morning"] { --bg-a: #f7f4f0; --ink: #1e2935; --accent: #5a6b7c; }
+html[data-theme="neutral_cloud"]   { --bg-a: #f1f5f9; --ink: #0f172a; --accent: #4a5568; }
+html[data-theme="neutral_oat"]     { --bg-a: #faf8f5; --ink: #2c2418; --accent: #6b5b4e; }
+html[data-theme="neutral_navy"]    { --bg-a: #ffffff; --ink: #0f172a; --accent: #2c5282; }
 ```
+
+| 类别 | 主题 | 适用场景 |
+|------|------|----------|
+| 暗色 | aurora 极光紫 | 俱乐部经典 |
+| | ocean 深海蓝 | 俱乐部科技风 |
+| | sunset 落日金 | 俱乐部暖调 |
+| 亮色 | mist 晨雾白 | 俱乐部留白 |
+| | neutral_morning 米白·晨雾 | 通用商务 |
+| | neutral_cloud 浅灰·云影 | 科技咨询 |
+| | neutral_oat 燕麦·暖调 | 文化餐饮 |
+| | neutral_navy 藏蓝·经典 | 金融法律 |
 
 切换主题只改 `<html data-theme>` 一个属性。所有组件都引用变量，不硬编码颜色——**这是新增组件时必须遵守的约定**，否则换主题就会破版。
 

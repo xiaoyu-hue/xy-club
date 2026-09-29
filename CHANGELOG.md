@@ -1,5 +1,45 @@
 # 更新日志
 
+所有版本变更记录。
+
+格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
+并 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
+
+---
+
+## [v1.6.0] - 2026-09-29
+
+### ✨ Features
+
+- **主题扩展**: 新增 4 套亮色商务主题（米白·晨雾 / 浅灰·云影 / 燕麦·暖调 / 藏蓝·经典）
+- **主题同步**: 与 xy-intro-card 主题配置完全一致
+- **视觉优化**: 亮色主题光斑透明度降低，玻璃效果增强
+
+### 🧪 Tests
+
+- 新增 11 项主题同步测试
+- 总测试数: 123 → 134 项
+- 通过率: 100%
+
+### 📚 Documentation
+
+- 更新 ARCHITECTURE.md 主题机制说明
+- 添加主题对比表格
+
+### 🔧 技术细节
+
+- 保持 xy-club 原有变量命名规范（--bg-a, --ink, --accent 等）
+- 新增主题适配亮色背景（降低光斑透明度，提高玻璃透明度）
+- 保留金色变量 --gold-1/2/3 用于所有主题
+
+### ⚠️ Breaking Changes
+
+- 无（完全向后兼容）
+
+---
+
+## [v1.5.2] - 2026-09-28
+
 本文件记录 XY 俱乐部官网模板的所有重要变更。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/)。
 
