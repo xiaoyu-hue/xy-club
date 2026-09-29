@@ -30,7 +30,7 @@
 
 ### 3.1 官网（数据驱动渲染）
 - 8 种板块类型（`docs/SECTIONS.md` 字段参考）：如服务 / 成员 / 活动 / 资讯 / 图片集 / 自由文本等
-- 4 套主题（aurora / ocean / mist / sunset），同一套 CSS + 变量切换
+- 8 套主题（aurora / ocean / mist / sunset 暗色；mist / neutral_morning / neutral_cloud / neutral_oat / neutral_navy 亮色商务），同一套 CSS + 变量切换
 - 8 处微交互（`bind*` 系列）：光标高光、卡片倾斜、点击涟漪、数字滚动、滚动进度、错落渐显等，均尊重 `prefers-reduced-motion`、触屏降级
 
 ### 3.2 后台管理（可视化编辑）
@@ -79,7 +79,7 @@
 
 - [ ] `npm test` 全绿（当前 **123 项 / 39 suites**，唯一强制门禁）
 - [ ] 官网首页无控制台报错
-- [ ] 四套主题均正常渲染且文字可读
+- [ ] 八套主题均正常渲染且文字可读
 - [ ] 后台登录 → 编辑 → 保存 → 刷新，内容一致
 - [ ] 375px 窄屏未破版
 - [ ] 中英文档已同步，CHANGELOG 已追加条目
