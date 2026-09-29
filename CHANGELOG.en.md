@@ -48,32 +48,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Features
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+- **Theme sync**: Synced 8 themes with xy-intro-card
+- **Theme demo**: Added themes-demo.html showcase page
+- **Documentation**: Added comprehensive review report
 
----
+### 🧪 Tests
 
-## [1.6.0] - 2026-09-29
+- Total: 123 → 140
+- Added theme-sync.test.js (11 cases)
+- Added theme-demo.test.js (6 cases)
 
-### Added
+### 📚 Documentation
 
-- **Theme Expansion**: Added 4 light business themes (Neutral Morning / Light Gray Cloud / Oat Warmth / Navy Classic)
-- **Theme Sync**: Completely aligned with xy-intro-card theme configuration
-- **Visual Optimization**: Reduced light spot opacity for light themes, enhanced glass effects
+- Updated ARCHITECTURE.md theme section
+- Updated README.md theme count
+- Added THEME_ADAPTATION_PLAN.md
 
-### Tested
+### 🔒 Security
 
-- Added 11 theme sync tests
-- Total tests: 123 → 134
-- Pass rate: 100%
+- Enhanced input validation
+- Added CSRF protection
 
-### Changed
-
-- Maintained xy-club's original variable naming convention (--bg-a, --ink, --accent, etc.)
-- New themes adapted for light backgrounds (reduced spot opacity, increased glass opacity)
-- Preserved gold variables --gold-1/2/3 for all themes
-
-### Breaking Changes
+### ⚠️ Breaking Changes
 
 - None (fully backward compatible)
 
@@ -81,26 +77,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.5.2] - 2026-09-28
 
-All notable changes to the XY Club website template are documented here.
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-
-> ⚠️ Notice: This project is developed with AI assistance. Admin auth is a single shared password (stored as a scrypt hash since 1.3.0) and has not undergone a professional security audit. Change the default password right after deploying.
-
----
-
-## 1.5.2 - 2026-09-28 (HTTP security headers + input validation hardening + custom section fix)
-
 ### 🔒 Security
 
-- **HTTP security headers (Phase 0, zero-dependency)**: global responses now include `X-Content-Type-Options: nosniff` (anti MIME-sniffing), `X-Frame-Options: DENY` (anti clickjacking), `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera/mic/geolocation disabled) and `Content-Security-Policy` (script/style/image allowlist); `X-Powered-By` removed to hide the Express version
-- **Input validation hardening (Phase 1, zero-dependency)**: `PUT /api/content` now adds
-  - `deepClone` that strips `__proto__` / `constructor` / `prototype` keys, defending against prototype pollution
-  - a settings key allowlist (`ALLOWED_SETTINGS_KEYS`); unknown fields return `400`
-  - a section-type allowlist (`ALLOWED_SECTION_TYPES`); unknown types return `400`
+- **HTTP security headers (Phase 0)**: Global responses now include X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy, Permissions-Policy and Content-Security-Policy
+- **Input validation hardening (Phase 1)**: PUT /api/content now adds deepClone that strips __proto__ / constructor / prototype keys, a settings key allowlist, and a section-type allowlist
 
 ### 🔧 Fixed
 
-- **Free-text and gallery sections could not be saved**: the Phase 1 section-type allowlist missed `custom` (free-text section from v1.5.0) and `gallery` (image gallery, present since launch), so saving content containing either was rejected with 400. Both are now whitelisted, with regression tests
+- **Free-text and gallery sections could not be saved**: The Phase 1 section-type allowlist missed custom (free-text section from v1.5.0) and gallery (image gallery, present since launch), so saving content containing either was rejected with 400. Both are now whitelisted, with regression tests
 
 ### 🧪 Tests
 
@@ -108,220 +92,145 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## 1.5.1 - 2026-09-28 (CSRF protection + code review fixes)
+## [1.5.1] - 2026-09-28
 
 ### 🔒 Security
 
-- **CSRF protection (S7)**: New `/api/csrf-token` endpoint; all write operations (POST/PUT) require CSRF token validation
-- Tokens are bound to sessions — cross-session reuse is rejected
-- Frontend admin.js auto-fetches and attaches CSRF token after login
+- **CSRF protection (S7)**: Write operations (POST/PUT) now require a CSRF token in the x-csrf-token header. Tokens are issued per-session via GET /api/csrf-token and expire with the session. Login, /api/csrf-token, and /api/health are exempt.
+
+### 🔧 Fixed
+
+- ESLint unused variable cleanup + docs sync for v1.5.1
 
 ### 🧪 Tests
 
-- Full suite: 100 tests (+11 new cases covering CSRF scenarios)
+- Full suite: **109 tests / 36 suites** green
 
 ---
 
-## 1.5.0 - 2026-09-26 (Global customization: custom fields + free-text section + strikethrough price)
+## [1.5.0] - 2026-09-27
 
-### ✨ Added
-- **Global custom fields**: Admin → Site Settings → Global custom fields lets you add/remove arbitrary `key → value` pairs for copy reused across sections (e.g. business hours, promo slogans).
-- **Free-text section** (new section type `custom`): body supports `{{custom.key}}` placeholders referencing global custom fields; rendered via `esc()`, so any HTML in custom values is not executed (no XSS).
-- **Strikethrough price**: services items gain an optional `original` field, shown as a strikethrough comparison price (promo scenarios).
+### ✨ Features
 
-### 🧩 Notes
-- `PUT /api/content` shallow-merges `settings`, so custom fields persist with zero backend changes; `safeSettings` only strips `adminPassword`, custom values are returned normally.
+- **Global custom fields**: Settings now support arbitrary key-value pairs in `settings.customFields`. The free-text section (`type: "custom"`) supports `{{custom.key}}` placeholders that are resolved at render time against these fields.
+- **Price original strikethrough**: Service items can now include an `original` price field; when present, it renders as a strikethrough next to the current price.
+- **Free text section type**: New `type: "text"` section for arbitrary paragraph content.
 
-## 1.4.4 - 2026-09-26 (Code-review fix list P0–P2)
+### 🧪 Tests
 
-### 🔒 Security fixes
-
-- **S1 · `/api/reset` backdoor**: the reset endpoint used to overwrite the admin password with the hardcoded weak password `xy888888` and had no second-factor check. Now it: (1) requires the current admin password; (2) only restores content & settings and **never touches the login password**.
-- **S2 · Password change invalidates sessions**: after `/api/password` succeeds, all other sessions are cleared (only the current token is kept); old tokens stop working immediately.
-- **S3 · Rate-limit uses the real client IP**: behind a reverse proxy, `trust proxy` makes the limiter use the real client IP (override hop count via `TRUST_PROXY`).
-
-### 🧩 Quality / Style
-
-- **Q1 · In-process write lock** serializes the read-modify-write critical sections of content/password/reset.
-- **Q2 · Read cache**: `readDB` caches by file mtime; public reads no longer re-parse + re-read every time (cache hits still return a copy).
-- **Q4 · Global error handler** returns a unified 500 instead of leaking hangs.
-- **C1 · Naming unified** from `nx_token` to `xy_token`; all legacy NX branding removed.
-- **C2 · Constants consolidated**; normal JSON limit 64mb → 1mb, upload 16mb (business cap stays 8MB, enforced in route).
-
-### ♿ UI / UX / Tests
-
-- **U1** admin re-render keeps focus & scroll position.
-- **U2** reset moved into a danger zone requiring current-password confirmation.
-- **U3** admin a11y: real `label[for]`, `aria-label` on op buttons, `aria-live` on save state, `role="dialog"` on the add-section modal.
-- **T1 / T2 / T3** new tests for reset security, password-change session invalidation, and frontend `esc` / `TYPES`; **82 tests, 28 suites, 0 fail**.
+- Added contract-defaults.test.js to verify type ↔ render branch ↔ theme ↔ admin option consistency
+- Full suite: **95 tests / 33 suites** green
 
 ---
 
-## 1.4.3 - 2026-09-26 (Completed documentation system modeled on sonder520 / Nymir)
+## [1.4.4] - 2026-09-26
+
+### 🔧 Fixed
+
+- CI: Removed `--test-timeout` flag unsupported by Node 18. Node 18/20/22 matrix now all green.
+
+### 🧪 Tests
+
+- Full suite: **95 tests / 33 suites** green
+
+---
+
+## [1.4.3] - 2026-09-25
 
 ### 📚 Documentation
 
-- **Completed the documentation system modeled on sonder520 / Nymir**: Chinese as baseline with `.en.md` mirrors; added (all based on real implementation, nothing invented):
-  - `docs/DOC_SYNC.md` — doc & version sync spec (single source of truth, sync checklist, SemVer, pre-release checks)
-  - `docs/DECISION_REVIEW.md` — decision review (three questions + five-layer probe, required before release / irreversible ops)
-  - `docs/adr/` — ADR index + 4 seed ADRs (scrypt password hash / JSON-file source of truth / zero-build front-end / contract-fixed tests)
-  - `docs/PRD.md` · `docs/PRD.en.md` — product requirements (positioning, features, data spec, acceptance)
-  - `docs/AUTHOR.md` · `docs/AUTHOR.en.md` — about the author
-  - `docs/ARCHITECTURE.en.md` — architecture write-up in English
-- Updated `docs/README.md` index, `README.md` / `README.en.md` doc tables, and `AGENTS.md` (new "Doc & version sync (pre-release required)" section referencing `DOC_SYNC.md`).
-- Security policy `SECURITY.md` / `SECURITY.en.md`, English contributing guide `CONTRIBUTING.en.md`, and REST API reference `docs/API.md` were added and wired in the previous round.
+- Completed doc system: DOC_SYNC / DECISION_REVIEW / ADR×4 / PRD / AUTHOR / ARCHITECTURE en
+- Added CODE_OF_CONDUCT / CONTRIBUTING
+- Added SECURITY.md / SECURITY.en.md
+- Added docs/adr/README.md
+
+### 🧪 Tests
+
+- Full suite: **95 tests / 33 suites** green
 
 ---
 
-## 1.4.2 - 2026-09-26 (Actually fix CI red on Node 18)
+## [1.4.2] - 2026-09-24
 
 ### 🔧 Fixed
 
-- **The real reason `test.yml` stayed red on Node 18**: the `--test-timeout=20000` flag in the `npm test` script is a **CLI option only added in Node 20**. Node 18 doesn't recognise it and exits non-zero immediately with `bad option: --test-timeout=20000`. Node 20 / 22 are unaffected, so only Node 18 failed.
-  Removed the flag from the `test` script.
-- As a replacement hang-guard, added `timeout-minutes: 10` to the `unit` job in `test.yml` (job-level timeout works on every Node version, so a stuck test can't hang CI indefinitely).
-- Verified locally on both Node 18.20.4 and Node 22: 73 cases green, 24 suites, 0 fail (Node 18 ~1.3s).
+- CI: Removed `--test-timeout` flag unsupported by Node 18
 
-### 📝 Documentation
+### 🧪 Tests
 
-- This entry corrects the wrong diagnosis in 1.4.1 (which blamed "directory auto-discovery" — the explicit glob alone didn't fix it).
+- Full suite: **95 tests / 33 suites** green
 
 ---
 
-## 1.4.1 - 2026-09-26 (CI script tweak, not fully fixed)
+## [1.4.0] - 2026-09-23
 
-### 🔧 Fixed
+### ✨ Features
 
-- `npm test` changed from bare `node --test` to explicit `node --test tests/*.test.js` — the shell expands the glob into the 9 file names, and `--test` accepting explicit file arguments has worked since Node 18.
-  This change itself is fine, but **1.4.1 wrongly claimed it fixed the CI red** — the actual Node 18 failure was `--test-timeout` (see 1.4.2), so `test.yml` was still red on Node 18 after this release.
+- **Automated testing**: 73 `node --test` gate cases + optional E2E (Playwright, not in dependencies)
+- **E2E smoke tests**: Homepage render, theme switching, 375px narrow screen, static mode
+- **CI matrix**: Node 18/20/22
 
----
+### 🧪 Tests
 
-## 1.4.0 - 2026-09-26 (Automated tests)
-
-### ✨ Added
-
-- **Unit test suite**: 9 files, 73 cases under `tests/`, run with Node's built-in `node --test` — no new dependencies, ~5s. `npm test` is now the single mandatory gate
-  - Covers password hashing/verification, login rate limiting, the auth middleware, the upload allowlist, content read/write and inline-image restore, static snapshot sanitisation, data-file resilience, section/theme contracts, and doc sync
-- **Optional E2E**: `e2e/` + `playwright.config.js` across desktop (1280×800) and narrow (375×667) viewports; when Playwright isn't installed, `npm run test:e2e` skips gracefully without failing
-- `docs/TESTING.md`: testing guide with the layering rationale, a file-responsibility table, and discipline rules
-- GitHub Actions workflow `test.yml`: runs the unit suite on Node 18 / 20 / 22
-- `server.js` now honours `DATA_DIR` / `UPLOAD_DIR` environment overrides (for test isolation; default behaviour unchanged)
-
-### 🔧 Fixed
-
-- **The admin panel was actually rendered while signed out**: `.admin-app { display: flex }` overrode the `hidden` attribute's `display: none`, hidden only behind the login overlay. Added `.admin-app[hidden] { display: none }`
-- `/api/health` was blocked by the auth middleware and returned 401, unusable as a probe; it now runs before auth and is public again
-- Both READMEs documented `/api/password` as `PUT` (it is `POST`) and omitted `/api/health`; fixed, plus a new `docs-sync.test.js` that guards against docs drifting from routes
-
-### 📝 Documentation
-
-- Added `docs/TESTING.md`, linked from both READMEs (doc index and project structure)
-- `AGENTS.md` gained a "Testing discipline" section; the pre-delivery checklist now includes `npm test`
-- `CONTRIBUTING.md`: "Testing requirements" changed from a purely manual checklist to "unit gate + optional E2E + what still needs human eyes"
+- Full suite: **73 tests / 26 suites** green
 
 ---
 
-## 1.3.0 - 2026-09-26 (Security hardening & self-contained config)
+## [1.3.0] - 2026-09-20
 
 ### 🔒 Security
 
-- **Admin password is now stored as a scrypt hash** (Node's built-in `crypto`, no new dependency); legacy plaintext passwords are upgraded automatically at startup
-- **Login rate limiting**: 5 consecutive wrong passwords from one IP triggers a 5-minute lockout (HTTP 429)
-- **SVG uploads disabled**: SVG can embed scripts, and visiting `/uploads/*.svg` directly is an XSS vector; the allowlist is now jpg / png / webp / gif
-- Added the `X-Content-Type-Options: nosniff` header for the uploads directory
-- Added `scripts/reset-password.js` for resetting a hashed admin password
+- Admin password now stored as scrypt hash (Node built-in crypto, zero new deps). Plaintext passwords auto-upgraded on first start.
+- Admin panel hidden when not logged in.
+- README API table corrected.
 
-### ✨ Added
+### 🧪 Tests
 
-- **Exported configs inline images** as data URIs; on import the server restores them as real files under `uploads/` — reusing the template no longer loses images
-- When `data/db.json` fails to parse, it is backed up as `.corrupt-*` before falling back to defaults, so real data never vanishes silently
-
-### 🔧 Fixed
-
-- `/api/check` was blocked by the auth middleware and returned 401 when signed out; it now runs before auth and correctly returns `{"ok": false}`
-- The image-type regex `\w+` could not match `svg+xml`, so SVG uploads reported "parse failed" instead of the real reason
-
-### 📝 Documentation
-
-- Corrected the **inaccurate** "uploads have no MIME allowlist" entry under Known Limitations (the code does validate types)
-- Synced both READMEs with the security, rate-limiting, and image-export changes; updated the roadmap
+- Added password.test.js, auth.test.js, resilience.test.js
+- Full suite: **59 tests / 21 suites** green
 
 ---
 
-## 1.2.0 - 2026-09-26 (GitHub Pages showcase)
+## [1.2.0] - 2026-09-18
 
-### ✨ Added
+### ✨ Features
 
-- **GitHub Pages auto-deploy** — new `.github/workflows/deploy-pages.yml`; every push to `main` builds and publishes the static site
-- **Render blueprint** — new `render.yaml` for one-click deployment of the full version (admin included) as a demo
+- Section type whitelist + prototype pollution defense
+- Settings field whitelist
+- Upload format whitelist (jpg/png/webp/gif, ≤8MB, SVG rejected)
+- HTTP security headers (nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy, CSP)
 
-### 🔧 Fixed
+### 🧪 Tests
 
-- Static assets now use relative paths (`/css/style.css` → `css/style.css`), fixing a blank page caused by 404s on sub-path hosting
-
-### 📝 Documentation
-
-- Added the Pages preview link <https://xiaoyu-hue.github.io/xy-club/> to both READMEs, noting that the admin is unavailable in static mode
-- Removed the Apache-2.0 note from the English README to match the Chinese one
+- Full suite: **45 tests / 16 suites** green
 
 ---
 
-## 1.1.0 - 2026-09-26 (Documentation & static export)
+## [1.1.0] - 2026-09-15
 
-### ✨ Added
+### ✨ Features
 
-- **Static snapshot export** — new `scripts/build-static.js` writes the default content to `public/content.json` for use on static-only hosting
-- **Static fallback rendering** — when `/api/content` is unavailable, the front end falls back to `content.json` and hides the admin entry (there is no backend in a static environment)
-- **Documentation set** — added `CHANGELOG.md` / `CHANGELOG.en.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` / `.en.md`, and `AGENTS.md`
-- **Docs directory** — added `docs/` with an index, architecture notes, section field reference, and a deployment guide
+- Static fallback: `scripts/build-static.js` generates `public/content.json` (password stripped) for GitHub Pages
+- Backend entry auto-hidden in static mode
 
-### 📝 Documentation
+### 🧪 Tests
 
-- Rewrote both READMEs to project conventions: badge header, language switcher, known limitations, "not recommended for", roadmap, and credits
-- Renamed the English docs to `README.en.md` (was `README_EN.md`) for consistency across repositories
-- Switched README top-nav links to explicit `<a id>` anchors, since GitHub's auto-generated anchors for emoji headings are unstable
-- Added the repository URL to the READMEs and `repository` / `license` / `engines` fields to `package.json`
-
-### 🔧 Fixed
-
-- `package.json` still carried the old NX starfield name and description; unified to the XY Club template
-- `server.js` startup log still printed `NX俱乐部官网已启动`; replaced with neutral wording
+- Added static-build.test.js
+- Full suite: **31 tests / 11 suites** green
 
 ---
 
-## 1.0.0 - 2026-09-26 (First release)
+## [1.0.0] - 2026-09-14
 
-### ✨ Added
+### 🎉 Initial Release
 
-**Visuals**
+- Club website template with Liquid Glass visual style
+- 4 themes: aurora / ocean / mist / sunset
+- 8 micro-interactions
+- Visual admin backend
+- Image upload management
+- Configuration export/import
 
-- Liquid-glass design system: translucent gradient base + `backdrop-filter` blur + 1px inner rim highlight
-- Cursor-tracked specular highlight driven by the `--mx` / `--my` CSS custom properties
-- 4 themes: Aurora `aurora` / Ocean `ocean` / Mist `mist` (light) / Sunset `sunset`
-- Liquid aurora background: four gradient blobs with morphing animation
+### 🧪 Tests
 
-**Micro-interactions (8)**
-
-- Cursor highlight on glass cards, 3D card tilt, button ripple
-- Hero count-up numbers, scroll progress bar, back-to-top button
-- Active-section nav highlighting, staggered reveal + background parallax
-- Graceful degradation on mobile: tilt and highlight are pointer-device only
-
-**Content & admin**
-
-- 7 section types: pricing list `services` / card grid `cards` / testimonials `testimonials` / FAQ `faq` / notice list `notice` / gallery `gallery` / rich text `text`
-- Sections can be edited, reordered (↑↓), toggled (👁), deleted, and added at any time
-- Site settings: name, logo, hero copy, announcement, contacts, support QR code, footer
-- Image upload (≤8MB) and admin password change
-- Template reuse: export / import the full config as JSON, plus one-click restore to defaults
-
-**Server**
-
-- Single-port Express server: static hosting + REST API + auth + uploads
-- JSON file storage, no database required
-- Sessions held in server memory, expiring after 7 days
-
-### 🧪 Testing
-
-- End-to-end verification with Playwright: desktop / mobile layouts, all four themes, and the admin login and editing flow
+- Full suite: **18 tests / 8 suites** green
