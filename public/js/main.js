@@ -372,7 +372,9 @@
   /* ================= 启动 ================= */
   function applyTheme() {
     const t = (SITE.settings && SITE.settings.theme) || 'aurora';
-    document.documentElement.dataset.theme = ['aurora', 'ocean', 'mist', 'sunset'].includes(t) ? t : 'aurora';
+    document.documentElement.dataset.theme = ['aurora', 'ocean', 'mist', 'sunset',
+      'neutral_morning', 'neutral_cloud', 'neutral_oat', 'neutral_navy']
+      .includes(t) ? t : 'aurora';
   }
 
   /**
