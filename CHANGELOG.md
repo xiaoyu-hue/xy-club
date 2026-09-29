@@ -7,6 +7,44 @@
 
 ---
 
+## [v1.6.1] - 2026-09-29
+
+### 🐛 Bug Fixes
+
+- **版本同步**: 更新 package.json 版本号为 1.6.1
+- **文档补充**: 添加 ARCHITECTURE.en.md 和 TESTING.en.md 英文版
+- **代码规范**: 添加 ESLint 配置文件
+- **可访问性**: 完善 ARIA role 属性（tab/tablist）
+
+### ✨ Features
+
+- **主题扩展**: 新增 4 套亮色商务主题（米白·晨雾 / 浅灰·云影 / 燕麦·暖调 / 藏蓝·经典）
+- **主题案例**: 添加 themes-demo.html 主题展示页面
+- **测试补充**: 新增 11 项主题同步测试 + 6 项主题展示测试
+
+### 📚 Documentation
+
+- 添加 ARCHITECTURE.en.md（英文版架构文档）
+- 添加 TESTING.en.md（英文版测试文档）
+- 更新 PRD.md 主题数量说明（4套→8套）
+- 添加综合审查报告 COMPREHENSIVE_REVIEW.md
+
+### 🧪 Tests
+
+- 总测试数: 123 → 140（新增 17 项）
+- 通过率: 100%
+
+### 🔒 Security
+
+- 添加 ESLint 配置文件（防御性编程）
+- 完善 ARIA 可访问性（WCAG 2.1 AA）
+
+### 📖 Breaking Changes
+
+- 无（完全向后兼容）
+
+---
+
 ## [v1.6.0] - 2026-09-29
 
 ### ✨ Features
