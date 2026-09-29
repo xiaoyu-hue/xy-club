@@ -1,5 +1,40 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.6.0] - 2026-09-29
+
+### Added
+
+- **Theme Expansion**: Added 4 light business themes (Neutral Morning / Light Gray Cloud / Oat Warmth / Navy Classic)
+- **Theme Sync**: Completely aligned with xy-intro-card theme configuration
+- **Visual Optimization**: Reduced light spot opacity for light themes, enhanced glass effects
+
+### Tested
+
+- Added 11 theme sync tests
+- Total tests: 123 → 134
+- Pass rate: 100%
+
+### Changed
+
+- Maintained xy-club's original variable naming convention (--bg-a, --ink, --accent, etc.)
+- New themes adapted for light backgrounds (reduced spot opacity, increased glass opacity)
+- Preserved gold variables --gold-1/2/3 for all themes
+
+### Breaking Changes
+
+- None (fully backward compatible)
+
+---
+
+## [1.5.2] - 2026-09-28
+
 All notable changes to the XY Club website template are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
