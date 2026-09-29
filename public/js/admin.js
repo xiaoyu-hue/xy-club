@@ -521,7 +521,11 @@
   /* ================= 主题选择 ================= */
   function renderTheme() {
     const cur = D.settings.theme || 'aurora';
-    $$('.theme-opt').forEach(b => b.classList.toggle('sel', b.dataset.theme === cur));
+    $$('.theme-opt').forEach(b => {
+      const isSelected = b.dataset.theme === cur;
+      b.classList.toggle('sel', isSelected);
+      b.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    });
   }
   $('#themePicker').addEventListener('click', (e) => {
     const b = e.target.closest('.theme-opt');

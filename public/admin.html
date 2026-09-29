@@ -56,15 +56,15 @@
         <div class="tab-panel" id="tab-settings" hidden>
           <div class="panel-card glass">
             <h2 class="panel-title">🎨 主题配色 / 模板复用</h2>
-            <div class="theme-picker" id="themePicker">
-              <button type="button" class="theme-opt" data-theme="aurora"><i class="sw aurora"></i><b>极光紫</b><span>深邃高级</span></button>
-              <button type="button" class="theme-opt" data-theme="ocean"><i class="sw ocean"></i><b>深海蓝</b><span>清透冷静</span></button>
-              <button type="button" class="theme-opt" data-theme="mist"><i class="sw mist"></i><b>晨雾白</b><span>明亮清爽</span></button>
-              <button type="button" class="theme-opt" data-theme="sunset"><i class="sw sunset"></i><b>落日金</b><span>温暖活力</span></button>
-              <button type="button" class="theme-opt" data-theme="neutral_morning"><i class="sw neutral_morning"></i><b>米白·晨雾</b><span>通用商务</span></button>
-              <button type="button" class="theme-opt" data-theme="neutral_cloud"><i class="sw neutral_cloud"></i><b>浅灰·云影</b><span>科技咨询</span></button>
-              <button type="button" class="theme-opt" data-theme="neutral_oat"><i class="sw neutral_oat"></i><b>燕麦·暖调</b><span>文化餐饮</span></button>
-              <button type="button" class="theme-opt" data-theme="neutral_navy"><i class="sw neutral_navy"></i><b>藏蓝·经典</b><span>金融法律</span></button>
+            <div class="theme-picker" id="themePicker" role="tablist" aria-label="主题选择">
+              <button type="button" class="theme-opt" data-theme="aurora" role="tab" aria-selected="true"><i class="sw aurora"></i><b>极光紫</b><span>深邃高级</span></button>
+              <button type="button" class="theme-opt" data-theme="ocean" role="tab" aria-selected="false"><i class="sw ocean"></i><b>深海蓝</b><span>清透冷静</span></button>
+              <button type="button" class="theme-opt" data-theme="mist" role="tab" aria-selected="false"><i class="sw mist"></i><b>晨雾白</b><span>明亮清爽</span></button>
+              <button type="button" class="theme-opt" data-theme="sunset" role="tab" aria-selected="false"><i class="sw sunset"></i><b>落日金</b><span>温暖活力</span></button>
+              <button type="button" class="theme-opt" data-theme="neutral_morning" role="tab" aria-selected="false"><i class="sw neutral_morning"></i><b>米白·晨雾</b><span>通用商务</span></button>
+              <button type="button" class="theme-opt" data-theme="neutral_cloud" role="tab" aria-selected="false"><i class="sw neutral_cloud"></i><b>浅灰·云影</b><span>科技咨询</span></button>
+              <button type="button" class="theme-opt" data-theme="neutral_oat" role="tab" aria-selected="false"><i class="sw neutral_oat"></i><b>燕麦·暖调</b><span>文化餐饮</span></button>
+              <button type="button" class="theme-opt" data-theme="neutral_navy" role="tab" aria-selected="false"><i class="sw neutral_navy"></i><b>藏蓝·经典</b><span>金融法律</span></button>
             </div>
             <div class="tpl-ops">
               <button class="btn btn-ghost btn-sm" id="exportBtn">⬇️ 导出配置（备份 / 复用模板）</button>
