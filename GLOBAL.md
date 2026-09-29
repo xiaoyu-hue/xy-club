@@ -175,3 +175,23 @@ v2.0.0-Phase1 - 输入验证强化
 - 包含完整的后端 API（Express + SQLite）
 - 支持图片上传和管理
 - 代码审查报告完善（CODE-REVIEW.md）
+
+## 文档提交规则（重要）
+
+**以下文档禁止推送到 GitHub：**
+- 审查报告（COMPREHENSIVE_REVIEW.md, CODE_REVIEW.md 等）
+- 计划方案（IMPLEMENTATION_PLAN.md, THEME_SYNC_PLAN.md 等）
+- 工作总结（FIX_SUMMARY.md, THEME_SYNC_COMPLETE.md 等）
+- 临时文档（*.tmp, *.temp 等）
+
+**可以推送的文档：**
+- CHANGELOG.md / CHANGELOG.en.md
+- README.md / README.en.md
+- ARCHITECTURE.md / ARCHITECTURE.en.md
+- PRD.md / PRD.en.md
+- TESTING.md
+- API.md / API.en.md
+- GLOBAL.md
+- LICENSE, CODE_OF_CONDUCT, CONTRIBUTING 等标准文档
+
+**原因**：审查报告和计划方案是内部工作文档，推送会污染仓库。
