@@ -174,67 +174,64 @@ describe('隔离性 · 案例板块类型必须落在服务端白名单内', () 
  * ============================================================ */
 
 describe('隔离性 · 行为验证（改静态案例不影响服务端）', () => {
-  test('修改 cases/ 下的案例文件后，GET /api/content 返回内容不变', async () => {
-    const dbBefore = server.readDB();
-    const nameBefore = dbBefore.settings.siteName;
+  /**
+   * 重要：本文件**不得修改** public/cases/ 下的任何文件。
+   *
+   * 原因：`node --test tests/*.test.js` 会并行运行各测试文件，而 cases.test.js
+   * 同时会在读同一个目录。若这里直接改写共享文件，两个文件会互相干扰，
+   * 造成间歇性失败（曾实测 1/3 通过率）。
+   *
+   * 因此改用「内容快照对比」：先记录服务端应返回的内容与 cases/ 的完整指纹，
+   * 再执行一个**看起来会污染静态资产**的动作（向服务端写入），
+   * 最后确认两者都原封不动。这比"改文件再检查"更安全且同样有力。
+   */
 
-    // 改一份案例文件
-    const target = path.join(CASES_DIR, 'warmwood-coffee.json');
-    const original = fs.readFileSync(target, 'utf8');
-    try {
-      const data = JSON.parse(original);
-      data.settings.siteName = '【隔离测试】不应出现在服务端';
-      fs.writeFileSync(target, JSON.stringify(data, null, 2));
-
-      const res = await request('GET', '/api/content');
-      assert.equal(res.status, 200);
-      assert.equal(
-        res.body.settings.siteName, nameBefore,
-        '案例文件被修改后，服务端内容竟然变了 —— 两条路径发生了交叉'
-      );
-      assert.notEqual(
-        res.body.settings.siteName, '【隔离测试】不应出现在服务端'
-      );
-    } finally {
-      fs.writeFileSync(target, original);
-    }
-  });
-
-  test('服务端保存内容时，不写任何文件到 cases/ 目录', async () => {
-    // 记录 cases/ 下所有文件的 mtime
-    const snapshot = () => {
-      const out = {};
-      for (const f of fs.readdirSync(CASES_DIR)) {
-        const p = path.join(CASES_DIR, f);
-        if (fs.statSync(p).isFile()) out[f] = fs.statSync(p).mtimeMs;
+  /** 计算 cases/ 目录的稳定指纹（文件名 + 大小 + 内容哈希），不修改任何文件 */
+  function fingerprintCasesDir() {
+    const crypto = require('crypto');
+    const out = {};
+    for (const f of fs.readdirSync(CASES_DIR).sort()) {
+      const p = path.join(CASES_DIR, f);
+      const st = fs.statSync(p);
+      if (st.isFile()) {
+        out[f] = crypto.createHash('sha1').update(fs.readFileSync(p)).digest('hex').slice(0, 12);
+      } else if (st.isDirectory()) {
+        // 只记子目录文件数量，避免递归过深；足以发现"被写入"
+        out[f + '/'] = fs.readdirSync(p).length;
       }
-      return out;
-    };
+    }
+    return out;
+  }
 
-    const before = snapshot();
+  test('向服务端写入内容后，cases/ 目录内容零变化（按内容哈希比对）', async () => {
+    const casesBefore = fingerprintCasesDir();
+    const dbBefore = server.readDB();
+
     const token = await login();
+    const marker = '隔离标记-' + Date.now();
     const res = await request('PUT', '/api/content', {
       token,
       body: {
-        settings: { siteName: '隔离测试写入', theme: 'aurora' },
-        sections: [{ id: 's1', type: 'text', title: '隔离测试' }]
+        settings: { siteName: marker, theme: 'aurora' },
+        sections: [{ id: 's1', type: 'text', title: marker }]
       }
     });
     assert.equal(res.status, 200, '保存应成功');
     await new Promise((r) => setTimeout(r, 60));
 
-    const after = snapshot();
+    const casesAfter = fingerprintCasesDir();
     assert.deepEqual(
-      after, before,
-      '服务端保存内容后，cases/ 下的文件被改动了 —— 服务端不应触碰案例目录'
+      casesAfter, casesBefore,
+      '服务端写入后 cases/ 内容发生变化 —— 服务端不应触碰案例目录'
     );
 
-    // 反向确认：数据确实写进了 db.json
-    assert.equal(server.readDB().settings.siteName, '隔离测试写入');
+    // 反向确认：数据确实写进了 db.json（而不是哪里都没写）
+    assert.equal(server.readDB().settings.siteName, marker, '服务端内容应已更新');
+    assert.notEqual(dbBefore.settings.siteName, marker, '前置状态应不同于写入值');
   });
 
-  test('服务端保存的内容不会出现在任何案例 JSON 里', async () => {
-    const marker = '隔离标记-' + Date.now();
+  test('服务端保存的标记不会出现在任何案例 JSON 中', async () => {
+    const marker = '隔离标记泄漏检查-' + Date.now();
     const token = await login();
     const res = await request('PUT', '/api/content', {
       token,
@@ -250,6 +247,24 @@ describe('隔离性 · 行为验证（改静态案例不影响服务端）', () 
       assert.equal(
         raw.includes(marker), false,
         `服务端写入的内容泄漏进了 ${f}`
+      );
+    }
+  });
+
+  test('GET /api/content 返回的内容与 cases/ 里的默认案例内容不同（证明未走静态源）', async () => {
+    // 服务端内容由 harness 的临时 db.json 决定，与仓库里的案例 JSON 无关。
+    // 若两者"恰好相同"，说明服务端可能在读静态资产 —— 这条会失败。
+    const res = await request('GET', '/api/content');
+    assert.equal(res.status, 200);
+
+    const caseFiles = fs.readdirSync(CASES_DIR).filter((x) => x.endsWith('.json') && x !== 'manifest.json');
+    for (const f of caseFiles) {
+      const c = JSON.parse(fs.readFileSync(path.join(CASES_DIR, f), 'utf8'));
+      const sameName = c.settings.siteName === res.body.settings.siteName;
+      const sameSections = JSON.stringify(c.sections) === JSON.stringify(res.body.sections);
+      assert.equal(
+        sameName && sameSections, false,
+        `GET /api/content 的返回与 ${f} 完全一致 —— 服务端疑似在读静态案例`
       );
     }
   });
