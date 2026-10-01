@@ -24,6 +24,31 @@ const UPLOAD_JSON_LIMIT = '16mb';             // 上传接口单独放宽，容�
 const SESSION_TTL_MS = 7 * 24 * 3600 * 1000;  // token 有效期 7 天
 const MAX_ATTEMPTS = 5;                        // 登录限流：连续错误次数
 const LOCK_MS = 5 * 60 * 1000;                // 登录限流：锁定时长 5 分钟
+const SESSION_SWEEP_MS = 30 * 60 * 1000;      // 每 30 分钟清扫一次过期的会话 / CSRF 条目
+// 上传限流：单 IP 每 10 分钟最多 30 张（防磁盘被打满）
+const UPLOAD_WINDOW_MS = 10 * 60 * 1000;
+const UPLOAD_MAX_PER_WINDOW = 30;
+// 上传目录总容量上限（默认 512MB），超出后拒绝新上传
+const UPLOAD_QUOTA_BYTES = Number(process.env.UPLOAD_QUOTA_MB || 512) * 1024 * 1024;
+
+/* ---------------- 审计日志（S-A6） ---------------- */
+// 登录、改密、保存内容、恢复默认、上传 —— 这些关键动作必须留痕，否则出事无法溯源。
+// 铁律：**任何情况下都不记录密码明文**，只记事件类型、IP、时间与结果。
+function audit(event, req, extra) {
+  const ip = req ? clientIp(req) : '-';
+  const at = new Date().toISOString();
+  const tail = extra && Object.keys(extra).length ? ' ' + JSON.stringify(sanitizeAudit(extra)) : '';
+  console.log(`[audit] ${at} ${event} ip=${ip}${tail}`);
+}
+// 兜底：哪怕调用方误传，也不能把密码写进日志
+function sanitizeAudit(obj) {
+  const out = {};
+  for (const [k, v] of Object.entries(obj || {})) {
+    if (/pass|pwd|secret|token/i.test(k)) continue;
+    out[k] = v;
+  }
+  return out;
+}
 
 /* ---------------- Phase 0: HTTP 安全头（零依赖） ---------------- */
 // 防御常见浏览器攻击：MIME 嗅探、点击劫持、XSS、信息泄露
@@ -33,16 +58,23 @@ app.use((req, res, next) => {
   res.setHeader('X-XSS-Protection', '0'); // 现代浏览器不用这个，设为 0 禁用
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  // HSTS：仅对 HTTPS 生效（HTTP 下浏览器按规范忽略），因此无条件发送是安全的
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   res.removeHeader('X-Powered-By'); // 移除 Express 版本信息
   next();
 });
 
 // CSP 头（独立配置，便于后续调整）
+// 已知取舍：script-src 已去掉 'unsafe-inline'（themes-demo.html 的内联脚本已抽成外部文件），
+// 这是 CSP 里最关键的一条 —— 去掉后，即便页面被注入 <script> 也不会执行。
+// style-src 仍保留 'unsafe-inline'：渲染层用 style="--i:0" 这种方式传递 CSS 自定义属性，
+// 要去掉需要把 stagger/animation-delay 全部改成 CSSOM 赋值，改动面较大，记为已知局限。
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
+  "object-src 'none'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'"
@@ -87,16 +119,22 @@ const ALLOWED_SECTION_TYPES = new Set(['cards', 'services', 'testimonials', 'not
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-if (!fs.existsSync(DB_PATH)) {
-  fs.writeFileSync(DB_PATH, JSON.stringify(DEFAULT_DB, null, 2));
-}
+// 注意：这里**不再**直接用 DEFAULT_DB 落盘生成 db.json。
+// 数据库初始化（含管理密码的生成）统一交给下面的 provisionAdminPassword()，
+// 保证 new 出来的库一定带一个非公开的强密码。
 
-/* ---------------- 反向代理信任（S3） ---------------- */
+/* ---------------- 反向代理信任（S3 / S-A2） ---------------- */
 // 部署在 Nginx / Cloudflare / Render 之后，必须从 X-Forwarded-For 取真实客户端 IP 限流，
 // 否则限流会锁在代理 IP 上：要么限流失效、要么一次误锁全站。
-// 可用环境变量覆盖：TRUST_PROXY=false / true / 跳数数字；不设置时默认信任 1 跳（最常见场景）。
+//
+// ⚠️ 默认值在 v1.7.0 由「1」改为「false」—— 这是安全修复。
+// 旧默认值的问题：直连部署（VPS / 裸 Node / 未配反代）时，客户端自己带的
+// X-Forwarded-For 会被当成可信代理跳，攻击者只要换个头就能：
+//   ① 无限次爆破密码（限流按伪造 IP 计数，永远锁不住）；
+//   ② 伪造管理员 IP 连错 5 次，把管理员本人锁在门外 5 分钟。
+// 现在默认不信任任何代理头；确实走反代时，由部署方显式设置 TRUST_PROXY=1（或跳数）。
 const tp = process.env.TRUST_PROXY;
-app.set('trust proxy', tp === undefined ? 1 : (tp === 'false' ? false : tp === 'true' ? true : Number(tp) || 1));
+app.set('trust proxy', tp === undefined ? false : (tp === 'false' ? false : tp === 'true' ? true : Number(tp) || false));
 
 /* ---------------- 密码哈希（Node 内置 scrypt，零新增依赖） ---------------- */
 const HASH_PREFIX = 'scrypt$';
@@ -134,7 +172,7 @@ function readDB() {
     if (dbCache.data && dbCache.mtime === stat.mtimeMs) return JSON.parse(JSON.stringify(dbCache.data)); // 返回副本，避免调用方改动污染缓存
     const data = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
     dbCache = { mtime: stat.mtimeMs, data };
-    return data;
+    return JSON.parse(JSON.stringify(data)); // 未命中时也返回副本，与命中路径保持一致
   } catch (e) {
     // 解析失败时先留一份现场，别让真实数据悄无声息地消失
     try {
@@ -158,6 +196,70 @@ function safeSettings(db) {
   const { adminPassword, ...settings } = db.settings;
   return settings;
 }
+
+/* ---------------- 管理密码初始化（S-A1：不再内置任何默认密码） ---------------- */
+// 旧版本把 'xy888888' 写死在 defaults.js 里，而本仓库是公开的 —— 等于把后台开放给所有人。
+// 现在改为三条规则，优先级从高到低：
+//   1) 环境变量 ADMIN_PASSWORD：每次启动校验一次，不一致就覆盖（这是"忘记密码"的官方恢复通道）
+//   2) 已有 db.json 里存着的密码：原样沿用，绝不擅自改动
+//   3) 首次启动且两者都没有：自动生成一个强随机密码，醒目打印一次
+const MIN_PASSWORD_LEN = 6;
+
+function generatePassword() {
+  // 12 位，取自 base64url 字符集（大小写字母 + 数字 + -_），约 71 bit 熵
+  return crypto.randomBytes(9).toString('base64url').slice(0, 12);
+}
+
+function loadDBRaw() {
+  if (!fs.existsSync(DB_PATH)) return { db: JSON.parse(JSON.stringify(DEFAULT_DB)), created: true };
+  return { db: JSON.parse(fs.readFileSync(DB_PATH, 'utf8')), created: false };
+}
+
+function provisionAdminPassword() {
+  try {
+    const { db, created } = loadDBRaw();
+    db.settings = db.settings || {};
+
+    const envPw = process.env.ADMIN_PASSWORD ? String(process.env.ADMIN_PASSWORD) : '';
+    let changed = false;
+
+    if (envPw && envPw.length >= MIN_PASSWORD_LEN) {
+      // 规则 1：环境变量优先。用 verifyPassword 比对，避免每次启动都无谓重写 db.json
+      if (!verifyPassword(envPw, db.settings.adminPassword)) {
+        db.settings.adminPassword = hashPassword(envPw);
+        changed = true;
+        console.log('✓ 已应用环境变量 ADMIN_PASSWORD 中设置的管理密码');
+      }
+    } else if (envPw) {
+      console.error(`✗ 环境变量 ADMIN_PASSWORD 至少 ${MIN_PASSWORD_LEN} 位，已忽略（沿用现有密码）`);
+    } else if (!db.settings.adminPassword) {
+      // 规则 3：首次启动，生成强随机密码
+      const pw = generatePassword();
+      db.settings.adminPassword = hashPassword(pw);
+      changed = true;
+      const line = '─'.repeat(56);
+      console.log(`\n${line}`);
+      console.log('  首次启动：已为你生成后台管理密码（只显示这一次）');
+      console.log(`  管理密码：${pw}`);
+      console.log('  后台地址：/admin');
+      console.log('  请立即保存。之后可用环境变量 ADMIN_PASSWORD 覆盖，');
+      console.log('  或在后台「修改密码」里自行更改。');
+      console.log(`${line}\n`);
+    }
+
+    if (created || changed) {
+      db.updatedAt = new Date().toISOString();
+      writeDB(db);
+    }
+    // 显式设置过 ADMIN_PASSWORD 就不必再啰嗦；否则提醒一次可以去设置
+    if (!envPw) {
+      console.log('ℹ️  提示：也可设置环境变量 ADMIN_PASSWORD 固定管理密码（推荐用于有持久盘的部署）');
+    }
+  } catch (e) {
+    console.error('管理密码初始化失败：', e.message);
+  }
+}
+provisionAdminPassword();
 
 // 启动时把遗留的明文密码自动升级为哈希
 (function migratePlainPassword() {
@@ -272,6 +374,17 @@ app.get('/admin', (req, res) => res.sendFile(path.join(ROOT, 'public', 'admin.ht
 /* ---------------- 登录鉴权 ---------------- */
 const sessions = new Map(); // token -> 过期时间
 
+// 定期清扫：过期条目必须从 Map 里真正删掉。
+// 旧实现只在读取时判断时间戳、从不 delete，长期运行会让 Map 无限增长（内存泄漏）。
+const sessionSweeper = setInterval(() => {
+  const now = Date.now();
+  for (const [k, exp] of sessions) if (!(exp > now)) sessions.delete(k);
+  for (const [k, v] of csrfTokens) if (!v || v.expiresAt < now) csrfTokens.delete(k);
+  for (const [k, a] of loginAttempts) if (!a.until || a.until < now) loginAttempts.delete(k);
+}, SESSION_SWEEP_MS);
+// unref：定时器不阻止进程退出（测试 require 本文件时不会被挂住）
+if (sessionSweeper.unref) sessionSweeper.unref();
+
 app.post('/api/login', jsonSmall, (req, res) => {
   const ip = clientIp(req);
   if (isLocked(ip)) {
@@ -284,10 +397,12 @@ app.post('/api/login', jsonSmall, (req, res) => {
 
   if (!verifyPassword(password, stored)) {
     noteFailure(ip);
+    audit('login.fail', req); // 只记事件，绝不记密码
     return res.status(401).json({ ok: false, error: '密码错误，请重试' });
   }
 
   loginAttempts.delete(ip);
+  audit('login.ok', req);
 
   // 命中遗留明文密码时顺手升级为哈希
   if (typeof stored === 'string' && !stored.startsWith(HASH_PREFIX)) {
@@ -309,6 +424,19 @@ app.get('/api/check', (req, res) => {
   const token = req.headers['x-token'];
   const exp = token && sessions.get(token);
   res.json({ ok: !!(exp && exp > Date.now()) });
+});
+
+// 退出登录（S-A3）：真正在服务端销毁会话。
+// 旧实现只做 localStorage.removeItem + 刷新，服务器上的 token 依然有效 7 天，
+// token 一旦泄露（共享电脑 / XSS）就再也无法吊销。
+app.post('/api/logout', (req, res) => {
+  const token = req.headers['x-token'];
+  if (token) {
+    sessions.delete(token);
+    csrfTokens.delete(token);
+  }
+  audit('logout', req);
+  res.json({ ok: true });
 });
 
 app.use('/api', (req, res, next) => {
@@ -414,7 +542,10 @@ app.put('/api/content', jsonSmall, (req, res) => {
     db.updatedAt = new Date().toISOString();
     writeDB(db);
     return { settings: safeSettings(db), sections: db.sections, restoredImages: s1.changed || s2.changed };
-  }).then(r => res.json({ ok: true, ...r }))
+  }).then(r => {
+    audit('content.save', req, { sections: (r.sections || []).length, restoredImages: r.restoredImages });
+    res.json({ ok: true, ...r });
+  })
     .catch((e) => {
       console.error('保存失败:', e.message);
       res.status(500).json({ error: '保存失败，请重试' });
@@ -438,8 +569,8 @@ app.post('/api/password', jsonSmall, (req, res) => {
     if (current) sessions.set(current, Date.now() + SESSION_TTL_MS);
     return { status: 200 };
   }).then(r => {
-    if (r.status === 200) res.json({ ok: true });
-    else res.status(r.status).json({ error: r.error });
+    if (r.status === 200) { audit('password.change', req); res.json({ ok: true }); }
+    else { audit('password.change.fail', req, { reason: r.error }); res.status(r.status).json({ error: r.error }); }
   }).catch(() => res.status(500).json({ error: '修改失败，请重试' }));
 });
 
@@ -460,13 +591,52 @@ app.post('/api/reset', jsonSmall, (req, res) => {
     writeDB(fresh);
     return { status: 200, settings: safeSettings(fresh), sections: fresh.sections };
   }).then(r => {
-    if (r.status === 200) res.json({ ok: true, settings: r.settings, sections: r.sections });
-    else res.status(r.status).json({ error: r.error });
+    if (r.status === 200) { audit('reset', req); res.json({ ok: true, settings: r.settings, sections: r.sections }); }
+    else { audit('reset.fail', req, { reason: r.error }); res.status(r.status).json({ error: r.error }); }
   }).catch(() => res.status(500).json({ error: '恢复失败，请重试' }));
 });
 
 /* ---------------- 图片上传（base64） ---------------- */
+// 真实类型校验（S-A5）：只看扩展名是不够的 —— 扩展名是客户端说了算的。
+// 这里读文件头几个字节（magic bytes）反推真实格式，与声明的扩展名不一致就拒绝。
+function sniffImageType(buf) {
+  if (!buf || buf.length < 12) return null;
+  if (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF) return 'jpg';                 // JPEG
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) return 'png'; // PNG
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) return 'gif';                 // GIF
+  if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 &&
+      buf.slice(8, 12).toString('latin1') === 'WEBP') return 'webp';                        // WEBP
+  return null;
+}
+
+function uploadDirBytes() {
+  let total = 0;
+  try {
+    for (const name of fs.readdirSync(UPLOAD_DIR)) {
+      const st = fs.statSync(path.join(UPLOAD_DIR, name));
+      if (st.isFile()) total += st.size;
+    }
+  } catch (e) { /* 目录不可读时按 0 处理，交给写入时的错误兜底 */ }
+  return total;
+}
+
+// 上传限流：ip -> 最近若干次上传的时间戳
+const uploadLog = new Map();
+function uploadAllowed(ip) {
+  const now = Date.now();
+  const list = (uploadLog.get(ip) || []).filter(t => now - t < UPLOAD_WINDOW_MS);
+  if (list.length >= UPLOAD_MAX_PER_WINDOW) { uploadLog.set(ip, list); return false; }
+  list.push(now);
+  uploadLog.set(ip, list);
+  return true;
+}
+
 app.post('/api/upload', jsonUpload, (req, res) => {
+  const ip = clientIp(req);
+  if (!uploadAllowed(ip)) {
+    return res.status(429).json({ error: `上传过于频繁，请稍后再试（每 ${UPLOAD_WINDOW_MS / 60000} 分钟最多 ${UPLOAD_MAX_PER_WINDOW} 张）` });
+  }
+
   const { data } = req.body || {};
   if (!data || !/^data:image\//.test(data)) return res.status(400).json({ error: '仅支持图片文件' });
   const m = /^data:image\/([\w+.-]+);base64,(.+)$/.exec(data);
@@ -476,8 +646,20 @@ app.post('/api/upload', jsonUpload, (req, res) => {
   if (!ALLOWED_EXTS.includes(ext)) return res.status(400).json({ error: `仅支持 ${ALLOWED_EXTS.join(' / ')} 格式` });
   const buf = Buffer.from(m[2], 'base64');
   if (buf.length > UPLOAD_MAX_BYTES) return res.status(400).json({ error: '图片不能超过 8MB' });
+
+  // 文件头必须与声明格式一致，防止把 HTML / 脚本伪装成图片上传
+  const actual = sniffImageType(buf);
+  if (!actual) return res.status(400).json({ error: '文件内容不是有效的图片' });
+  if (actual !== ext) return res.status(400).json({ error: `文件内容与扩展名不符（实际是 ${actual}）` });
+
+  // 磁盘配额：避免已登录用户把磁盘打满
+  if (uploadDirBytes() + buf.length > UPLOAD_QUOTA_BYTES) {
+    return res.status(507).json({ error: '上传空间已满，请先清理旧图片' });
+  }
+
   const file = Date.now() + '-' + crypto.randomBytes(4).toString('hex') + '.' + ext;
   fs.writeFileSync(path.join(UPLOAD_DIR, file), buf);
+  audit('upload', req, { bytes: buf.length, type: ext });
   res.json({ ok: true, url: '/uploads/' + file });
 });
 
@@ -508,7 +690,13 @@ module.exports = {
   MAX_ATTEMPTS,
   LOCK_MS,
   UPLOAD_MAX_BYTES,
+  UPLOAD_MAX_PER_WINDOW,
+  UPLOAD_QUOTA_BYTES,
   SESSION_TTL_MS,
+  generatePassword,
+  sniffImageType,
+  audit,
+  uploadLog,
   ROOT,
   DATA_DIR,
   UPLOAD_DIR,
@@ -518,6 +706,7 @@ module.exports = {
   isSafeKey,
   ALLOWED_SETTINGS_KEYS,
   ALLOWED_SECTION_TYPES,
+  withDBLock,
   // 导出 withDBLock 用于测试
   get dbWriteChain() { return dbWriteChain; }
 };

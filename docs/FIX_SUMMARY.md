@@ -166,8 +166,8 @@ b9c3773 docs: 修复英文 CHANGELOG 格式问题
    - IIFE 封装，零全局变量
 
 3. **测试覆盖全面**
-   - 17个测试文件
-   - 140项测试用例
+   - 18个测试文件（.test.js）+ harness
+   - 158项测试用例
    - 100% 通过率
    - 核心逻辑全覆盖
 
@@ -185,8 +185,7 @@ b9c3773 docs: 修复英文 CHANGELOG 格式问题
 
 ## 📄 相关文档
 
-- **综合审查报告**: `docs/COMPREHENSIVE_REVIEW.md`
-- **第二次审查报告**: `docs/SECOND_COMPREHENSIVE_REVIEW.md`
+- **代码审查报告**: `CODE-REVIEW.md`（实际存在的审查记录）
 - **修复总结**: `docs/FIX_SUMMARY.md`
 
 ---

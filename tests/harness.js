@@ -22,6 +22,14 @@ const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'xy-club-test-' + (++tmpCounte
 process.env.DATA_DIR = path.join(TMP, 'data');
 process.env.UPLOAD_DIR = path.join(TMP, 'uploads');
 
+// 测试用固定密码（TEST_PASSWORD）。
+// v1.7.0 起 defaults.js 不再内置任何密码，数据库密码由 server.js 生成；
+// 这里走 ADMIN_PASSWORD 环境变量通道把它固定成已知值，既让旧用例继续可用，
+// 也顺带覆盖了「环境变量设定密码」这条新路径。
+// 注意：必须在 require('../server.js') **之前** 设置，服务端只在启动时读一次。
+const TEST_PASSWORD = 'test-pw-12345';
+process.env.ADMIN_PASSWORD = TEST_PASSWORD;
+
 const server = require('../server.js');
 
 let srv = null;
@@ -90,9 +98,9 @@ async function request(method, urlPath, opts) {
   });
 }
 
-/** 登录并返回 token（默认用出厂密码） */
+/** 登录并返回 token（默认用测试固定密码，不再是出厂弱密码） */
 async function login(password) {
-  const res = await request('POST', '/api/login', { body: { password: password || 'xy888888' } });
+  const res = await request('POST', '/api/login', { body: { password: password || TEST_PASSWORD } });
   if (res.status !== 200) throw new Error('登录失败：' + res.text);
   const token = res.body.token;
   // 登录后自动获取 CSRF token 并存入 server
@@ -139,6 +147,7 @@ module.exports = {
   writeDBFile,
   uploadedFiles,
   cleanup,
+  TEST_PASSWORD,
   root: ROOT,
   tmp: TMP
 };

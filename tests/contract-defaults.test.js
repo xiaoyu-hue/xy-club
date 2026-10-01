@@ -80,7 +80,14 @@ describe('主题契约', () => {
 
 describe('出厂设置', () => {
   test('默认密码长度不低于 6 位（与服务端的校验一致）', () => {
-    assert.ok(DEFAULT_DB.settings.adminPassword.length >= 6);
+    // v1.7.0 安全修复：模板里绝不能内置任何密码。
+    // 本仓库是公开的，写死密码 = 把后台开放给所有读到源码的人。
+    // 密码由 server.js 在首次启动时生成（或由 ADMIN_PASSWORD 环境变量指定）。
+    assert.equal(
+      DEFAULT_DB.settings.adminPassword,
+      undefined,
+      'defaults.js 不得内置 adminPassword（公开仓库里的写死密码等于后门）'
+    );
   });
 
   test('上传白名单不含 svg', () => {

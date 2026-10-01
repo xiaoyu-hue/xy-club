@@ -99,3 +99,40 @@ describe('API 表与真实路由一致', () => {
     }
   });
 });
+
+
+describe('docs/API.md 详文档与真实路由一致', () => {
+  test('server.js 的每个 /api 路由都在 API.md 有详细小节', () => {
+    const src = read('server.js');
+    const routes = [
+      ...new Set(
+        (src.match(/app\.(?:get|post|put|delete)\('(\/api\/[\w/-]+)'/g) || []).map((m) =>
+          m.replace(/^app\.\w+\('/, '').replace(/'$/, '')
+        )
+      )
+    ];
+    assert.ok(routes.length >= 6, '应至少解析出 6 个 API 路由');
+    const apiDoc = read('docs/API.md');
+    const docHeadings = new Set(
+      [...apiDoc.matchAll(/^###\s+(?:GET|POST|PUT|DELETE)\s+(\/api\/[\w/-]+)/gm)].map((m) => m[1])
+    );
+    for (const r of routes) {
+      assert.ok(docHeadings.has(r), `docs/API.md 缺少 ${r} 的详细小节`);
+    }
+  });
+
+  test('API.md 记录的路由都真实存在于 server.js', () => {
+    const src = read('server.js');
+    const real = new Set(
+      (src.match(/app\.(?:get|post|put|delete)\('(\/api\/[\w/-]+)'/g) || []).map((m) =>
+        m.replace(/^app\.\w+\('/, '').replace(/'$/, '')
+      )
+    );
+    const apiDoc = read('docs/API.md');
+    const docRoutes = [...apiDoc.matchAll(/^###\s+(?:GET|POST|PUT|DELETE)\s+`?(\/api\/[\w/-]+)`?/gm)].map((m) => m[1]);
+    assert.ok(docRoutes.length >= 6, 'API.md 应至少记录 6 个接口');
+    for (const d of docRoutes) {
+      assert.ok(real.has(d), `docs/API.md 记录了不存在的路由 ${d}`);
+    }
+  });
+});

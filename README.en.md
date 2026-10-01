@@ -47,9 +47,9 @@ The site and the admin panel share a single JSON document. Whatever you edit in 
 | Feature | Description |
 |---------|-------------|
 | 🎨 **Liquid-glass visuals** | Blurred glass + cursor-tracked specular highlight + sheen sweep, holding up in both light and dark themes |
-| 🌈 **4 themes** | Aurora / Ocean / Mist (light) / Sunset — switchable in one click from the admin |
+| 🌈 **8 themes** | 3 dark (Aurora / Ocean / Sunset) + 5 light-business (Mist, Morning-Mist, Cloud-Gray, Oat-Warm, Classic-Navy) — one-click switch in the admin |
 | ✨ **8 micro-interactions** | Cursor highlight, 3D card tilt, button ripple, count-up numbers, scroll progress, back-to-top, nav highlighting, staggered reveal |
-| 🧩 **7 section types** | Pricing list / Card grid / Testimonials / FAQ / Notice list / Gallery / Rich text |
+| 🧩 **8 section types** | Services / Cards / Testimonials / FAQ / Notice / Gallery / Rich text / Custom |
 | 🛠 **Visual admin** | Add, edit, delete, reorder (↑↓) and toggle (👁) any section at any time |
 | 📦 **Template reuse** | Export / import the whole site as JSON, plus one-click restore to defaults |
 | 🚀 **No database** | Single-port HTTP + JSON file storage — runs anywhere Node.js runs |
@@ -84,6 +84,10 @@ The glass look is built in three layers: a translucent gradient base, `backdrop-
 | 🌊 Ocean `ocean` | Dark · cyan-blue gradient | Tech / outdoor / sports clubs |
 | ☁️ Mist `mist` | **Light** · grey-white gradient | Reading / family / lifestyle services |
 | 🌇 Sunset `sunset` | Dark · orange-gold gradient | Food / parties / hobby communities |
+| 🕊️ Morning-Mist `neutral_morning` | **Light** · warm off-white | Consulting / professional services |
+| ☁️ Cloud-Gray `neutral_cloud` | **Light** · cool grey | Tech consulting |
+| 🌾 Oat-Warm `neutral_oat` | **Light** · warm oat | Culture / F&B |
+| 🔵 Classic-Navy `neutral_navy` | **Light** · clean navy | Finance / legal |
 
 ---
 
@@ -107,7 +111,7 @@ Eight types are available when adding a section; each renders differently on the
 ## 🔐 Data & Privacy
 
 - **All content lives in `data/db.json`** — a single JSON file, survives restarts, no database required
-- **Default admin password `xy888888`** — stored as a **scrypt hash** (Node's built-in crypto, no extra dependency); **change it right after deploying**
+- **Admin password** — from the `ADMIN_PASSWORD` env var; if unset, the server generates a **strong random password** on first start and prints it to the console once (save it immediately). Stored as a **scrypt hash** (Node's built-in crypto, no extra dependency); **change it soon after deploying**
 - **Passwords stay out of git** — `data/db.json` is listed in `.gitignore`
 - **Login rate limiting** — 5 consecutive wrong passwords from one IP triggers a 5-minute lockout
 - **CSRF protection** — all write operations (save / password change / upload / reset) require a valid CSRF token
@@ -155,7 +159,7 @@ node server.js    # http://localhost:3000 by default
 
 - Site: <http://localhost:3000>
 - Admin: <http://localhost:3000/admin>
-- **Default admin password: `xy888888`** — change it under Site Settings → Change Password right after login
+- **Admin password**: if `ADMIN_PASSWORD` is unset, look for the random password in the console log on first start; change it under Site Settings → Change Password
 - Custom port: `PORT=8080 node server.js` (already bound to `0.0.0.0`, deployment-ready)
 
 > On first start, `defaults.js` generates `data/db.json` automatically. Delete that file to restore factory content.
@@ -195,6 +199,7 @@ xy-club/
 |--------|------|-------------|
 | POST | `/api/login` | Password login, returns a token |
 | GET | `/api/check` | Validate the session |
+| POST | `/api/logout` | Log out (destroys the session server-side) |
 | GET | `/api/csrf-token` | Get CSRF token (requires login) |
 | GET | `/api/content` | Fetch all site content (public) |
 | PUT | `/api/content` | Save content and settings (auth + CSRF required) |
@@ -281,7 +286,7 @@ Static assets and the API share one port, so there is no CORS setup.
 ## 💾 Data & Backup
 
 - Everything lives in `data/db.json`; **back it up regularly via Export config**
-- Forgot the password? Run `node scripts/reset-password.js <new-password>` — the password is hashed, so it can no longer be hand-edited as plaintext
+- Forgot the password? Run `node scripts/reset-password.js <new-password>` (or `--generate` for a random one) — the password is hashed, so it can no longer be hand-edited as plaintext
 - Back to square one? Delete `data/db.json` and restart, or hit Restore defaults in the admin
 
 ---
@@ -290,7 +295,7 @@ Static assets and the API share one port, so there is no CORS setup.
 
 ### Done ✅
 
-- Liquid-glass visual system and 4 themes
+- Liquid-glass visual system and 8 themes
 - 8 micro-interactions
 - 8 section types with a visual admin
 - Image upload, password change, config import/export
@@ -316,7 +321,7 @@ Static assets and the API share one port, so there is no CORS setup.
 ## 🧪 Testing
 
 ```bash
-npm test          # Unit tests: 123 cases, no new dependencies (Node's built-in node --test)
+npm test          # Unit tests: 158 cases, no new dependencies (Node's built-in node --test)
 ```
 
 `npm test` is the only mandatory gate; CI runs it on Node 18 / 20 / 22. It covers the parts that actually carry risk: password hashing and login rate limiting, CSRF tokens, HTTP security headers, input validation and prototype-pollution defense, the upload allowlist, content read/write and data resilience, static snapshots staying credential-free, and whether the docs still match the code.
@@ -326,7 +331,7 @@ npm test          # Unit tests: 123 cases, no new dependencies (Node's built-in 
 | Unit | `npm test` | none | Mandatory gate, `tests/` |
 | E2E | `npm run test:e2e` | requires a local `@playwright/test` | Optional; skipped automatically if absent |
 
-E2E drives a real browser at desktop (1280×800) and narrow (375×667) viewports: home rendering, all four themes, and the admin loop "edit → save → reload and it's still there". See [docs/TESTING.md](docs/TESTING.md).
+E2E drives a real browser at desktop (1280×800) and narrow (375×667) viewports: home rendering, all eight themes, and the admin loop "edit → save → reload and it's still there". See [docs/TESTING.md](docs/TESTING.md).
 
 ---
 
@@ -365,7 +370,7 @@ Released under the [MIT License](LICENSE) — free to use, modify, and commercia
 
 | Project | License | Role |
 |---------|---------|------|
-| [Playwright](https://playwright.dev) | Apache-2.0 | End-to-end verification of site and admin (desktop / mobile, all four themes) |
+| [Playwright](https://playwright.dev) | Apache-2.0 | End-to-end verification of site and admin (desktop / mobile, all eight themes) |
 
 ### Visual & Design Inspiration
 

@@ -39,9 +39,8 @@ curl -s -H "Authorization: token ${GITHUBTOKEN}" \
 ```bash
 cd /var/minis/workspace/xy-club
 
-# 1. 跑测试和构建检查
+# 1. 跑测试检查
 npm test
-npm run build
 
 # 2. 确认文档已同步（见 docs/DOC_SYNC.md）
 
@@ -84,7 +83,7 @@ curl -s -X POST -H "Authorization: token ${GITHUBTOKEN}" \
 
 | 元素 | 格式 | 示例 |
 |------|------|------|
-| Git Tag | `vMAJOR.MINOR.PATCH` 或 `vMAJOR.MINOR.PATCH-PhaseN` | `v1.5.2` 或 `v2.0.0-Phase1` |
+| Git Tag | `vMAJOR.MINOR.PATCH` 或 `vMAJOR.MINOR.PATCH-PhaseN` | `v1.7.0` 或 `v1.7.0-Phase1` |
 | package.json version | `vMAJOR.MINOR.PATCH` | `"version": "1.5.2"` |
 | CHANGELOG 标题 | `## [vX.Y.Z]` 或 `## [vX.Y.Z-PhaseN]` | `## [v1.5.2]` |
 | GitHub Release tag_name | 必须与 Git Tag 完全一致 | `v1.5.2` |
@@ -100,8 +99,10 @@ v1.4.4 - 性能优化
 v1.5.0 - 后台管理系统
 v1.5.1 - 文档同步
 v1.5.2 - 板块类型修复
-v2.0.0-Phase0 - HTTP 安全头
-v2.0.0-Phase1 - 输入验证强化
+v1.6.0 - 主题扩展（新增 4 套亮色商务主题，共 8 套）
+v1.6.1 - 输入验证强化（Phase 1）
+v1.6.2 - 安全加固与文档同步（审计修复）
+v1.7.0 - 安全加固发布（默认密码机制变更、限流绕过封堵、登出接口）
 ```
 
 ---
@@ -121,7 +122,7 @@ v2.0.0-Phase1 - 输入验证强化
 ```
 /var/minis/workspace/xy-club/
 ├── server.js               # 后端服务器
-├── package.json            # 依赖配置（version: 1.5.2）
+├── package.json            # 依赖配置（version: 1.7.0）
 ├── render.yaml             # Render 部署配置
 ├── defaults.js             # 默认配置
 ├── public/                 # 前端静态资源
@@ -129,7 +130,7 @@ v2.0.0-Phase1 - 输入验证强化
 │   ├── css/
 │   └── js/
 ├── src/                    # 前端源代码
-├── tests/                  # 测试文件（16 个）
+├── tests/                  # 测试文件（18 个 .test.js + harness）
 ├── docs/                   # 文档目录
 │   ├── CHANGELOG.md        # 变更日志
 │   ├── CHANGELOG.en.md     # 英文变更日志
@@ -145,9 +146,9 @@ v2.0.0-Phase1 - 输入验证强化
 
 - **前端**: Vanilla JavaScript + Liquid Glass 风格
 - **后端**: Node.js + Express
-- **数据库**: SQLite（本地存储）
-- **测试**: Node.js + 自定义测试框架
-- **部署**: Render / Vercel
+- **数据存储**: 单个 JSON 文件 `data/db.json`（零数据库依赖，无 SQLite）
+- **测试**: Node.js 内置 `node --test`（零测试框架依赖，见 docs/TESTING.md）
+- **部署**: Render（`render.yaml`）+ GitHub Pages 静态快照（见 docs/DEPLOY.md）
 - **包管理**: npm + pnpm
 - **CI/CD**: GitHub Actions
 
@@ -172,7 +173,7 @@ v2.0.0-Phase1 - 输入验证强化
 - 采用液态玻璃（Liquid Glass）视觉风格
 - 数据驱动 + 可视化后台管理
 - 可作为任意俱乐部官网复用
-- 包含完整的后端 API（Express + SQLite）
+- 包含完整的后端 API（Express + JSON 文件存储，零数据库）
 - 支持图片上传和管理
 - 代码审查报告完善（CODE-REVIEW.md）
 

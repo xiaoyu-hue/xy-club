@@ -77,7 +77,7 @@ Source of truth: `data/db.json`, shaped by `DEFAULT_DB` in `defaults.js`.
 
 ## 6. Acceptance Criteria
 
-- [ ] `npm test` green (currently **123 cases / 39 suites**, the only mandatory gate)
+- [ ] `npm test` green (currently **158 cases / 45 suites**, the only mandatory gate)
 - [ ] No console errors on the home page
 - [ ] All 4 themes render correctly with readable text
 - [ ] Admin login → edit → save → refresh keeps content consistent

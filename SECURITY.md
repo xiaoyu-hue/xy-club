@@ -4,7 +4,7 @@
 
 ## 📌 支持版本
 
-安全修复只进**最新稳定版**。当前受支持版本：**v1.5.2**（[Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)）。
+安全修复只进**最新稳定版**。当前受支持版本：**v1.7.0**（[Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)）。
 
 旧版本不再接收安全补丁，请尽快升级。
 
@@ -42,7 +42,7 @@
 
 ## 🛡 部署安全建议
 
-1. **部署后立即改默认密码 `xy888888`**（后台「网站设置 → 修改管理密码」或 `node scripts/reset-password.js 新密码`）。
+1. **部署时显式设置强密码**：设置环境变量 `ADMIN_PASSWORD`；若未设置，首次启动生成的随机密码**只打印一次**，请及时保存。部署后尽快改密（后台「网站设置 → 修改管理密码」或 `node scripts/reset-password.js 新密码`）。
 2. **挂载持久卷**保存 `data/` 与 `public/uploads/`，否则重启丢失内容。
 3. **前面加反向代理**（Nginx / Caddy 等）提供 HTTPS，并对登录接口限流。
 4. 不要把 `data/db.json` 提交进版本库（已在 `.gitignore` 排除）。

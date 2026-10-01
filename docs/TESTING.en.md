@@ -17,7 +17,7 @@ npm test
 | Runner | `node --test` (Node built-in) |
 | Dependencies | None (just need `express` running, tests themselves zero-dependency) |
 | Test location | `tests/*.test.js` |
-| Test count | 140 cases / 42 suites |
+| Test count | 158 cases / 45 suites |
 | Time reference | About 10–40 seconds (depends on machine performance) |
 
 ### Files and Responsibilities

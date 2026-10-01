@@ -29,13 +29,13 @@
                   └──────────────────────────────────────────┘
 ```
 
-**关键点**：官网与后台共用同一份 `data/db.json`。后台改什么，前台刷新即是什么——没有缓存层，也没有重新构建。
+**关键点**：官网与后台共用同一份 `data/db.json`。后台改什么，前台刷新即是什么——服务端有一层**进程内读缓存**（`readDB` 按文件 `mtime` 判断是否需要重读，写操作后失效），没有整站构建步骤。
 
 ## 存储
 
 | 文件 | 作用 | 是否入库 |
 |------|------|----------|
-| `data/db.json` | 全部内容与设置（**含明文管理密码**） | ❌ 已 gitignore |
+| `data/db.json` | 全部内容与设置（管理密码以 `scrypt$...` 哈希存储，**非明文**） | ❌ 已 gitignore |
 | `public/uploads/` | 后台上传的图片 | ❌ 已 gitignore（保留 `.gitkeep`） |
 | `public/content.json` | 静态快照，由 `scripts/build-static.js` 生成 | ❌ 构建产物 |
 | `data/db.json.corrupt-*` | 配置文件解析失败时自动留存的现场 | ❌ 已 gitignore |
@@ -75,12 +75,12 @@
 主题不是多套 CSS，而是**同一套 CSS + 8 组变量**（与 xy-intro-card 同步）：
 
 ```css
-/* 暗色主题（4套） */
+/* 暗色主题（3套） */
 html[data-theme="aurora"]   { --bg-a: ...; --ink: ...; --accent: #8b7cf6; }
 html[data-theme="ocean"]    { --bg-a: ...; --ink: ...; --accent: #38bdf8; }
 html[data-theme="sunset"]   { --bg-a: ...; --ink: ...; --accent: #fb7185; }
 
-/* 亮色商务主题（4套） */
+/* 亮色商务主题（5套） */
 html[data-theme="mist"]     { --bg-a: #eef1fb; --ink: #141a2e; --accent: #6d5df0; }
 html[data-theme="neutral_morning"] { --bg-a: #f7f4f0; --ink: #1e2935; --accent: #5a6b7c; }
 html[data-theme="neutral_cloud"]   { --bg-a: #f1f5f9; --ink: #0f172a; --accent: #4a5568; }

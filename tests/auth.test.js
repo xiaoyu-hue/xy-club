@@ -6,11 +6,11 @@
  */
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { server, request, login, readDBFile, writeDBFile } = require('./harness');
+const { server, request, login, readDBFile, writeDBFile, TEST_PASSWORD } = require('./harness');
 
 describe('POST /api/login', () => {
   test('密码正确时返回 token', async () => {
-    const res = await request('POST', '/api/login', { body: { password: 'xy888888' } });
+    const res = await request('POST', '/api/login', { body: { password: TEST_PASSWORD } });
     assert.equal(res.status, 200);
     assert.equal(res.body.ok, true);
     assert.match(res.body.token, /^[0-9a-f]{48}$/, 'token 应为 24 字节随机 hex');
@@ -105,7 +105,7 @@ describe('POST /api/password', () => {
     const token = await login();
     const res = await request('POST', '/api/password', {
       token,
-      body: { oldPassword: 'xy888888', newPassword: '123' }
+      body: { oldPassword: TEST_PASSWORD, newPassword: '123' }
     });
     assert.equal(res.status, 400);
   });
@@ -117,14 +117,14 @@ describe('POST /api/password', () => {
     try {
       const res = await request('POST', '/api/password', {
         token,
-        body: { oldPassword: 'xy888888', newPassword: 'brand-new-pw' }
+        body: { oldPassword: TEST_PASSWORD, newPassword: 'brand-new-pw' }
       });
       assert.equal(res.status, 200);
 
       const ok = await request('POST', '/api/login', { body: { password: 'brand-new-pw' } });
       assert.equal(ok.status, 200, '新密码应能登录');
 
-      const old = await request('POST', '/api/login', { body: { password: 'xy888888' } });
+      const old = await request('POST', '/api/login', { body: { password: TEST_PASSWORD } });
       assert.equal(old.status, 401, '旧密码应失效');
     } finally {
       writeDBFile(original); // 还原出厂密码

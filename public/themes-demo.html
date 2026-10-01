@@ -354,14 +354,8 @@
     <p>XY 俱乐部官网模板 v1.6.0 · 8 套主题 · 与 xy-intro-card 同步</p>
   </footer>
 
-  <script>
-    // 主题切换演示
-    document.querySelectorAll('.theme-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const themeKey = card.querySelector('.theme-key').textContent.replace('data-theme="', '').replace('"', '');
-        alert(`主题: ${themeKey}\n\n在后台设置中切换此主题即可看到效果。`);
-      });
-    });
-  </script>
+  <!-- 内联脚本已抽到 js/themes-demo.js：
+       这样 CSP 才能去掉 script-src 的 'unsafe-inline'（XSS 的关键防线） -->
+  <script src="js/themes-demo.js"></script>
 </body>
 </html>

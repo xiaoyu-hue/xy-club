@@ -7,11 +7,11 @@
  */
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { request, login, readDBFile, writeDBFile } = require('./harness');
+const { request, login, readDBFile, writeDBFile, TEST_PASSWORD } = require('./harness');
 
 describe('POST /api/reset', () => {
   test('未带 token 时拒绝', async () => {
-    const res = await request('POST', '/api/reset', { body: { currentPassword: 'xy888888' } });
+    const res = await request('POST', '/api/reset', { body: { currentPassword: TEST_PASSWORD } });
     assert.equal(res.status, 401);
   });
 
@@ -37,7 +37,7 @@ describe('POST /api/reset', () => {
       mod.sections = mod.sections.slice(0, 1);
       writeDBFile(mod);
 
-      const res = await request('POST', '/api/reset', { token, body: { currentPassword: 'xy888888' } });
+      const res = await request('POST', '/api/reset', { token, body: { currentPassword: TEST_PASSWORD } });
       assert.equal(res.status, 200, '密码正确应成功');
       assert.equal(res.body.ok, true);
 
@@ -46,7 +46,7 @@ describe('POST /api/reset', () => {
       assert.equal(after.sections.length, before.sections.length, '板块数量应回退默认');
 
       // 关键安全断言：reset 后原密码仍可用，且落盘的是哈希（未被改回明文弱密码）
-      const loginOld = await request('POST', '/api/login', { body: { password: 'xy888888' } });
+      const loginOld = await request('POST', '/api/login', { body: { password: TEST_PASSWORD } });
       assert.equal(loginOld.status, 200, 'reset 后原密码仍可登录（密码未被重置）');
       assert.ok(after.settings.adminPassword.startsWith('scrypt$'), '密码应仍是哈希，未被改回明文弱密码');
     } finally {

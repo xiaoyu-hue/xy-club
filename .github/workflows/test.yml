@@ -30,6 +30,9 @@ jobs:
       - name: 安装依赖
         run: npm install --no-audit --no-fund
 
+      - name: Lint（质量门：error 级问题会阻断 CI）
+        run: npm run lint
+
       - name: 运行单元测试
         run: npm test
 

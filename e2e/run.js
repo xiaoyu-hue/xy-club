@@ -25,6 +25,12 @@ for (const spec of ['@playwright/test/cli', '@playwright/test/cli.js']) {
 }
 
 if (!cliPath) {
+  // 强制模式：CI / 发布门可设置 FORCE_E2E=1，缺依赖时明确失败（而非静默跳过）
+  if (process.env.FORCE_E2E === '1') {
+    console.error('✗ E2E 被强制要求（FORCE_E2E=1）但未安装 @playwright/test，退出失败。');
+    console.error('  请先执行：npm i -D @playwright/test && npx playwright install chromium');
+    process.exit(1);
+  }
   console.log('─'.repeat(60));
   console.log('跳过 E2E：未安装 @playwright/test。');
   console.log('');

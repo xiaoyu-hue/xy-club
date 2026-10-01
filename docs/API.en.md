@@ -38,8 +38,10 @@ Password login, issues session token.
 Request body:
 
 ```json
-{ "password": "xy888888" }
+{ "password": "your admin password" }
 ```
+
+> ⚠️ This project **no longer ships a default password**. The admin password comes from the `ADMIN_PASSWORD` environment variable; if unset, the server generates a strong random password on first start and prints it to the console (once only, see ARCHITECTURE "Authentication"). The old weak default `xy888888` is deprecated.
 
 Success `200`:
 
@@ -77,6 +79,20 @@ Success `200`:
 ```
 
 `ok` is `false` means token missing or expired.
+
+### POST /api/logout
+
+Log out the current session (**authenticated**). Invalidates the current token immediately (no longer bound to the 7-day TTL); the frontend should also clear the token from `localStorage`.
+
+Request header: `x-token: <token>`
+
+Success `200`:
+
+```json
+{ "ok": true }
+```
+
+> On a shared device or when a token leak is suspected, logging out revokes the old token at once—safer than waiting for the 7-day expiry.
 
 ### GET /api/content
 
@@ -145,7 +161,7 @@ Change admin password (**authenticated + CSRF**).
 Request body:
 
 ```json
-{ "oldPassword": "xy888888", "newPassword": "newSecret6" }
+{ "oldPassword": "your current password", "newPassword": "newSecret6" }
 ```
 
 Success `200`: `{ "ok": true }`
@@ -160,6 +176,15 @@ Errors:
 ### POST /api/reset
 
 Restore to template defaults (**authenticated + CSRF**). Useful when reusing for another club.
+
+Request body:
+
+```json
+{ "currentPassword": "your admin password" }
+```
+
+- `currentPassword` is required to re-confirm identity; missing or wrong returns `400 { "ok": false, "error": "管理密码错误，无法恢复默认内容" }`. Note it is **not** the login token, but the admin password you logged in with.
+- After reset, the **current** admin password is preserved (it does not fall back to a default); everything else returns to the factory template.
 
 Success `200`:
 

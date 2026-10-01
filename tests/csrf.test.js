@@ -10,7 +10,7 @@
  */
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { server, request, login, readDBFile, writeDBFile } = require('./harness');
+const { server, request, login, readDBFile, writeDBFile, TEST_PASSWORD } = require('./harness');
 
 describe('CSRF 防护（S7）', () => {
   describe('GET /api/csrf-token', () => {
@@ -64,7 +64,7 @@ describe('CSRF 防护（S7）', () => {
       server.csrfTokens.delete(token);
       const res = await request('POST', '/api/password', {
         token,
-        body: { oldPassword: 'xy888888', newPassword: 'newpass123' }
+        body: { oldPassword: TEST_PASSWORD, newPassword: 'newpass123' }
       });
       assert.equal(res.status, 403);
     });
@@ -74,7 +74,7 @@ describe('CSRF 防护（S7）', () => {
       server.csrfTokens.delete(token);
       const res = await request('POST', '/api/reset', {
         token,
-        body: { password: 'xy888888' }
+        body: { password: TEST_PASSWORD }
       });
       assert.equal(res.status, 403);
     });
@@ -107,7 +107,7 @@ describe('CSRF 防护（S7）', () => {
         const pwRes = await request('POST', '/api/password', {
           token,
           headers: { 'x-csrf-token': csrfToken },
-          body: { oldPassword: 'xy888888', newPassword: 'newpassword123' }
+          body: { oldPassword: TEST_PASSWORD, newPassword: 'newpassword123' }
         });
         assert.equal(pwRes.status, 200, '改密码应成功');
 

@@ -8,7 +8,7 @@ const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { server, request, login, readDBFile, writeDBFile, uploadedFiles } = require('./harness');
+const { server, request, login, readDBFile, writeDBFile, uploadedFiles, TEST_PASSWORD } = require('./harness');
 
 // 1×1 PNG，够小且能被当成合法图片落盘
 const PNG_1PX =
@@ -159,7 +159,7 @@ describe('POST /api/reset', () => {
     assert.equal(denied.status, 400);
 
     // 提供正确密码才恢复默认内容
-    const res = await request('POST', '/api/reset', { token, body: { currentPassword: 'xy888888' } });
+    const res = await request('POST', '/api/reset', { token, body: { currentPassword: TEST_PASSWORD } });
     assert.equal(res.status, 200);
     assert.equal(res.body.settings.siteName, 'XY俱乐部');
 

@@ -260,7 +260,8 @@
   function pickFile(cb) {
     const inp = document.createElement('input');
     inp.type = 'file';
-    inp.accept = 'image/*';
+    // 与服务端 ALLOWED_EXTS 保持一致（服务端不支持 svg / bmp 等，收窄可避免"选完才报错"）
+    inp.accept = 'image/jpeg,image/png,image/webp,image/gif';
     inp.onchange = () => { if (inp.files[0]) cb(inp.files[0]); };
     inp.click();
   }
@@ -270,10 +271,12 @@
 
   function typeBadge(s) {
     const t = TYPES[s.type];
-    const n = s.type === 'text' ? '' : ` · ${(s.items || []).length} 个${t.itemLabel || ''}`;
+    const n = s.type === 'text' ? '' : ` · ${(s.items || []).length} 个${t ? (t.itemLabel || '') : ''}`;
     const off = s.visible === false ? ' off' : '';
     const offTxt = s.visible === false ? ' · 已隐藏' : '';
-    return `<span class="badge${off}">${t ? t.label : s.type}${n}${offTxt}</span>`;
+    // 未知板块类型：给出明确警示而非裸字符串，避免后台界面哑火
+    const label = t ? t.label : `⚠ 未知类型(${s.type})`;
+    return `<span class="badge${off}${t ? '' : ' warn'}">${label}${n}${offTxt}</span>`;
   }
 
   function renderSecList() {
@@ -446,6 +449,7 @@
     }
   });
 
+  let addModalReturnFocus = null;
   /* ================= 添加板块弹窗 ================= */
   $('#addSecBtn').addEventListener('click', () => {
     newSecType = 'services';
@@ -454,6 +458,7 @@
     $('#newSecIcon').value = '';
     $('#newSecSub').value = '';
     $('#addModal').hidden = false;
+    addModalReturnFocus = document.activeElement; // 记录打开前焦点，关闭后还原
     $('#newSecTitle').focus(); // U3：弹窗打开时把焦点移到首个输入框
   });
   $('#typeGrid').addEventListener('click', (e) => {
@@ -513,7 +518,16 @@
       toast('✅ 密码修改成功');
     } catch (e) { toast(e.message, true); }
   });
-  $('#logoutBtn').addEventListener('click', () => {
+  // 退出登录：必须先在服务端销毁会话，再清本地。
+  // 旧实现只清 localStorage —— 服务器上的 token 仍有效 7 天，等于"退出"是假的。
+  $('#logoutBtn').addEventListener('click', async () => {
+    try {
+      await api('/api/logout', { method: 'POST' });
+    } catch (e) {
+      // 请求失败也要继续清本地：至少保证用户能退出当前界面
+    }
+    token = '';
+    csrfToken = '';
     localStorage.removeItem('xy_token');
     location.reload();
   });
@@ -522,10 +536,14 @@
   document.addEventListener('click', (e) => {
     if (e.target.closest('[data-close]')) {
       $('#addModal').hidden = true;
+      if (addModalReturnFocus && typeof addModalReturnFocus.focus === 'function') addModalReturnFocus.focus();
     }
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') $('#addModal').hidden = true;
+    if (e.key === 'Escape' && !$('#addModal').hidden) {
+      $('#addModal').hidden = true;
+      if (addModalReturnFocus && typeof addModalReturnFocus.focus === 'function') addModalReturnFocus.focus();
+    }
   });
 
   /* ================= 登录事件 ================= */

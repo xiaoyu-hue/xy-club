@@ -6,7 +6,7 @@
  */
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { request, login } = require('./harness');
+const { request, login, TEST_PASSWORD } = require('./harness');
 
 describe('POST /api/password · 会话失效', () => {
   test('改密码后其它会话失效、当前会话保留', async () => {
@@ -15,7 +15,7 @@ describe('POST /api/password · 会话失效', () => {
 
     const res = await request('POST', '/api/password', {
       token: tokenA,
-      body: { oldPassword: 'xy888888', newPassword: 'session-new-pw' }
+      body: { oldPassword: TEST_PASSWORD, newPassword: 'session-new-pw' }
     });
     assert.equal(res.status, 200);
 
@@ -28,7 +28,7 @@ describe('POST /api/password · 会话失效', () => {
     assert.equal(checkB.body.ok, false, '其它会话应被令失效');
 
     // 旧密码失效、新密码可登录
-    const oldLogin = await request('POST', '/api/login', { body: { password: 'xy888888' } });
+    const oldLogin = await request('POST', '/api/login', { body: { password: TEST_PASSWORD } });
     assert.equal(oldLogin.status, 401, '旧密码应失效');
     const newLogin = await request('POST', '/api/login', { body: { password: 'session-new-pw' } });
     assert.equal(newLogin.status, 200, '新密码应能登录');
@@ -36,7 +36,7 @@ describe('POST /api/password · 会话失效', () => {
     // 还原出厂密码，避免影响其它用例
     await request('POST', '/api/password', {
       token: newLogin.body.token,
-      body: { oldPassword: 'session-new-pw', newPassword: 'xy888888' }
+      body: { oldPassword: 'session-new-pw', newPassword: TEST_PASSWORD }
     });
   });
 });

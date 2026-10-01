@@ -83,8 +83,9 @@ pnpm install
 # 启动服务
 node server.js        # 官网 http://localhost:3000 ｜ 后台 /admin
 
-# 默认管理密码
-xy888888
+# 管理员密码：优先读环境变量 ADMIN_PASSWORD；
+# 未设置时首次启动自动生成随机密码并打印到控制台
+ADMIN_PASSWORD=你的密码 node server.js
 ```
 
 ```bash

@@ -10,7 +10,7 @@
   const interp = (text, custom) => {
     const c = custom || {};
     return String(text == null ? '' : text)
-      .replace(/\{\{\s*custom\.([\w.\-]+)\s*\}\}/g, (m, k) => (k in c ? c[k] : ''));
+      .replace(/\{\{\s*custom\.([\w.-]+)\s*\}\}/g, (m, k) => (k in c ? c[k] : ''));
   };
   const fine = matchMedia('(pointer:fine)').matches;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -154,7 +154,7 @@
     const st = SITE.settings;
     $('#ctaCard').innerHTML = `
       <h2 class="grad-text">准备好开启陪伴了吗？</h2>
-      <p>${esc(st.slogan || '')}　${esc(st.qrNote || '')}</p>
+      <p>${esc(st.slogan || '')} ${esc(st.qrNote || '')}</p>
       ${st.wechat ? `<div class="cta-wx">💚 微信号：<b>${esc(st.wechat)}</b></div>` : ''}
       <div class="cta-btns">
         <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
@@ -207,6 +207,10 @@
       navigator.clipboard.writeText(text).then(done).catch(fallback);
     } else fallback();
   }
+  let modalReturnFocus = null;
+  function onModalKey(e) {
+    if (e.key === 'Escape' && !$('#modal').hidden) closeModal();
+  }
   function openModal() {
     const st = SITE.settings;
     const rows = [];
@@ -230,10 +234,17 @@
       <p class="m-time">🕐 ${esc(st.serviceTime || '')}</p>`;
     $('#modal').hidden = false;
     document.body.style.overflow = 'hidden';
+    // 无障碍：记录打开前焦点，并把焦点移入弹窗；ESC 可关闭
+    modalReturnFocus = document.activeElement;
+    const f = $('#modal').querySelector('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])');
+    if (f) f.focus();
+    document.addEventListener('keydown', onModalKey);
   }
   function closeModal() {
     $('#modal').hidden = true;
     document.body.style.overflow = '';
+    document.removeEventListener('keydown', onModalKey);
+    if (modalReturnFocus && typeof modalReturnFocus.focus === 'function') modalReturnFocus.focus();
   }
 
   /* ================= 微交互 ================= */
@@ -405,6 +416,7 @@
     } catch (e) { /* 快照也不存在 */ }
 
     console.error('加载内容失败：API 与静态快照均不可用');
+    toast('⚠ 内容加载失败，请检查网络后刷新页面', 6000);
     return { settings: {}, sections: [] };
   }
 

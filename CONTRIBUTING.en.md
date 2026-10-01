@@ -77,7 +77,9 @@ git clone https://github.com/xiaoyu-hue/xy-club.git
 cd xy-club
 pnpm install
 node server.js        # site http://localhost:3000 | admin /admin
-# default admin password: xy888888
+# admin password: reads ADMIN_PASSWORD first;
+# if unset, a random password is generated on first start and printed to console
+ADMIN_PASSWORD=yourpassword node server.js
 ```
 
 ```bash

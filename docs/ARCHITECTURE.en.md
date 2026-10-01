@@ -31,7 +31,7 @@ A single Express process serves both static files and REST APIs; all content liv
                   └──────────────────────────────────────────┘
 ```
 
-**Key point**: The official site and admin panel share the same `data/db.json`. Whatever the admin changes, the frontend reflects immediately—no cache layer, no rebuild.
+**Key point**: The official site and admin panel share the same `data/db.json`. Whatever the admin changes, the frontend reflects immediately—there is an **in-process read cache** (`readDB` re-reads only when the file `mtime` changes, invalidated after writes), but no whole-site rebuild.
 
 ---
 
@@ -48,7 +48,7 @@ The shape of `db.json` matches `DEFAULT_DB` in `defaults.js`:
 
 ```json
 {
-  "settings": { "siteName": "...", "theme": "aurora", "adminPassword": "..." },
+  "settings": { "siteName": "...", "theme": "aurora", "adminPassword": "scrypt$..." },
   "sections": [ { "id": "s-game", "type": "services", "items": [] } ]
 }
 ```

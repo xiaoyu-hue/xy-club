@@ -94,7 +94,7 @@ refactor: 抽出主题应用逻辑为 applyTheme()
 任何发版（bump 版本 + tag + Release）、功能变更、依赖变化、CI 变化、新增文档 / ADR，都必须走 `docs/DOC_SYNC.md` 的同步清单。要点：
 
 1. **版本号问 `package.json`**：它是唯一真源，其他文档（CHANGELOG / PRD / ARCHITECTURE / README 徽章）从它派生。
-2. **数字问测试输出**：测试数（当前 **123 项 / 39 suites**）以 `npm test` 实际输出为准，禁止凭印象写数字、禁止改数字假装一致。
+2. **数字问测试输出**：测试数（当前 **158 项 / 45 suites**）以 `npm test` 实际输出为准，禁止凭印象写数字、禁止改数字假装一致。
 3. **描述问代码**：功能 / 架构描述不得超出实现；文档声明的能力代码里必须真有。
 4. **中英文档同步**：中文为基准，改中文文档必须同步 `.en.md`（README / CHANGELOG / CODE_OF_CONDUCT / SECURITY / AUTHOR / PRD / ARCHITECTURE）。
 5. **发布前验证必跑**：旧版本号残留 grep、版本一致性、CHANGELOG 转正、中英对查、`npm test` 与 CI 全绿。
@@ -108,7 +108,7 @@ refactor: 抽出主题应用逻辑为 applyTheme()
 - 在私有仓库 README 中使用 `github/v/release` 等徽章 —— shields.io 取不到数据，显示 inaccessible，应使用静态徽章
 - 改了 `.stat span` 之类的宽泛选择器导致数字换行 —— 样式选择器要收窄到直接子元素
 - 忘记 `public/uploads/` 与 `data/` 在无持久卷环境下会丢失
-- 直接编辑 `data/db.json` 改密码 —— 密码是 **scrypt 哈希**，必须用 `node scripts/reset-password.js 新密码`
+- 直接编辑 `data/db.json` 改密码 —— 密码是 **scrypt 哈希**，必须用 `node scripts/reset-password.js 新密码`（或 `--generate`）
 
 ## 十、交付前自检
 

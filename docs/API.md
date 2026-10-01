@@ -38,8 +38,10 @@ x-token: <登录时返回的 token>
 请求体：
 
 ```json
-{ "password": "xy888888" }
+{ "password": "你的管理员密码" }
 ```
+
+> ⚠️ 本项目**不再内置默认密码**。管理员密码来自环境变量 `ADMIN_PASSWORD`；若未设置，服务首次启动会生成一个强随机密码并打印到控制台（仅一次，详见架构文档「鉴权」）。示例中的弱密码 `xy888888` 已废弃。
 
 成功 `200`：
 
@@ -77,6 +79,20 @@ x-token: <登录时返回的 token>
 ```
 
 `ok` 为 `false` 表示 token 缺失或已过期。
+
+### POST /api/logout
+
+登出当前会话（**需鉴权**）。使当前 token 立即失效（不再受 7 天 TTL 约束），前端应同时清除 `localStorage` 中的 token。
+
+请求头：`x-token: <token>`
+
+成功 `200`：
+
+```json
+{ "ok": true }
+```
+
+> 在公用设备退出、或怀疑 token 泄露时，登出可第一时间让旧 token 作废，比等待 7 天过期更安全。
 
 ### GET /api/content
 
@@ -145,7 +161,7 @@ x-token: <登录时返回的 token>
 请求体：
 
 ```json
-{ "oldPassword": "xy888888", "newPassword": "newSecret6" }
+{ "oldPassword": "你的当前密码", "newPassword": "newSecret6" }
 ```
 
 成功 `200`：`{ "ok": true }`
@@ -160,6 +176,15 @@ x-token: <登录时返回的 token>
 ### POST /api/reset
 
 恢复为模板默认内容（**需鉴权 + CSRF**）。换俱乐部复用时可先恢复默认再改内容。
+
+请求体：
+
+```json
+{ "currentPassword": "你的管理员密码" }
+```
+
+- `currentPassword` 为必填，用于二次确认身份，缺失或错误返回 `400 { "ok": false, "error": "管理密码错误，无法恢复默认内容" }`；**注意它不是登录 token**，而是当前登录所用的管理员密码。
+- 恢复后**保留**当前的管理员密码（不会退回默认），其余内容回到出厂模板。
 
 成功 `200`：
 

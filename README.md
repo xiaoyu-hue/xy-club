@@ -118,7 +118,7 @@
 ## 🔐 数据与隐私
 
 - **所有内容存于 `data/db.json`** — 单个 JSON 文件，重启不丢失，不依赖任何数据库
-- **默认管理密码 `xy888888`** — 以 **scrypt 哈希**存于 `db.json`（Node 内置实现，未引入新依赖），**部署后请立即修改**
+- **管理员密码** — 来自环境变量 `ADMIN_PASSWORD`；未设置时，服务首次启动会生成一个**强随机密码**并仅打印到控制台一次（请立即保存）。密码以 **scrypt 哈希**存于 `db.json`（Node 内置实现，未引入新依赖），**部署后请尽快修改**
 - **密码不进版本库** — `data/db.json` 已在 `.gitignore` 中排除
 - **登录限流** — 同一 IP 连续 5 次密码错误后锁定 5 分钟
 - **CSRF 防护** — 所有写操作（保存 / 改密码 / 上传 / 恢复默认）强制校验 CSRF token
@@ -166,7 +166,7 @@ node server.js    # 默认 http://localhost:3000
 
 - 官网：<http://localhost:3000>
 - 后台：<http://localhost:3000/admin>
-- **默认管理密码：`xy888888`** —— 登录后立即到「网站设置 → 修改管理密码」更换
+- **管理员密码**：未设 `ADMIN_PASSWORD` 时，看服务首次启动的控制台日志里那串随机密码；登录后到「网站设置 → 修改管理密码」更换
 - 换端口：`PORT=8080 node server.js`（服务已绑定 `0.0.0.0`，可直接部署）
 
 > 首次启动会由 `defaults.js` 自动生成 `data/db.json`；删掉这个文件即恢复出厂内容。
@@ -206,6 +206,7 @@ xy-club/
 |------|------|------|
 | POST | `/api/login` | 密码登录，返回 token |
 | GET | `/api/check` | 校验登录态 |
+| POST | `/api/logout` | 退出登录（服务端销毁会话，前端登出时会调） |
 | GET | `/api/csrf-token` | 获取 CSRF token（需登录） |
 | GET | `/api/content` | 获取整站内容（公开） |
 | PUT | `/api/content` | 保存内容与设置（需鉴权 + CSRF） |
@@ -292,7 +293,7 @@ PORT=8080 node server.js     # 平台会注入 PORT，服务已监听 0.0.0.0
 ## 💾 数据与备份
 
 - 内容全在 `data/db.json`，**建议定期用后台「导出配置」备份 JSON**
-- 忘记密码：`node scripts/reset-password.js 新密码`（密码以哈希存储，不能再直接手改明文）
+- 忘记密码：`node scripts/reset-password.js 新密码`（或 `--generate` 自动生成随机密码）；密码以哈希存储，不能再直接手改明文
 - 想回到初始状态：删除 `data/db.json` 重启，或后台点「恢复默认」
 
 ---
@@ -327,7 +328,7 @@ PORT=8080 node server.js     # 平台会注入 PORT，服务已监听 0.0.0.0
 ## 🧪 测试
 
 ```bash
-npm test          # 单元测试：123 项，零新增依赖（Node 内置 node --test）
+npm test          # 单元测试：158 项，零新增依赖（Node 内置 node --test）
 ```
 
 `npm test` 是唯一的强制门禁，CI 会在 Node 18 / 20 / 22 上各跑一遍。它覆盖的是真正有风险的层面：密码哈希与登录限流、CSRF token、HTTP 安全头、输入验证与原型链污染防御、上传格式白名单、内容读写与数据容错、静态快照不含凭据、以及「文档与代码是否还对齐」。

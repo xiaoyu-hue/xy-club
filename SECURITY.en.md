@@ -4,7 +4,7 @@
 
 ## 📌 Supported Versions
 
-Security fixes go only into the **latest stable release**. Currently supported: **v1.5.2** ([Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)).
+Security fixes go only into the **latest stable release**. Currently supported: **v1.7.0** ([Latest Release](https://github.com/xiaoyu-hue/xy-club/releases/latest)).
 
 Older versions no longer receive security patches — please upgrade.
 
@@ -39,7 +39,7 @@ This is a solo-maintained project with no SLA, but we'll confirm and handle repo
 
 ## 🛡 Deployment Security Checklist
 
-1. **Change the default password `xy888888` immediately after deploying** (admin "Site Settings → Change Password", or `node scripts/reset-password.js <new-password>`).
+1. **Set a strong password explicitly at deploy time**: use the `ADMIN_PASSWORD` env var; if unset, the random password generated on first start is **printed only once**, so save it. Change it soon after deploying (admin "Site Settings → Change Password", or `node scripts/reset-password.js <new-password>`).
 2. **Mount a persistent volume** for `data/` and `public/uploads/`, or a restart wipes content.
 3. **Put a reverse proxy** (Nginx / Caddy) in front for HTTPS and rate-limit the login endpoint.
 4. Never commit `data/db.json` to the repo (already in `.gitignore`).

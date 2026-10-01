@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.7.0] - 2026-10-01
+
+### 🔒 Security
+
+- **Default-password hardening (Breaking)**: Removed the hardcoded weak default `xy888888`. The admin password now comes from the `ADMIN_PASSWORD` env var; if unset, the server generates a strong random password on first start and prints it to the console once. **After upgrading, set `ADMIN_PASSWORD` or read the new password from the startup log**
+- **Login rate-limit bypass closed**: `TRUST_PROXY` default changed from `1` to `false`; a spoofed `X-Forwarded-For` header can no longer bypass the login rate limit (previously one HTTP header allowed unlimited brute force)
+- **New logout endpoint** `POST /api/logout`: invalidates the token immediately instead of waiting for the 7-day TTL
+- **Tighter CSP**: removed script/style `unsafe-inline`; added `Strict-Transport-Security` and `object-src 'none'`
+- **Upload validation**: added file-signature (magic-byte) checks (rejecting scripts disguised as images), a per-IP upload rate limit, and disk quota on top of the extension whitelist
+- **Audit log**: key writes (password change / reset / logout / upload) are written to the server log
+
+### 🔧 Fixes
+
+- **Accessibility**: fixed the unclosed `<main>` tag in `index.html` (footer / modal / floating button were wrongly nested inside `main`); added visible keyboard focus styles to admin inputs; modals now close on ESC and manage focus
+- **Robustness**: unknown section types show a clear warning; `build-static` reads the real `data/db.json` first; the site shows a visible message when loading fails
+- **Code standards**: fixed the crashing `npm run lint` (two conflicting ESLint configs plus one nonexistent rule); now zero errors
+
+### 🧪 Tests
+
+- Total: 140 → **158 cases / 45 suites**, 100% pass rate
+- Added: XSS-escaping regression, logout invalidation, unauthenticated upload, CSRF cross-session binding, session TTL, write-lock serialization, API-doc two-way consistency guard
+- **CI**: added a lint quality gate; deploy now depends on tests passing
+
+### 📚 Documentation
+
+- Fixed `docs/API.md` / `.en.md`: added the required `currentPassword` param for `/api/reset`, added `/api/logout`, removed the obsolete default-password example
+- Fixed `docs/ARCHITECTURE.md` / `.en.md`: cache layer, password storage, theme count
+- Fixed `GLOBAL.md` factual errors (SQLite → single JSON file, test framework), repaired dead doc links
+- Unified test counts across the repo; unified EN/ZH themes to 8 and section types to 8
+
+### ⚠️ Breaking Changes
+
+- **Admin password mechanism changed**: there is no built-in default password anymore. After upgrading you must set the `ADMIN_PASSWORD` env var, or read the auto-generated random password from the first startup log, otherwise you cannot log into the admin
+
+---
+
 ## [v1.6.2] - 2026-09-29
 
 ### 🔧 Fixes
@@ -26,14 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Total: 140 cases
 - Pass rate: 100%
-
-### 📊 Score Improvement
-
-- Overall: 89 → 94/100 (+5 points)
-
-### ⚠️ Breaking Changes
-
-- None (fully backward compatible)
 
 ---
 

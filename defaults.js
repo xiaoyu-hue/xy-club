@@ -22,8 +22,11 @@ const DEFAULT_DB = {
     footer: 'XY俱乐部 · 有趣的人，都在这里\n线上纯语音 / 文字服务 · 不线下 · 不露脸 · 未成年人请勿消费',
     // 全局自定义字段：后台可任意增删「键 → 值」，用于跨板块复用的文案（如营业时间、活动标语）。
     // 在「自由文本」板块或支持的文本里用 {{custom.键名}} 引用。
-    custom: {},
-    adminPassword: 'xy888888'
+    custom: {}
+    // 注意：这里**故意不设** adminPassword。
+    // 管理密码由 server.js 在首次启动时决定：优先取环境变量 ADMIN_PASSWORD，
+    // 未设置则自动生成一个强随机密码并打印到控制台（见 server.js 的 ensureAdminPassword）。
+    // 模板里绝不再内置任何已知密码 —— 本仓库是公开的，写死密码等于把后台开放给所有人。
   },
   sections: [
     {

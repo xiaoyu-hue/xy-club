@@ -1,4 +1,6 @@
 module.exports = {
+  root: true,
+  ignorePatterns: ['tests/', 'node_modules/'],
   env: {
     browser: true,
     node: true,
@@ -37,5 +39,5 @@ module.exports = {
     // 允许不使用严格模式（IIFE 内部已有）
     'strict': 'off'
   }
-}
+};
 

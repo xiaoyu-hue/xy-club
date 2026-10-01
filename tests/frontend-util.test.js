@@ -53,7 +53,11 @@ global.innerHeight = 800;
 global.scrollTo = () => {};
 
 const { esc, TYPES } = require('../public/js/admin.js');
-const { interp } = require('../public/js/main.js');
+// 注意：main.js 的 esc 必须**单独**测。
+// 官网每一个板块、每一条文案都是经过它才拼进 innerHTML 的 —— 它一旦被改坏，
+// 全站立刻变成存储型 XSS 的靶子。v1.7.0 之前只有 admin.js 那份被测，
+// main.js 这份被删成恒等函数时 140 项测试依然全绿（变异测试实证）。
+const { esc: escMain, interp } = require('../public/js/main.js');
 
 describe('esc（XSS 转义）', () => {
   test('转义 < > & " \'', () => {
@@ -67,8 +71,40 @@ describe('esc（XSS 转义）', () => {
   });
 });
 
+// 官网渲染层用的正是这一份，行为必须与后台那一份完全一致
+describe('esc（main.js · 官网渲染层）', () => {
+  test('转义 < > & " \'', () => {
+    assert.equal(escMain('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
+    assert.equal(escMain('a&b"c\'d'), 'a&amp;b&quot;c&#39;d');
+  });
+
+  test('null / undefined 安全返回空串', () => {
+    assert.equal(escMain(null), '');
+    assert.equal(escMain(undefined), '');
+  });
+
+  test('能挡住真实攻击载荷：闭合标签 + 事件属性 + javascript: 协议', () => {
+    for (const payload of [
+      '</script><script>alert(1)</script>',
+      '" onmouseover="alert(1)',
+      "' onerror='alert(1)",
+      '<svg/onload=alert(1)>',
+      'javascript:alert(1)'
+    ]) {
+      const out = escMain(payload);
+      assert.equal(/[<>"']/.test(out), false, `载荷未被完全转义：${payload} → ${out}`);
+    }
+  });
+
+  test('与 admin.js 的 esc 行为一致（两份实现不得漂移）', () => {
+    for (const s of ['<a href="x">', "it's", 'a&b', null, undefined, '']) {
+      assert.equal(escMain(s), esc(s), `两份 esc 对 ${JSON.stringify(s)} 的处理不一致`);
+    }
+  });
+});
+
 describe('TYPES（主题 / 板块白名单）', () => {
-  test('含 7 种板块类型', () => {
+  test('含 8 种板块类型', () => {
     assert.deepEqual(
       Object.keys(TYPES).sort(),
       ['cards', 'custom', 'faq', 'gallery', 'notice', 'services', 'testimonials', 'text']

@@ -7,7 +7,7 @@
  */
 const { test, describe, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
-const { server, request } = require('./harness');
+const { server, request, TEST_PASSWORD } = require('./harness');
 
 const { MAX_ATTEMPTS, loginAttempts } = server;
 
@@ -27,7 +27,7 @@ describe('登录失败计数', () => {
     for (let i = 0; i < MAX_ATTEMPTS; i++) {
       await request('POST', '/api/login', { body: { password: 'bad-' + i } });
     }
-    const res = await request('POST', '/api/login', { body: { password: 'xy888888' } });
+    const res = await request('POST', '/api/login', { body: { password: TEST_PASSWORD } });
     assert.equal(res.status, 429);
     assert.match(res.body.error, /5\s*分钟/, '应提示锁定时长');
   });
@@ -43,7 +43,7 @@ describe('登录失败计数', () => {
   test('登录成功后计数清零', async () => {
     await request('POST', '/api/login', { body: { password: 'bad-1' } });
     await request('POST', '/api/login', { body: { password: 'bad-2' } });
-    const ok = await request('POST', '/api/login', { body: { password: 'xy888888' } });
+    const ok = await request('POST', '/api/login', { body: { password: TEST_PASSWORD } });
     assert.equal(ok.status, 200);
     assert.equal(loginAttempts.size, 0, '成功后应清除该 IP 的失败记录');
   });
@@ -60,7 +60,7 @@ describe('登录失败计数', () => {
     // 直接把锁定时间拨到过去，避免真的等 5 分钟
     loginAttempts.get(ip).until = Date.now() - 1;
     assert.equal(server.isLocked(ip), false);
-    const res = await request('POST', '/api/login', { body: { password: 'xy888888' } });
+    const res = await request('POST', '/api/login', { body: { password: TEST_PASSWORD } });
     assert.equal(res.status, 200);
   });
 });

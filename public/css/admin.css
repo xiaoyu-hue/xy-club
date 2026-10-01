@@ -93,7 +93,7 @@ img { max-width: 100%; }
 .field { margin-top: 26px; }
 .field input, .form-item input, .form-item textarea {
   width: 100%; padding: 12px 15px; border-radius: 14px; border: 1px solid var(--line);
-  background: rgba(255,255,255,.05); color: var(--ink); font-size: 14px; outline: none;
+  background: rgba(255,255,255,.05); color: var(--ink); font-size: 14px;
   transition: border-color .2s, box-shadow .2s;
 }
 .form-item textarea { resize: vertical; line-height: 1.7; }
@@ -196,10 +196,14 @@ img { max-width: 100%; }
 /* 全局自定义字段管理 */
 .custom-row { display: flex; gap: 8px; align-items: center; margin: 9px 0; }
 .custom-row .cf-key { flex: 0 0 130px; background: rgba(255,255,255,.04); border: 1px solid var(--line); color: var(--faint); border-radius: 12px; padding: 9px 12px; font-size: 13px; }
-.custom-row .cf-val { flex: 1; padding: 9px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--ink); font-size: 13px; outline: none; }
+.custom-row .cf-val { flex: 1; padding: 9px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--ink); font-size: 13px; }
 .custom-row .cf-val:focus { border-color: var(--accent); }
 .empty-hint { font-size: 12.5px; color: var(--faint); margin: 4px 0 12px; }
 .empty-hint code, .tpl-tip code { background: rgba(255,255,255,.08); padding: 1px 6px; border-radius: 6px; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+/* 无障碍：键盘 Tab 导航时显示清晰焦点轮廓；鼠标点击不显示（避免与 :focus 阴影环重叠） */
+:focus:not(:focus-visible) { outline: none; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .item-row.v2 { grid-template-columns: minmax(0, .5fr) minmax(0, 1.2fr) minmax(0, 2.4fr) auto; }
 .item-row.v3 { grid-template-columns: minmax(0, 2.4fr) minmax(0, 2.4fr) auto; }
 .item-row.v4 { grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr) minmax(0, 2.2fr) auto; }
