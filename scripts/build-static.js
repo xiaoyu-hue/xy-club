@@ -18,7 +18,21 @@ const fs = require('fs');
 const path = require('path');
 const { DEFAULT_DB } = require('../defaults');
 
-const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+// 产物根目录默认就是仓库的 public/。
+// BUILD_STATIC_PUBLIC_DIR 仅供**测试**把构建指向一个沙箱副本使用
+// （tests/static-build.test.js 需要在不污染真实 manifest.json 的前提下
+// 验证「坏资产必须让构建失败」）。
+//
+// 安全约束：只有同时设置 NODE_TEST_CONTEXT（node --test 自动注入）时才接受重定向，
+// 防止在 CI / 生产环境被环境变量劫持，把产物写到仓库外。
+const ALLOW_REDIRECT = !!process.env.NODE_TEST_CONTEXT;
+if (process.env.BUILD_STATIC_PUBLIC_DIR && !ALLOW_REDIRECT) {
+  console.error('✗ BUILD_STATIC_PUBLIC_DIR 只在测试环境可用（缺少 NODE_TEST_CONTEXT）。已忽略该变量。');
+  process.exit(1);
+}
+const PUBLIC_DIR = (ALLOW_REDIRECT && process.env.BUILD_STATIC_PUBLIC_DIR)
+  ? path.resolve(process.env.BUILD_STATIC_PUBLIC_DIR)
+  : path.join(__dirname, '..', 'public');
 const CASES_DIR = path.join(PUBLIC_DIR, 'cases');
 
 /* ---------------- 1. 生成默认案例快照 ---------------- */

@@ -48,29 +48,62 @@ describe('scripts/build-static.js', () => {
   });
 
   test('构建脚本在案例资产损坏时确实报错退出（负向用例）', () => {
-    // 造一份坏 manifest，确认脚本会拒绝构建 —— 防止校验逻辑沦为摆设。
-    const CASES = path.join(ROOT, 'public', 'cases');
-    const manifestPath = path.join(CASES, 'manifest.json');
-    const backup = fs.readFileSync(manifestPath, 'utf8');
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'xy-build-neg-'));
+    // 目标：确认校验逻辑不是摆设 —— 坏资产必须让构建失败。
+    //
+    // 注意：这里**不能篡改仓库里的 public/cases/manifest.json**。
+    // node --test 会并行运行各测试文件，其他文件（cases.test.js、
+    // case-isolation.test.js、static-build.test.js 自身）同时在读 manifest，
+    // 写共享文件会造成间歇性失败。
+    //
+    // 替代做法：把整个 public/ 复制到临时目录，在副本里制造损坏，
+    // 再用 BUILD_STATIC_ROOT 环境变量把构建脚本指向该副本执行。
+    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'xy-build-neg-'));
     try {
-      // 指向一个不存在的案例文件
-      fs.writeFileSync(manifestPath, JSON.stringify({
+      const pubCopy = path.join(sandbox, 'public');
+      fs.cpSync(path.join(ROOT, 'public'), pubCopy, { recursive: true });
+      fs.mkdirSync(path.join(sandbox, 'scripts'), { recursive: true });
+
+      // 在副本里把 manifest 指向一个不存在的案例
+      fs.writeFileSync(path.join(pubCopy, 'cases', 'manifest.json'), JSON.stringify({
         cases: [{ id: 'definitely-not-exist', name: 'X', industry: 'X', emoji: 'X', theme: 'aurora' }]
       }, null, 2));
 
       let code = 0;
       try {
         execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'build-static.js')], {
-          cwd: ROOT, stdio: 'pipe'
+          cwd: ROOT,
+          stdio: 'pipe',
+          env: Object.assign({}, process.env, { BUILD_STATIC_PUBLIC_DIR: pubCopy })
         });
       } catch (e) {
         code = e.status;
       }
       assert.equal(code, 1, '坏 manifest 应导致构建失败（退出码 1）');
     } finally {
-      fs.writeFileSync(manifestPath, backup);
-      fs.rmSync(tmpDir, { recursive: true, force: true });
+      fs.rmSync(sandbox, { recursive: true, force: true });
+    }
+  });
+
+  test('构建脚本对完好资产返回成功（与上一个负向用例构成对照）', () => {
+    // 只有"坏→失败"没有"好→成功"，无法排除脚本是一律失败的假校验。
+    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'xy-build-pos-'));
+    try {
+      const pubCopy = path.join(sandbox, 'public');
+      fs.cpSync(path.join(ROOT, 'public'), pubCopy, { recursive: true });
+
+      let code = 0;
+      try {
+        execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'build-static.js')], {
+          cwd: ROOT,
+          stdio: 'pipe',
+          env: Object.assign({}, process.env, { BUILD_STATIC_PUBLIC_DIR: pubCopy })
+        });
+      } catch (e) {
+        code = e.status;
+      }
+      assert.equal(code, 0, '完好资产应构建成功（退出码 0）');
+    } finally {
+      fs.rmSync(sandbox, { recursive: true, force: true });
     }
   });
 });
