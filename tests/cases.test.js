@@ -248,10 +248,16 @@ describe('多案例 · P2 图片资产与授权溯源', () => {
     }
   });
 
-  test('CREDITS.md 标注了 License，可追溯', () => {
+  test('CREDITS.md 标注了授权来源，可追溯', () => {
+    // v1.9.0 起图片改为项目作者自有版权（原 Unsplash 台账因无法核验已废弃），
+    // 因此合法来源既包括第三方图库，也包括「自有版权」。关键是"来源必须写清"。
     const md = fs.readFileSync(CREDITS, 'utf8');
-    assert.match(md, /License/i, 'CREDITS.md 需有 License 列');
-    assert.match(md, /Unsplash|CC0|Public Domain|Pexels/i, 'CREDITS.md 需写明具体授权来源');
+    assert.match(md, /License|版权/i, 'CREDITS.md 需有 License 或版权归属列');
+    assert.match(
+      md,
+      /Unsplash|CC0|Public Domain|Pexels|自有版权|原创/i,
+      'CREDITS.md 需写明具体授权来源（图库名称或自有版权声明）'
+    );
   });
 
   test('案例引用的本地图片真实存在', () => {

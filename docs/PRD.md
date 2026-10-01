@@ -53,7 +53,7 @@
 - 案例为纯静态 JSON（`public/cases/*.json`），字段与 `DEFAULT_DB` 同构，仅由现有 8 种板块类型拼装
 - 切换用查询参数 `?case=<id>`，纯静态托管可用；`history.pushState` + `popstate` 支持浏览器前进/后退
 - 4 个非俱乐部案例**全部虚构**，机构名/电话/地址/Logo 均为演示内容，并在首屏显式声明「虚构」
-- 案例图片来自 Unsplash（免费商用），逐张登记在 `public/cases/CREDITS.md`
+- 案例配图为项目作者**自有版权**的原创摄影作品，版权说明登记在 `public/cases/CREDITS.md`（v1.10.0 起；此前的第三方图库台账因无法核验已废弃，详见 `docs/IMAGE-AUDIT.md`）
 - 案例资产在构建期（`scripts/build-static.js`）与测试期（`tests/cases.test.js`）双重校验：结构 / 类型 / 凭据 / 图片引用
 
 ## 四、数据规范
@@ -85,7 +85,7 @@
 
 ## 六、验收标准
 
-- [ ] `npm test` 全绿（当前 **223 项 / 60 suites**，唯一强制门禁）
+- [ ] `npm test` 全绿（当前 **232 项 / 63 suites**，唯一强制门禁）
 - [ ] 官网首页无控制台报错
 - [ ] 八套主题均正常渲染且文字可读
 - [ ] 后台登录 → 编辑 → 保存 → 刷新，内容一致

@@ -1,42 +1,46 @@
-# 案例图片授权台账（CREDITS）
+# 案例图片版权说明（CREDITS）
 
-本目录下的演示案例使用真实摄影作品作为配图。所有图片均来自 **Unsplash**，
-遵循 [Unsplash License](https://unsplash.com/license)：**可免费用于商业与非商业用途，无需署名**（本文件仍主动记录出处以示尊重与可追溯）。
+本目录下的演示案例配图，**全部为项目作者本人拍摄的原创摄影作品**，
+不涉及任何第三方素材、图库授权或 AI 生成内容。
 
-## 使用限制说明（重要）
-
-Unsplash License **不覆盖**以下权利，使用时已刻意规避：
-
-- **肖像权**：若照片中出现可识别的人物面孔，其肖像权不随 License 转移。
-  → **本目录所有图片均为无正脸人物、静物、建筑或风景题材。**
-- **商标权**：照片中若出现他人品牌标识，商标权不随 License 转移。
-  → 已避免选择含可辨识品牌 Logo 的画面。
+> **变更提示（重要）**：本文件此前登记的 16 张「Unsplash 图片」已经**全部移除**。
+> 原因是那些图片的授权来源无法核验（登记链接格式与 Unsplash 实际规则不符，
+> 详见 `docs/IMAGE-AUDIT.md`）。现在仓库内仅保留自有版权图片，授权状况清晰可查。
 
 ## 图片清单
 
-| 文件名 | 用途 | 原始页面 | License | 下载日期 |
-|--------|------|---------|---------|---------|
-| `coffee-hero.webp` | 青坞咖啡 · 首屏 | https://unsplash.com/photos/4d71bcdd2085 | Unsplash License | 2026-10-01 |
-| `coffee-latte.webp` | 青坞咖啡 · 菜单配图 | https://unsplash.com/photos/b67a49e012bf | Unsplash License | 2026-10-01 |
-| `coffee-beans.webp` | 青坞咖啡 · 菜单配图 | https://unsplash.com/photos/0c6688de566e | Unsplash License | 2026-10-01 |
-| `coffee-shop.webp` | 青坞咖啡 · 门店 | https://unsplash.com/photos/1e0d58224f24 | Unsplash License | 2026-10-01 |
-| `law-hero.webp` | 衡合律师事务所 · 首屏 | https://unsplash.com/photos/d10d557cf95f | Unsplash License | 2026-10-01 |
-| `law-books.webp` | 衡合律师事务所 · 业务领域 | https://unsplash.com/photos/8beaceb93744 | Unsplash License | 2026-10-01 |
-| `law-desk.webp` | 衡合律师事务所 · 服务流程 | https://unsplash.com/photos/c8848c66ca85 | Unsplash License | 2026-10-01 |
-| `law-handshake.webp` | 衡合律师事务所 · 团队 | https://unsplash.com/photos/7986c2920216 | Unsplash License | 2026-10-01 |
-| `saas-hero.webp` | 叠云协作 · 首屏 | https://unsplash.com/photos/43490279c0fa | Unsplash License | 2026-10-01 |
-| `saas-dashboard.webp` | 叠云协作 · 功能 | https://unsplash.com/photos/bebda4e38f71 | Unsplash License | 2026-10-01 |
-| `saas-analytics.webp` | 叠云协作 · 功能 | https://unsplash.com/photos/afdab827c52f | Unsplash License | 2026-10-01 |
-| `saas-team.webp` | 叠云协作 · 客户评价 | https://unsplash.com/photos/c894fdcc538d | Unsplash License | 2026-10-01 |
-| `photo-hero.webp` | 临界摄影 · 首屏 | https://unsplash.com/photos/ce544e77e70d | Unsplash License | 2026-10-01 |
-| `photo-work-1.webp` | 临界摄影 · 作品集 | https://unsplash.com/photos/21bda4d32df4 | Unsplash License | 2026-10-01 |
-| `photo-work-2.webp` | 临界摄影 · 作品集 | https://unsplash.com/photos/d120267933ba | Unsplash License | 2026-10-01 |
-| `photo-work-3.webp` | 临界摄影 · 作品集 | https://unsplash.com/photos/3b5ec3a7fe05 | Unsplash License | 2026-10-01 |
+| 文件名 | 用途 | 拍摄者 | 版权归属 | 入库日期 |
+|--------|------|--------|---------|---------|
+| `work-dew-white.webp` | 临界摄影 · 作品集 | 项目作者 | 自有版权 | 2026-10-01 |
+| `work-bauhinia-pink.webp` | 临界摄影 · 作品集 | 项目作者 | 自有版权 | 2026-10-01 |
+| `work-paired-bloom.webp` | 临界摄影 · 作品集 | 项目作者 | 自有版权 | 2026-10-01 |
+| `work-backlit-sky.webp` | 临界摄影 · 作品集 | 项目作者 | 自有版权 | 2026-10-01 |
+
+## 使用范围与限制
+
+自有版权图片可用于本项目的一切用途（含演示、分发、商业使用），**不受第三方限制**：
+
+- ✅ 无需署名
+- ✅ 可用于商业与非商业场景
+- ✅ 可自由裁剪、调色、二次加工
+- ⚠️ 图片中如出现可识别的人物面孔或第三方商标，**其肖像权/商标权仍归原权利人**。
+  → 当前 4 张均为植物与自然光题材，**无人物正脸、无第三方品牌标识**。
 
 ## 处理方式
 
-- 下载后统一转为 **WebP**（质量 82），最长边不超过 1400px，总体积控制在 1MB 以内。
+- 原片统一转为 **WebP**（质量 82），最长边不超过 1400px。
 - 图片**本地化存储**，不依赖外部 CDN 热链，保证离线可用与部署稳定。
+- 保留原始底片，如后续需要更高分辨率可随时重新导出。
+
+## 自动化校验
+
+`tests/credits.test.js` 会在每次测试运行时校验：
+
+1. 本清单与 `public/cases/images/` 目录下的文件**双向一致**（不多不少）；
+2. 每个案例 JSON 引用的图片路径**真实存在**；
+3. 仓库内**不存在未登记**的图片文件。
+
+这样「台账凭空捏造」「僵尸图片」「引用失效」三类问题都会在 CI 阶段被拦下。
 
 ## 案例内容声明
 

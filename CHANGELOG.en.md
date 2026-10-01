@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.10.0] - 2026-10-01
+
+**Theme: image licensing compliance** — remove third-party images of unverifiable provenance, replace them with original works, and add an automated gate to prevent recurrence.
+
+### 🔒 Security / Compliance (the core of this release)
+
+- **Removed all 16 third-party images**: the "临界摄影" case's 16 images were recorded as Unsplash free-commercial, but an audit showed the ledger could not prove itself — the recorded URLs used **12-character hex IDs**, whereas Unsplash photo IDs are actually **11-character short codes** (`varchar(11)`). The format does not match, so the links cannot resolve. Additionally, **12 of the 16 were never referenced by any case** — dead weight with no purpose.
+  - See `docs/IMAGE-AUDIT.md` for the full audit.
+- **Replaced with original photography owned by the project author**: 4 new original botanical / natural-light works with clear ownership, free of any third-party restrictions.
+  - Repository image size dropped from roughly **930KB to 160KB**.
+
+### ✨ Case rework
+
+- **Repositioned the "临界摄影" case**: from a portrait studio (wedding documentary / family portraits / commercial portraiture) to a **natural-light photography** studio focused on botanical still life, natural-light documentary, and solar-term themes — consistent with the new images.
+- **Unified case naming**: the original had `siteName: 临界摄影` while the body text said "拾光摄影"; everything is now "临界摄影".
+- **Rewrote all copy**: portfolio captions, service packages, shooting workflow, testimonials, FAQ, and about section — all rebuilt around the new positioning.
+- Renamed image files to semantic names (e.g. `work-dew-white.webp`) instead of the vague `photo-work-1.webp`.
+
+### ✅ Tests
+
+- **Added `tests/credits.test.js` (9 cases)**: turns licensing compliance into executable assertions —
+  - ledger list and image directory must match **in both directions** (no orphan files, no unlisted files);
+  - images referenced by case JSON **must actually exist** (no broken references);
+  - the ledger **must not contain 12-character hex pseudo-Unsplash IDs** (no fabricated ledgers);
+  - per-image size ceiling.
+  - Validated with deliberate-break experiments: orphan file / broken reference / re-inserted pseudo ID were all caught.
+- Test scale **223 cases / 60 suites → 232 cases / 63 suites**.
+
+### 🐛 Fixed
+
+- **Rewrote `scripts/gen-cases.js` to fix a defect that kept corrupting live data**:
+  - The script used to be a "case data generator" — case content was hand-written inside the script and then written over the JSON files. But the in-script content had drifted badly from the live JSON (mismatched case names, missing `settings.fictional`), so **every run silently corrupted live data**, including deleting the fictional-content declaration from demo cases (a compliance requirement enforced by tests).
+  - It is now a **validation + formatting tool**: the JSON is the single source of truth, and the script only validates structure (section-type whitelist, required fields, credential scan, manifest consistency) and normalises formatting — it **never writes content**.
+  - The script is now **idempotent**: repeated runs produce no diff. A `--check` mode (validate without writing) was added for CI.
+
+### 📝 Docs
+
+- Added `docs/IMAGE-AUDIT.md`: the full image copyright audit, with findings, risk grading, and remediation options.
+- Rewrote `public/cases/CREDITS.md`: from a third-party stock ledger to an original-works statement with clear ownership and usage scope.
+
+---
+
 ## [v1.9.0] - 2026-10-01
 
 **Theme: admin mobile usability** — make the admin panel genuinely usable on a phone: smooth, tappable, and capable of uploading images.

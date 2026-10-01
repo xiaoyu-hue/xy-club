@@ -77,7 +77,7 @@
 
 **怎么做的**：每个案例是一份纯静态 JSON（`public/cases/<id>.json`），与 `content.json` 同构，用现有的 8 种板块类型拼装——**不需要新增代码就能造一个新案例，也不需要服务端**。切换走查询参数 `?case=<id>`，因此纯静态托管（GitHub Pages）也能用。详细决策见 [ADR-005](docs/adr/ADR-005.md)。
 
-> ⚠️ **关于演示案例**：4 个非俱乐部案例的机构名、联系方式、地址均为**虚构**，仅用于展示模板的行业适配能力，非真实企业。图片来自 Unsplash（免费商用），来源与授权逐张登记在 [public/cases/CREDITS.md](public/cases/CREDITS.md)。
+> ⚠️ **关于演示案例**：4 个非俱乐部案例的机构名、联系方式、地址均为**虚构**，仅用于展示模板的行业适配能力，非真实企业。案例配图为**项目作者自有版权**的原创摄影作品，版权说明见 [public/cases/CREDITS.md](public/cases/CREDITS.md)，审查记录见 [docs/IMAGE-AUDIT.md](docs/IMAGE-AUDIT.md)。
 
 ---
 
