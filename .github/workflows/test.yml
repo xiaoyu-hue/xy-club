@@ -26,9 +26,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      # 仓库里没有 package-lock.json（依赖只有一个 express），用 install 而非 ci
+      # 用 ci 而非 install：严格按 package-lock.json 安装，能立刻暴露 lockfile 漂移。
+      # （v1.8.0 之前 lockfile 缺失 eslint 依赖树，改用 ci 后这类问题不会再潜伏。）
       - name: 安装依赖
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Lint（质量门：error 级问题会阻断 CI）
         run: npm run lint
