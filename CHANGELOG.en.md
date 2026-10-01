@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.10.2] - 2026-10-01
+
+**Theme: documentation governance — turn written-but-unenforced rules into gates**
+
+### 🗂 Documentation governance
+
+- **Archived 4 process artifacts to `docs/_archive/`**: `CODE-REVIEW.md` (a 261-line audit report), `docs/FIX_SUMMARY.md` (a 195-line work summary), `docs/PLAN-v1.8.0.md` (a version plan), and `docs/IMAGE-AUDIT.md` (an image audit).
+  - Archived rather than deleted: these files explain *why* past decisions were made; deleting them would discard that context.
+- **Corrected stale claims in `GLOBAL.md`**: the project tree still listed `CODE-REVIEW.md`, and the notes claimed "code review report is complete" — both contradicted reality.
+- **Drew a clear line between "process artifacts" and "process tools"**:
+  - Process artifacts (`FIX_SUMMARY` / `PLAN-vX` / audit reports) describe **what was done this time** → they expire → archive them.
+  - Process tools (`DECISION_REVIEW.md` decision checklist / `DOC_SYNC.md` / `docs/adr/**`) describe **how to act from now on** → they stay valid → keep them.
+  - This distinction matters: `DECISION_REVIEW.md` was nearly blacklisted as a "decision retrospective", when in fact it is the workflow document `AGENTS.md` requires an AI to consult before any irreversible operation.
+
+### 🗑 Version history correction
+
+- **Deleted two orphan tags**: `v2.0.0-Phase0` / `v2.0.0-Phase1`.
+  - Their commits (`bceac13` / `5eded1e`) are **not in `main`'s history** and have **no corresponding GitHub Release**.
+  - Effect: the tag list showed `2.0.0` at the top while `package.json` said `1.10.1` — anyone would misjudge the project's progress.
+  - **Verified no functionality was lost before deleting**: their features (HTTP security headers, input-validation hardening via `deepClone` / `FORBIDDEN_KEYS`) were independently implemented on `main` by `9dc428f`, and the corresponding `security-headers.test.js` and `input-validation.test.js` are both present.
+  - Full details backed up to a working copy; the remote commits remain recoverable via reflog / SHA.
+
+### ✅ Tests
+
+- **Added `tests/doc-policy.test.js` (6 cases)**:
+  - process artifacts must not appear on mainline paths (`docs/_archive/` excepted)
+  - the blacklist **self-checks** — guarding against a broken regex silently disabling the gate, and against blacklisting legitimate process tools
+  - tag format consistency (`vX.Y.Z` or `vX.Y.Z-PhaseN`)
+  - tag version must not exceed `package.json` (prevents a 2.x tag hovering above 1.x again)
+- **Verified bidirectionally via deliberate breakage**: putting a violating file back on the mainline → red; adding a legitimate process tool to the blacklist → self-check red.
+- Test count 238 → **244 cases** (63 → 65 suites).
+
+### 📌 A rejected approach (recorded to avoid repeating it)
+
+The first version of `doc-policy.test.js` asserted "every tag must be an ancestor of HEAD". **That assertion was wrong**: it flagged `v1.3.0`–`v1.5.1` — 7 versions that were **formally released and recorded on GitHub Releases** — as violations. They are not in the ancestor chain only because `main` was rebuilt around v1.7.0, leaving those versions on a forked history.
+
+**"Not an ancestor" ≠ "wrong".** Acting on that assertion would have deleted legitimate releases and orphaned their GitHub Release entries. It has been removed; the gate now guards the two lines that genuinely hold (format consistency, version not ahead of code).
+
+---
+
 ## [v1.10.1] - 2026-10-01
 
 **Theme: fix release badge showing a stale version**

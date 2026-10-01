@@ -13,6 +13,12 @@
 | [adr/README.md](./adr/README.md) | 架构决策记录（ADR）索引与状态约定 |
 | [AUTHOR.md](./AUTHOR.md) · [AUTHOR.en.md](./AUTHOR.en.md) | 关于作者（中 / 英） |
 
+归档目录（**非当前文档**，仅供参考历史决策上下文）：
+
+- [`_archive/`](./_archive/) — 审查报告 / 版本计划 / 工作总结。这些是某一次工作的收尾产物，
+  内容已凝固，**不代表当前状态**。按 `GLOBAL.md`「文档提交规则」，过程产物一律置于此处，
+  由 `tests/doc-policy.test.js` 强制。
+
 根目录下的相关文件：
 
 - [README.md](../README.md) · [README.en.md](../README.en.md) — 项目介绍与快速开始

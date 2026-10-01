@@ -1,6 +1,6 @@
 # Product Requirements Document (PRD) — XY Club Website Template
 
-> Version: 1.10.1
+> Version: 1.10.2
 > Status: Maintained
 > Last updated: 2026-09-28
 > Scope: This document is the **source of truth for requirements**; implementation details live in `ARCHITECTURE.md` / `API.md`, decisions in `docs/adr/`.
@@ -103,6 +103,7 @@ Source of truth: `data/db.json`, shaped by `DEFAULT_DB` in `defaults.js`.
 
 | Version | Type | Summary |
 |---------|------|---------|
+| 1.10.2 | patch | Doc governance: archive process artifacts to docs/_archive/, drop orphan tags, add doc-policy gate |
 | 1.10.1 | patch | Fix release badge showing a stale version: shields.io ranks "latest" by creation time, not SemVer; added `sort=semver` |
 | 1.10.0 | minor | Image licensing compliance: removed 16 third-party images with unverifiable provenance, replaced with original works; added licensing tests |
 | 1.9.0 | minor | Admin mobile usability: removed frosted glass (FPS 46.7→60.2), local DOM updates for item operations, 4-breakpoint responsive layout, image upload for three more sections |

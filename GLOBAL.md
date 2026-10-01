@@ -136,7 +136,7 @@ v1.7.0 - 安全加固发布（默认密码机制变更、限流绕过封堵、�
 │   ├── CHANGELOG.en.md     # 英文变更日志
 │   ├── README.md           # 使用说明
 │   ├── ARCHITECTURE.md     # 架构文档
-│   └── CODE-REVIEW.md      # 代码审查报告
+│   └── _archive/           # 过程产物归档（审查报告/计划/总结，见下「文档提交规则」）
 ├── scripts/                # 构建脚本
 ├── e2e/                    # 端到端测试
 └── GLOBAL.md               # 全局记忆（本文件）
@@ -175,15 +175,19 @@ v1.7.0 - 安全加固发布（默认密码机制变更、限流绕过封堵、�
 - 可作为任意俱乐部官网复用
 - 包含完整的后端 API（Express + JSON 文件存储，零数据库）
 - 支持图片上传和管理
-- 代码审查报告完善（CODE-REVIEW.md）
+- 代码审查记录已归档至 `docs/_archive/CODE-REVIEW.md`（过程产物，不再随主线维护）
 
 ## 文档提交规则（重要）
 
-**以下文档禁止推送到 GitHub：**
-- 审查报告（COMPREHENSIVE_REVIEW.md, CODE_REVIEW.md 等）
-- 计划方案（IMPLEMENTATION_PLAN.md, THEME_SYNC_PLAN.md 等）
-- 工作总结（FIX_SUMMARY.md, THEME_SYNC_COMPLETE.md 等）
-- 临时文档（*.tmp, *.temp 等）
+**以下文档禁止出现在仓库主线路径**（`docs/` 与根目录），应移入 `docs/_archive/`：
+
+- 审查报告（`CODE-REVIEW.md`、`IMAGE-AUDIT.md`、`*REVIEW_REPORT.md` 等）
+- 计划方案（`PLAN-v1.8.0.md`、`IMPLEMENTATION_PLAN.md` 等）
+- 工作总结（`FIX_SUMMARY.md`、`*_SUMMARY.md` 等）
+- 临时文档（`*.tmp`、`*.temp` 等）
+
+> **为什么保留 `docs/_archive/` 而不是直接删**：这些文件对"当时为什么这么做"有解释价值，
+> 直接删等于丢失决策上下文。归档 = 保留价值、移出视野，两者兼得。
 
 **可以推送的文档：**
 - CHANGELOG.md / CHANGELOG.en.md
@@ -195,4 +199,17 @@ v1.7.0 - 安全加固发布（默认密码机制变更、限流绕过封堵、�
 - GLOBAL.md
 - LICENSE, CODE_OF_CONDUCT, CONTRIBUTING 等标准文档
 
-**原因**：审查报告和计划方案是内部工作文档，推送会污染仓库。
+**不属于过程产物、必须留在主线（易误删）：**
+- `docs/DECISION_REVIEW.md` —— 不可逆操作前的决策审查清单，**长期有效**，被 `AGENTS.md` 引用为必经流程
+- `docs/DOC_SYNC.md` —— 文档同步规范，长期有效的执行清单
+- `docs/adr/**` —— 架构决策记录，决策的长期沉淀
+
+> 区别在于：**过程产物描述"这次做了什么"，流程工具描述"以后该怎么做"**。
+> 前者会过期，后者不会。
+
+**原因**：审查报告和计划方案是某一次工作的收尾产物，写完全部内容就凝固了，
+留在主线会让人误以为它们仍然有效。
+
+> **规则的可执行性（v1.10.2 起）**：本节此前只是"写下来的约定"，从未被检查过 ——
+> 结果 `CODE-REVIEW.md`、`FIX_SUMMARY.md` 在仓库里躺了很久没人发现。
+> 现已由 `tests/doc-policy.test.js` 强制执行：一旦有新文件落入禁推清单且不在 `_archive/`，CI 立即报红。
