@@ -115,6 +115,47 @@ describe('图片版权：授权来源可核验', () => {
     );
   });
 
+  test('对外文案不得再宣称图片来自 Unsplash（已废弃的旧声明）', () => {
+    // v1.10.0 前，README / PRD / themes-demo 页脚都写着「图片来自 Unsplash（免费商用）」。
+    // 图片换成自有版权后这些声明全部失效。docs-sync.test.js 只校验版本号与 CHANGELOG，
+    // 覆盖不到这些内容，曾经因此漏改 4 处（中英文 README / PRD / 可见页脚）。
+    // 这里把「不得再出现旧授权声明」变成断言，堵住这个盲区。
+    const targets = [
+      'README.md', 'README.en.md',
+      'docs/PRD.md', 'docs/PRD.en.md',
+      'public/themes-demo.html',
+    ];
+    const offenders = [];
+    for (const rel of targets) {
+      const p = path.join(ROOT, rel);
+      if (!fs.existsSync(p)) continue;
+      const text = fs.readFileSync(p, 'utf8');
+      // 允许提及 Unsplash 用于历史说明/审计，但不允许作为「当前图片来源」出现
+      for (const line of text.split('\n')) {
+        if (!/Unsplash/i.test(line)) continue;
+        // 排除明确的历史/审计语境
+        if (/审计|audit|已废弃|已移除|dropped|removed|历史/i.test(line)) continue;
+        if (/12 位|11 位|varchar/i.test(line)) continue;   // 技术说明
+        offenders.push(`${rel}: ${line.trim().slice(0, 70)}`);
+      }
+    }
+    assert.deepEqual(
+      offenders, [],
+      `以下位置仍宣称图片来自 Unsplash（营业执照已变更，需同步）：\n  ${offenders.join('\n  ')}`
+    );
+  });
+
+  test('对外文案须声明图片为自有版权', () => {
+    for (const rel of ['README.md', 'public/themes-demo.html']) {
+      const p = path.join(ROOT, rel);
+      if (!fs.existsSync(p)) continue;
+      assert.ok(
+        /自有版权|原创摄影/.test(fs.readFileSync(p, 'utf8')),
+        `${rel} 应声明案例配图为自有版权作品`
+      );
+    }
+  });
+
   test('当前图片均已声明为自有版权或可核验授权', () => {
     assert.ok(
       /自有版权/.test(CREDITS),

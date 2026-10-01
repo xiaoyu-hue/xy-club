@@ -53,7 +53,7 @@ It is a **ready-to-use template**, not a custom site for one club — anyone can
 - Cases are plain static JSON (`public/cases/*.json`) shaped exactly like `DEFAULT_DB`, assembled only from the existing 8 section types
 - Switching uses `?case=<id>`, so pure static hosting works; `history.pushState` + `popstate` support browser back/forward
 - All 4 non-club cases are **entirely fictional** — names, phones, addresses and logos are demo content, explicitly declared as fictional on the hero
-- Case images come from Unsplash (free for commercial use), logged per-file in `public/cases/CREDITS.md`
+- Case images are **original photography owned by the project author**, documented in `public/cases/CREDITS.md` (from v1.10.0; the earlier third-party stock ledger was dropped as unverifiable — see `docs/IMAGE-AUDIT.md`)
 - Case assets are validated at both build time (`scripts/build-static.js`) and test time (`tests/cases.test.js`): structure / types / credentials / image references
 
 ## 4. Data Specification

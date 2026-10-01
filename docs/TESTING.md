@@ -17,7 +17,7 @@ npm test
 | 运行器 | `node --test`（Node 内置） |
 | 依赖 | 无（只需 `express` 跑起来，测试本身零依赖） |
 | 用例位置 | `tests/*.test.js` |
-| 用例规模 | 232 项 / 63 suites |
+| 用例规模 | 234 项 / 63 suites |
 | 耗时参考 | 约 10–40 秒（视机器性能） |
 
 ### 文件与职责
@@ -41,7 +41,7 @@ npm test
 | `tests/cases.test.js` | 案例 JSON 结构 / 板块类型白名单 / 凭据零容忍 / 虚构声明 / 图片溯源 / 相对路径 / 主题合法性 / `heroStats` 格式（29 项） | v1.8.0 多案例内容资产的契约门禁（ADR-005 P7） |
 | `tests/case-isolation.test.js` | 服务端不引用 `cases/`、`DB_FILE`/`UPLOAD_DIR` 越界检查、前端回退顺序、改案例不影响 API、服务端写入不落 `cases/`（13 项） | 守住「静态案例 ↔ 服务端内容」两条路径永不交叉（ADR-005 P8） |
 | `tests/admin-perf.test.js` | 后台禁用 `backdrop-filter` / 光斑禁用 `blur` / 断点数量 / 44px 触控尺寸 / 条目操作不得整列表重绘 / 三板块支持传图（18 项） | 把手机端性能与响应式约束固化为门禁，防止模糊与全量重绘回归（v1.9.0） |
-| `tests/credits.test.js` | 台账与图片目录双向一致 / 无僵尸图片 / 引用真实存在 / 拒绝 12 位伪 Unsplash ID / 图片体积上限（9 项） | 把图片版权合规固化为门禁：防止僵尸文件、失效引用与编造台账（v1.10.0） |
+| `tests/credits.test.js` | 台账与图片目录双向一致 / 无僵尸图片 / 引用真实存在 / 拒绝 12 位伪 Unsplash ID / 图片体积上限 / 对外文案不得再宣称 Unsplash（11 项） | 把图片版权合规固化为门禁：防止僵尸文件、失效引用与编造台账（v1.10.0） |
 | `tests/harness.js` | （非测试文件）临时目录隔离 + 内存服务器启动 | 所有测试的公共底座 |
 
 > **为什么需要 `admin-perf.test.js`**：手机后台卡顿的根因**不在 JavaScript，而在 CSS**。

@@ -27,13 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✅ Tests
 
-- **Added `tests/credits.test.js` (9 cases)**: turns licensing compliance into executable assertions —
+- **Added `tests/credits.test.js` (11 cases)**: turns licensing compliance into executable assertions —
   - ledger list and image directory must match **in both directions** (no orphan files, no unlisted files);
   - images referenced by case JSON **must actually exist** (no broken references);
   - the ledger **must not contain 12-character hex pseudo-Unsplash IDs** (no fabricated ledgers);
   - per-image size ceiling.
   - Validated with deliberate-break experiments: orphan file / broken reference / re-inserted pseudo ID were all caught.
-- Test scale **223 cases / 60 suites → 232 cases / 63 suites**.
+- Test scale **223 cases / 60 suites → 234 cases / 63 suites**.
 
 ### 🐛 Fixed
 
@@ -46,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `docs/IMAGE-AUDIT.md`: the full image copyright audit, with findings, risk grading, and remediation options.
 - Rewrote `public/cases/CREDITS.md`: from a third-party stock ledger to an original-works statement with clear ownership and usage scope.
+- **Follow-up**: corrected 4 remaining stale licensing claims — `README.en.md`, `docs/PRD.en.md`, the user-visible footer of `public/themes-demo.html`, and the image-source entries in `docs/adr/ADR-005.md` (original text kept, change note appended — history is not rewritten).
+- `docs-sync.test.js` only checked version numbers and CHANGELOGs, so it could not catch content drift — assertions were added to `credits.test.js` to prevent this class of miss from recurring.
 
 ---
 
