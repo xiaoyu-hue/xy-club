@@ -208,6 +208,39 @@ GitHub Pages 对**不存在的路径**返回 404，SPA 式路径路由（`/case/
 构建期拦截在 `scripts/build-static.js`：结构、板块类型、凭据字段、manifest 对应关系、
 图片引用存在性，**任一不合格退出码 1，阻断部署**。
 
+### 与服务端内容的隔离
+
+多案例是**纯静态特性**，与 Node 服务端的内容体系互不干扰。两条路径从头到尾不交叉：
+
+```
+【Node 部署】
+  后台编辑器  ──►  PUT /api/content  ──►  data/db.json  ──►  GET /api/content  ──►  前端
+                                          （唯一真源）
+【静态部署】
+  无写入能力  ──►  public/cases/<id>.json 或 public/content.json  ──►  前端只读
+
+  关键：server.js 中不存在任何对 cases/ 目录的引用。
+        前端 loadContent() 第 1 步先试 /api/content，成功即 return，永不走到静态分支。
+```
+
+因此：
+
+- **改静态案例不影响服务端**：服务端只认 `data/db.json`
+- **后台保存不影响静态案例**：写入只落 `data/db.json`
+- **Node 部署下案例切换器不显示**：只在 `static-mode` 渲染，避免"后台改了但下拉框没变"的困惑
+
+**唯一的方向性是 `content.json` 单向导出**：
+
+```
+node scripts/build-static.js   →   data/db.json  ──►  content.json    ✔
+                               ←   content.json ──►  data/db.json    ✘（无回流）
+```
+
+在静态站手改 `content.json` 后再跑构建脚本，改动会被 `data/db.json` 覆盖——这是"唯一真源"的预期行为，不是 bug。
+
+> 这条隔离原本只是**架构约定**，没有代码守着。v1.8.0 起由 `tests/case-isolation.test.js`（13 项）转为可执行门禁：
+> 静态检查源码约定 + 行为检查真跑服务端验证。已用破坏性实验确认它在违规时确实变红。
+
 ### 代价（已知取舍）
 
 - **SEO 分不清**：所有案例共用同一份 HTML，搜索引擎只认默认案例

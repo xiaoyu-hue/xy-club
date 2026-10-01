@@ -223,6 +223,39 @@ and test time:
 Build-time interception lives in `scripts/build-static.js`: structure, section types, credential fields,
 manifest correspondence and image-reference existence — **any failure exits with code 1 and blocks deployment**.
 
+### Isolation from server-side content
+
+Multi-case is a **purely static feature** and never interferes with the Node server's content system. The two paths never cross:
+
+```
+【Node deployment】
+  Admin editor  ──►  PUT /api/content  ──►  data/db.json  ──►  GET /api/content  ──►  Frontend
+                                             (single source of truth)
+【Static deployment】
+  No write access  ──►  public/cases/<id>.json or public/content.json  ──►  Frontend (read-only)
+
+  Key: server.js contains no reference whatsoever to the cases/ directory.
+       loadContent() tries /api/content first and returns immediately on success,
+       so it never reaches the static branches.
+```
+
+Consequently:
+
+- **Editing a static case never affects the server**: the server only reads `data/db.json`
+- **Saving in the admin never affects static cases**: writes only land in `data/db.json`
+- **Under Node deployment the case switcher does not render**: it only shows in `static-mode`, avoiding the confusion of "I changed the admin but the dropdown didn't move"
+
+**The one directionality is the one-way export of `content.json`**:
+
+```
+node scripts/build-static.js   →   data/db.json  ──►  content.json   ✔
+                               ←   content.json  ──►  data/db.json   ✘ (no return path)
+```
+
+If you hand-edit `content.json` on a static site and then run the build script, your change is overwritten by `data/db.json` — that is the expected behaviour of the single-source-of-truth rule, not a bug.
+
+> This isolation used to be a mere **architectural convention** with nothing guarding it. Since v1.8.0 it is an executable gate: `tests/case-isolation.test.js` (13 cases) combines static source checks with behavioural checks that actually run the server. Deliberate-break experiments confirmed the tests go red on violation.
+
 ### Trade-offs (known)
 
 - **SEO cannot tell cases apart**: all cases share one HTML document, so search engines only see the default case

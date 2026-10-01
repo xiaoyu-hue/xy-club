@@ -21,7 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Multi-case architecture (ADR-005)**: content addressing expanded from a single `data/db.json` to "default site + multiple read-only case snapshots". Cases are plain static JSON and need no server to switch, so **purely static hosting such as GitHub Pages works too**
 - **Case overview page**: `themes-demo.html` upgraded into a combined "cases + themes" overview with 5 clickable case cards
 - **Image credits ledger** `public/cases/CREDITS.md`: all 16 demo images logged per-file with original page, license and download date, keeping licensing traceable
-- **Case contract tests** `tests/cases.test.js` (28 cases): structure, allowed section types, zero-tolerance credentials, fictional disclosure, image provenance, relative paths and theme validity are all enforced in CI
+- **Case contract tests** `tests/cases.test.js` (29 cases): structure, allowed section types, zero-tolerance credentials, fictional disclosure, image provenance, relative paths, theme validity and `heroStats` number format are all enforced in CI
+- **Case isolation guard** `tests/case-isolation.test.js` (13 cases): keeps the "static cases" and "server content" paths from ever crossing. Two layers — static checks (the server must not reference `cases/`; `DB_FILE`/`UPLOAD_DIR` must not fall inside it; the frontend fallback must try the API first) plus behavioural checks (actually runs the server to prove editing a case file leaves the API untouched and that saving server-side writes nothing into `cases/`). Proven effective via deliberate-break experiments: the tests do go red when a violation is introduced
 - **Build-time case validation**: besides generating the snapshot, `scripts/build-static.js` now validates the `public/cases/` assets and **exits with code 1 to block deployment** if anything fails
 
 ### 🔧 Fixed

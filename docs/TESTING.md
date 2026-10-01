@@ -38,7 +38,14 @@ npm test
 | `tests/contract-defaults.test.js` | 板块类型 ↔ 渲染分支 ↔ 主题 ↔ 后台选项 | 防"加了类型忘了渲染""加了主题后台没选项" |
 | `tests/docs-sync.test.js` | 版本号漂移、中英 README 断链、API 表与路由不一致 | 把「改了行为必须同步文档」自动化 |
 | `tests/frontend-util.test.js` | `esc()` 转义与 `TYPES` 板块类型定义（前端纯函数） | XSS 第一防线 + 类型定义一致性 |
+| `tests/cases.test.js` | 案例 JSON 结构 / 板块类型白名单 / 凭据零容忍 / 虚构声明 / 图片溯源 / 相对路径 / 主题合法性 / `heroStats` 格式（29 项） | v1.8.0 多案例内容资产的契约门禁（ADR-005 P7） |
+| `tests/case-isolation.test.js` | 服务端不引用 `cases/`、`DB_FILE`/`UPLOAD_DIR` 越界检查、前端回退顺序、改案例不影响 API、服务端写入不落 `cases/`（13 项） | 守住「静态案例 ↔ 服务端内容」两条路径永不交叉（ADR-005 P8） |
 | `tests/harness.js` | （非测试文件）临时目录隔离 + 内存服务器启动 | 所有测试的公共底座 |
+
+> **为什么需要 `case-isolation.test.js`**：v1.8.0 后内容有两条来源——服务端的 `data/db.json` 与静态的 `public/cases/*.json`。
+> 二者的分离在架构上天然成立（`server.js` 完全不认识 `cases/` 目录），但那是**隐式约定**。一旦被无意打破，
+> 症状是「后台改了但页面不变」或「静态站覆盖真实内容」，**没有任何报错**，排查代价极高。
+> 该文件把约定固化为可执行门禁，并用破坏性实验验证过有效性（人为制造违规时确实变红）。
 
 ### 隔离机制
 
