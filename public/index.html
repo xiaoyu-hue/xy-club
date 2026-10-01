@@ -27,6 +27,8 @@
       </a>
       <div class="nav-links" id="navLinks"></div>
       <div class="nav-actions">
+        <!-- 参考案例切换器：仅在纯静态托管（static-mode）下由 case-switcher.js 填充 -->
+        <div class="case-switcher" id="caseSwitcher" hidden></div>
         <button class="btn btn-primary btn-sm nav-cta" id="navCta">立即下单</button>
         <button class="menu-btn" id="menuBtn" aria-label="菜单"><span></span><span></span><span></span></button>
       </div>
@@ -57,13 +59,14 @@
   </div>
 
   <!-- 动态板块区 -->
-  <main class="container" id="app" role="main">
+  <main class="container" id="app" role="main"></main>
 
-  <!-- 底部下单 CTA -->
+  <!-- 底部下单 CTA（必须放在 #app 之外：
+       renderSections() 会整体替换 #app 的 innerHTML，
+       若 #ctaCard 在 #app 内会被一并删除，导致 renderCTA() 崩溃） -->
   <section class="container">
     <div class="cta-card glass glass-sheen" id="ctaCard"></div>
   </section>
-  </main>
 
   <!-- 页脚 -->
   <footer class="footer" role="contentinfo">
@@ -88,5 +91,6 @@
 
   <noscript><p style="text-align:center;padding:40px">请启用 JavaScript 以浏览本站</p></noscript>
   <script src="js/main.js"></script>
+  <script src="js/case-switcher.js"></script>
 </body>
 </html>

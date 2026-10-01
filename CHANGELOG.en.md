@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.8.0] - 2026-10-01
+
+**Theme: Multi-case demo site** — one template now showcases five website cases across five industries, proving it is not "club-only".
+
+### ✨ Added
+
+- **Multi-case switching (user-visible)**: a case dropdown in the header of the live demo lets you switch between **5 reference cases** instantly, without a page reload
+  - 💎 XY Club (companion service · the real site)
+  - ☕ Qingwu Coffee (specialty coffee) · ⚖️ Henghe Law Firm (legal services)
+  - ☁️ Cloudpivot (SaaS product) · 📷 Shiguang Photo (photography studio)
+  - Switching writes browser history, so **back / forward work**; links are shareable (`?case=<id>`)
+- **Multi-case architecture (ADR-005)**: content addressing expanded from a single `data/db.json` to "default site + multiple read-only case snapshots". Cases are plain static JSON and need no server to switch, so **purely static hosting such as GitHub Pages works too**
+- **Case overview page**: `themes-demo.html` upgraded into a combined "cases + themes" overview with 5 clickable case cards
+- **Image credits ledger** `public/cases/CREDITS.md`: all 16 demo images logged per-file with original page, license and download date, keeping licensing traceable
+- **Case contract tests** `tests/cases.test.js` (28 cases): structure, allowed section types, zero-tolerance credentials, fictional disclosure, image provenance, relative paths and theme validity are all enforced in CI
+- **Build-time case validation**: besides generating the snapshot, `scripts/build-static.js` now validates the `public/cases/` assets and **exits with code 1 to block deployment** if anything fails
+
+### 🔧 Fixed
+
+- **⚠️ Fixed a live production bug: the homepage bottom CTA block and the entire footer never rendered** (affects every release before v1.8.0)
+  - **Root cause**: in `public/index.html` the CTA `<section>` was mistakenly placed **inside** `<main id="app">`. `renderSections()` runs `$('#app').innerHTML = ...`, which replaces all of `#app`'s content and thereby removes `<div id="ctaCard">`; `renderCTA()` then touches that now-missing element and throws `Cannot set properties of null (setting 'innerHTML')`. Because the exception aborted the remaining initialization, **the footer failed to render as well**
+  - **Fix**: moved the CTA `<section>` outside `#app` and added a test locking the constraint (see `tests/cases.test.js`) to prevent regressions
+- **Test hygiene**: `tests/theme-demo.test.js` hard-coded an assertion for `v1.6.0`, so it failed spuriously on every version bump. It now follows the `package.json` version, which both guarantees the demo page shows a version and prevents drift
+
+### 🔒 Security
+
+- **Zero real company information in demo cases (P1)**: the four new cases use entirely fictional organisation names, phone numbers (`400-000-0000`), addresses and logos; names were searched to confirm they do not collide with real businesses
+- **Explicit fictional disclosure**: demo cases label their hero badge with "🎭 Template demo case · fictional organisation, not a real business" and set `settings.fictional`; the frontend also renders a notice bar so visitors cannot mistake them for real firms
+- **Zero-tolerance on credentials in case assets**: case JSON must never contain `adminPassword` / `password` / `secret` / `token`; enforced by both the build script and the tests
+- **Frontend case-ID allow-list**: `readCaseId()` filters with `/^[a-z0-9-]{1,64}$/`; invalid IDs issue no request and fall back to the default site gracefully (prevents path traversal)
+- **Stronger deployment artifact gate**: CI gained a "verify artifact integrity" step confirming `cases/` and `CREDITS.md` ship with the artifact, admin files are truly removed, and the case count matches the manifest
+
+### 📝 Docs
+
+- Added `docs/adr/ADR-005.md`: architecture decision record for multi-case support (including the seven protections P1–P7 and the trade-offs)
+- Added `docs/PLAN-v1.8.0.md`: phased task list and acceptance matrix for v1.8.0
+- Added `public/cases/CREDITS.md`: image licensing ledger
+- Synced `README.md` / `README.en.md` / `docs/ARCHITECTURE.md` / `docs/DEPLOY.md` / `docs/PRD.md` / `docs/adr/README.md`
+
+---
+
 ## [v1.7.1] - 2026-10-01
 
 ### 🔧 Fixes

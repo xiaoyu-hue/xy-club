@@ -21,7 +21,7 @@
 
 <br>
 
-**[🔗 在线预览（GitHub Pages）](https://xiaoyu-hue.github.io/xy-club/)** · **[🚀 快速开始](#quick-start)** · **[🔁 复用模板](#reuse)** · **[📚 文档](docs/README.md)** · **[⚠️ 不适合什么场景](#not-recommended)** · **[🧩 配套工具](#companion)**
+**[🔗 在线预览（GitHub Pages）](https://xiaoyu-hue.github.io/xy-club/)** · **[🎭 5 个跨行业案例](https://xiaoyu-hue.github.io/xy-club/themes-demo.html)** · **[🚀 快速开始](#quick-start)** · **[🔁 复用模板](#reuse)** · **[📚 文档](docs/README.md)** · **[⚠️ 不适合什么场景](#not-recommended)** · **[🧩 配套工具](#companion)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
@@ -49,11 +49,34 @@
 | 🎨 **液态玻璃视觉** | 高斯模糊玻璃 + 光标高光追踪 + 流光扫过，深浅主题都保持玻璃质感 |
 | 🌈 **8 套主题配色** | 极光紫 / 深海蓝 / 晨雾白 / 落日金（暗色），米白·晨雾 / 浅灰·云影 / 燕麦·暖调 / 藏蓝·经典（亮色商务），后台一键切换 |
 | ✨ **8 处微交互** | 光标高光、卡片 3D 倾斜、按钮涟漪、数字滚动、滚动进度条、返回顶部、导航高亮、错落渐显 |
-| 🧩 **7 种板块类型** | 价目列表 / 卡片网格 / 客户评价 / 常见问答 / 须知列表 / 图片集 / 图文段落 |
+| 🧩 **8 种板块类型** | 价目列表 / 卡片网格 / 客户评价 / 常见问答 / 须知列表 / 图片集 / 图文段落 / 自定义 |
 | 🛠 **可视化后台** | 板块增删改、↑↓ 排序、👁 显隐，随时新增板块 |
 | 📦 **模板复用** | 整站配置导出 / 导入 JSON，一键恢复默认内容 |
 | 🚀 **零数据库** | 单端口 HTTP + JSON 文件存储，任何支持 Node.js 的平台都能跑 |
 | 🍦 **零前端框架** | 原生 HTML/CSS/JS，无构建步骤，改完刷新即生效 |
+| 🎭 **5 个跨行业案例** | 预览站内置 5 个不同行业的示范案例（咖啡 / 律所 / SaaS / 摄影），顶部下拉框即时切换，证明模板不止能做俱乐部 |
+
+---
+
+## 🎭 多案例演示（v1.8.0 新增）
+
+一句话：**模板不止能做俱乐部。**
+
+预览站顶部有个案例下拉框，可以在 5 个不同行业的网站之间即时切换（页面不刷新，浏览器前进/后退可用，链接可分享）：
+
+| 案例 | 行业 | 主题 | 说明 |
+|------|------|------|------|
+| 💎 **XY俱乐部** | 陪玩服务 | 极光紫 | 真实站点内容 |
+| ☕ **青坞咖啡** | 精品咖啡 | 燕麦·暖调 | 虚构演示 |
+| ⚖️ **衡合律师事务所** | 法律服务 | 藏蓝·经典 | 虚构演示 |
+| ☁️ **叠云协作** | SaaS 产品 | 浅灰·云影 | 虚构演示 |
+| 📷 **临界摄影** | 摄影工作室 | 晨雾白 | 虚构演示 |
+
+**怎么看**：打开 [在线预览](https://xiaoyu-hue.github.io/xy-club/)，点右上角案例下拉框；或直接访问 [案例总览页](https://xiaoyu-hue.github.io/xy-club/themes-demo.html)，5 张案例卡片 + 8 套主题一眼看全。
+
+**怎么做的**：每个案例是一份纯静态 JSON（`public/cases/<id>.json`），与 `content.json` 同构，用现有的 8 种板块类型拼装——**不需要新增代码就能造一个新案例，也不需要服务端**。切换走查询参数 `?case=<id>`，因此纯静态托管（GitHub Pages）也能用。详细决策见 [ADR-005](docs/adr/ADR-005.md)。
+
+> ⚠️ **关于演示案例**：4 个非俱乐部案例的机构名、联系方式、地址均为**虚构**，仅用于展示模板的行业适配能力，非真实企业。图片来自 Unsplash（免费商用），来源与授权逐张登记在 [public/cases/CREDITS.md](public/cases/CREDITS.md)。
 
 ---
 
@@ -225,7 +248,7 @@ xy-club/
 |------|------|
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [.en](docs/ARCHITECTURE.en.md) | 架构说明：数据流转、主题机制、鉴权、静态回退 |
 | [docs/PRD.md](docs/PRD.md) · [.en](docs/PRD.en.md) | 产品需求文档：定位、功能、数据规范、验收标准 |
-| [docs/SECTIONS.md](docs/SECTIONS.md) | 7 种板块类型的字段参考 |
+| [docs/SECTIONS.md](docs/SECTIONS.md) | 8 种板块类型的字段参考 |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | 部署指南：Node 服务器 / 纯静态托管两条路线 |
 | [docs/TESTING.md](docs/TESTING.md) | 测试指南：单元测试门禁 + 可选 E2E，含纪律约定 |
 | [docs/API.md](docs/API.md) | 后台 REST API 详细参考（鉴权、各端点、错误码） |

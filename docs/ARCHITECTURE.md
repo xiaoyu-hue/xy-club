@@ -130,6 +130,93 @@ node scripts/build-static.js    # 写出 public/content.json（已剔除密码�
 
 > 静态模式下官网完整可用，**后台不可用**（没有服务端可写）。
 
+## 多案例（v1.8.0 / ADR-005）
+
+预览站需要证明"这套模板能变成别的行业"。做法是给静态托管加一条**只读的多案例通道**，不动数据结构。
+
+### 内容布局
+
+```
+public/
+├── content.json              # 默认案例（XY俱乐部）快照，仍是最终兜底
+└── cases/
+    ├── manifest.json         # 案例清单：id / 名称 / 行业 / 主题，供切换器读取
+    ├── xy-club.json          # 案例内容，与 content.json 同构
+    ├── warmwood-coffee.json
+    ├── mingli-law.json
+    ├── cloudpivot.json
+    ├── shiguang-photo.json
+    ├── CREDITS.md            # 演示图片授权台账
+    └── images/               # 演示图片（WebP，本地自包含）
+```
+
+每个案例 JSON 的字段与 `DEFAULT_DB` **完全一致**，只由现有 8 种板块类型拼装。因此：
+
+- 后台编辑器**无需改造**即可编辑任意案例内容
+- 新增一个案例 = 加一份 JSON + 在 manifest 登记一行，**不写代码**
+- 案例不含任何凭据字段（`adminPassword` / `password` / `secret` / `token`）
+
+### 加载顺序
+
+`main.js` 的 `loadContent()` 是四级回退：
+
+```
+1. /api/content                 (Node 部署，后台为唯一真源)
+2. ./cases/<id>.json            (静态，且 URL 指定了 ?case=<id>)
+3. ./content.json               (静态，默认案例)
+4. 报错并提示
+```
+
+`case` 参数先经 `readCaseId()` 白名单校验（`/^[a-z0-9-]{1,64}$/`），非法值不发起请求、直接回退，避免路径穿越。
+
+### 为什么用查询参数而不是路径路由
+
+GitHub Pages 对**不存在的路径**返回 404，SPA 式路径路由（`/case/coffee`）会直接失效，除非引入
+`_redirects` / `.htaccess` 之类改写规则或 404 兜底技巧。查询参数 `?case=<id>` 天然可用，
+不需要任何服务端配置，也不影响 Node 部署。
+
+### 切换流程（不刷新页面）
+
+```
+用户点选案例
+  → case-switcher.js: history.pushState({case:id}, '', '?case=' + id)
+  → window.XYClub.reload(id)
+  → loadContent() 取到新内容
+  → renderAll()  ★ 全量重渲染 + 主题重置
+  → 派发 xy:rendered 事件
+  → 切换器重新渲染自身 + 清理旧的局部监听器
+```
+
+浏览器**后退/前进**由 `popstate` 监听处理，走同一条 `reload()` 路径，因此前进后退可靠。
+`popstate` / `xy:case-invalid` 两个监听是**常驻**的（不登记进 `cleanupFns`），否则一次清理会把
+自己摘掉，导致只有第一次后退生效。
+
+### 保护措施
+
+案例资产是静态手写/脚本生成的，没有运行时兜底，因此在构建期与测试期双重设防：
+
+| 编号 | 保护 | 落点 |
+|------|------|------|
+| P1 | 演示案例零真实企业信息 + 显式"虚构"声明 | `settings.fictional`、hero 徽标、前端提示条 |
+| P2 | 图片授权可追溯 | `public/cases/CREDITS.md` |
+| P3 | 切换必须全量重渲染 + 主题重置 | `main.js` `renderAll()` |
+| P4 | 无效 case id 优雅降级 | `main.js` `readCaseId()` |
+| P5 | 图片加载失败降级 | `main.js` `bindImageFallback()` |
+| P6 | 切换不刷新页面 + 监听器清理 | `case-switcher.js` `cleanupFns` |
+| P7 | 案例契约测试门禁 | `tests/cases.test.js`（28 项） |
+
+构建期拦截在 `scripts/build-static.js`：结构、板块类型、凭据字段、manifest 对应关系、
+图片引用存在性，**任一不合格退出码 1，阻断部署**。
+
+### 代价（已知取舍）
+
+- **SEO 分不清**：所有案例共用同一份 HTML，搜索引擎只认默认案例
+- **Node 部署与静态部署割裂**：Node 下后台是唯一真源，案例切换器只在 `static-mode` 显示
+- **仓库体积**：16 张演示图约 0.9MB（已转 WebP 并限制单图 < 400KB）
+- **文案非真实**：演示案例是行业范本，不是真实客户案例
+
+> 若将来要让后台统一编辑全部案例，必须先修订 **ADR-002**（唯一真源约定），属独立议题。
+
 ## 图片的导出与导入
 
 配置导出时会把 `/uploads/*` **内联成 data URI**，让 JSON 自包含；导入保存时服务端再把 data URI 还原成

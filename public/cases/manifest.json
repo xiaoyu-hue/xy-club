@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "id": "xy-club",
+      "name": "XY俱乐部",
+      "industry": "陪玩服务",
+      "emoji": "💎",
+      "theme": "aurora",
+      "desc": "游戏陪玩 · 陪聊树洞 · 受气包服务",
+      "demo": false,
+      "fictional": false
+    },
+    {
+      "id": "warmwood-coffee",
+      "name": "青坞咖啡",
+      "industry": "精品咖啡",
+      "emoji": "☕",
+      "theme": "neutral_oat",
+      "desc": "产地直采 · 自家烘焙 · 社区友好",
+      "demo": true,
+      "fictional": true
+    },
+    {
+      "id": "mingli-law",
+      "name": "衡合律师事务所",
+      "industry": "法律服务",
+      "emoji": "⚖️",
+      "theme": "neutral_navy",
+      "desc": "公司治理 · 知识产权 · 争议解决",
+      "demo": true,
+      "fictional": true
+    },
+    {
+      "id": "cloudpivot",
+      "name": "叠云协作",
+      "industry": "SaaS 产品",
+      "emoji": "☁️",
+      "theme": "neutral_cloud",
+      "desc": "研发协作中枢 · 自动化工作流",
+      "demo": true,
+      "fictional": true
+    },
+    {
+      "id": "shiguang-photo",
+      "name": "临界摄影",
+      "industry": "摄影工作室",
+      "emoji": "📷",
+      "theme": "mist",
+      "desc": "自然光纪实 · 婚礼 · 家庭写真",
+      "demo": true,
+      "fictional": true
+    }
+  ]
+}

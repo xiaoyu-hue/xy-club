@@ -142,6 +142,96 @@ node scripts/build-static.js    # Writes public/content.json (password field str
 
 > The official site works fully in static mode; **the admin panel is unavailable** (no server to write to).
 
+## Multi-case (v1.8.0 / ADR-005)
+
+The preview site needs to prove "this template can become another industry". The approach is a **read-only
+multi-case channel** for static hosting, without touching the data structure.
+
+### Content layout
+
+```
+public/
+├── content.json              # Default case (XY Club) snapshot — still the final fallback
+└── cases/
+    ├── manifest.json         # Case list: id / name / industry / theme, read by the switcher
+    ├── xy-club.json          # Case content, shaped exactly like content.json
+    ├── warmwood-coffee.json
+    ├── mingli-law.json
+    ├── cloudpivot.json
+    ├── shiguang-photo.json
+    ├── CREDITS.md            # Image licensing ledger
+    └── images/               # Demo images (WebP, self-contained locally)
+```
+
+Every case JSON mirrors `DEFAULT_DB` field for field and is assembled only from the existing 8 section types. Therefore:
+
+- The admin editor can edit any case **without modification**
+- Adding a case = one JSON file + one manifest line, **no code**
+- Cases never contain credential fields (`adminPassword` / `password` / `secret` / `token`)
+
+### Load order
+
+`loadContent()` in `main.js` is a four-level fallback:
+
+```
+1. /api/content                 (Node deployment — the admin is the single source of truth)
+2. ./cases/<id>.json            (Static, when the URL specifies ?case=<id>)
+3. ./content.json               (Static, default case)
+4. Error with a message
+```
+
+The `case` parameter is validated first by `readCaseId()` against `/^[a-z0-9-]{1,64}$/`; an invalid value
+issues no request and falls straight back, preventing path traversal.
+
+### Why a query parameter rather than a path route
+
+GitHub Pages returns 404 for **nonexistent paths**, so SPA-style path routing (`/case/coffee`) fails outright
+unless you add rewrite rules (`_redirects` / `.htaccess`) or 404 fallback tricks. The query parameter `?case=<id>`
+works natively, needs no server configuration, and does not affect Node deployments.
+
+### Switch flow (no page reload)
+
+```
+User picks a case
+  → case-switcher.js: history.pushState({case:id}, '', '?case=' + id)
+  → window.XYClub.reload(id)
+  → loadContent() fetches the new content
+  → renderAll()  ★ full re-render + theme reset
+  → dispatches xy:rendered
+  → switcher re-renders itself + clears stale scoped listeners
+```
+
+Browser **back/forward** is handled by a `popstate` listener that takes the same `reload()` path, so navigation
+is reliable. The `popstate` and `xy:case-invalid` listeners are **permanent** (not registered in `cleanupFns`) —
+otherwise a single cleanup would remove them and only the first back-press would work.
+
+### Protections
+
+Case assets are static and hand-rolled/generated with no runtime safety net, so they are guarded at both build
+and test time:
+
+| # | Protection | Where |
+|---|------------|-------|
+| P1 | Zero real company info in demo cases + explicit "fictional" disclosure | `settings.fictional`, hero badge, frontend notice bar |
+| P2 | Traceable image licensing | `public/cases/CREDITS.md` |
+| P3 | Switching must fully re-render + reset theme | `main.js` `renderAll()` |
+| P4 | Graceful fallback on invalid case id | `main.js` `readCaseId()` |
+| P5 | Image-load failure fallback | `main.js` `bindImageFallback()` |
+| P6 | Switching without reload + listener cleanup | `case-switcher.js` `cleanupFns` |
+| P7 | Case contract test gate | `tests/cases.test.js` (28 cases) |
+
+Build-time interception lives in `scripts/build-static.js`: structure, section types, credential fields,
+manifest correspondence and image-reference existence — **any failure exits with code 1 and blocks deployment**.
+
+### Trade-offs (known)
+
+- **SEO cannot tell cases apart**: all cases share one HTML document, so search engines only see the default case
+- **Node vs. static deployment split**: under Node the admin is the single source of truth, and the switcher only shows in `static-mode`
+- **Repository size**: 16 demo images, ~0.9 MB (converted to WebP, each under 400 KB)
+- **Copy is not real**: demo cases are industry exemplars, not real client work
+
+> Making the admin edit all cases would first require amending **ADR-002** (the single-source-of-truth rule) — a separate topic.
+
 ---
 
 ## Image Export & Import

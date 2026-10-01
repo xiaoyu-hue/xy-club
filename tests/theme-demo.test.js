@@ -58,8 +58,16 @@ describe('测试 17: 主题案例展示页面', function() {
     assert.ok(demoContent.includes('亮色'), '应有亮色主题标签');
   });
 
-  it('应包含版本信息', function() {
-    assert.ok(demoContent.includes('v1.6.0'), '应包含版本号');
+  it('应包含版本信息（与 package.json 保持一致）', function() {
+    // 原为硬编码 'v1.6.0'，每次升版本都会假失败。
+    // 改为跟随 package.json：既保证页面确实标了版本，也强制两者不漂移。
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')
+    );
+    assert.ok(
+      demoContent.includes('v' + pkg.version),
+      `页面应包含当前版本号 v${pkg.version}`
+    );
   });
 });
 

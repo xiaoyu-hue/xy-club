@@ -39,6 +39,114 @@
       font-size: 14px;
     }
 
+    /* ---------- 区块 ---------- */
+    .demo-section {
+      max-width: 1400px;
+      margin: 0 auto 56px;
+    }
+    .demo-heading {
+      font-size: 21px;
+      margin-bottom: 6px;
+    }
+    .demo-sub {
+      color: var(--dim);
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    /* ---------- 参考案例 ---------- */
+    .case-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .case-card {
+      display: flex;
+      flex-direction: column;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+    .case-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      border-color: var(--accent);
+    }
+    .case-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 20px 14px;
+    }
+    .case-emoji {
+      font-size: 30px;
+      line-height: 1;
+      flex: none;
+    }
+    .case-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .case-industry {
+      font-size: 11.5px;
+      color: var(--dim);
+    }
+    .case-body {
+      padding: 0 20px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .case-desc {
+      font-size: 13px;
+      color: var(--dim);
+      line-height: 1.6;
+      flex: 1;
+    }
+    .case-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .case-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      flex: none;
+    }
+    .case-theme {
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--dim);
+    }
+    .case-badge {
+      font-size: 10.5px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(128, 128, 128, 0.16);
+      color: var(--dim);
+    }
+    .case-cta {
+      font-size: 12.5px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .foot-note {
+      margin-top: 8px;
+      font-size: 11.5px;
+    }
+    .foot-note a {
+      color: var(--accent);
+    }
+
     .theme-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -190,11 +298,24 @@
 </head>
 <body>
   <header>
-    <h1>XY 俱乐部官网模板 · 主题案例</h1>
-    <p>8 套主题，适配不同场景 · 点击卡片查看效果</p>
+    <h1>XY 俱乐部官网模板 · 案例与主题</h1>
+    <p>一套模板，跨行业复用 · 5 个参考案例 · 8 套主题配色</p>
   </header>
 
-  <div class="theme-grid">
+  <!-- ============ 参考案例（v1.8.0） ============ -->
+  <section class="demo-section">
+    <h2 class="demo-heading">🏢 参考案例</h2>
+    <p class="demo-sub">点击任意案例，查看该行业完整的官网形态。企业名称与内容均为虚构示例。</p>
+    <div class="case-grid" id="caseGrid">
+      <!-- 由 js/themes-demo.js 从 cases/manifest.json 渲染 -->
+    </div>
+  </section>
+
+  <!-- ============ 主题配色 ============ -->
+  <section class="demo-section">
+    <h2 class="demo-heading">🎨 主题配色</h2>
+    <p class="demo-sub">8 套主题，同一套 CSS + 变量切换 · 点击卡片查看使用方式</p>
+    <div class="theme-grid">
     <!-- 暗色主题 -->
     <div class="theme-card">
       <div class="theme-preview preview-aurora">
@@ -348,10 +469,12 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
+  </section>
 
   <footer>
-    <p>XY 俱乐部官网模板 v1.6.0 · 8 套主题 · 与 xy-intro-card 同步</p>
+    <p>XY 俱乐部官网模板 v1.8.0 · 5 个参考案例 · 8 套主题 · 与 xy-intro-card 同步</p>
+    <p class="foot-note">案例图片来自 Unsplash（免费商用），案例内容均为虚构示例 · 详见 <a href="./cases/CREDITS.md">CREDITS.md</a></p>
   </footer>
 
   <!-- 内联脚本已抽到 js/themes-demo.js：

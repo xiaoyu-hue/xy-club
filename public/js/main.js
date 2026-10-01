@@ -15,6 +15,33 @@
   const fine = matchMedia('(pointer:fine)').matches;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let SITE = { settings: {}, sections: [] };
+  // 当前案例 id（静态多案例切换用）。Node 部署下恒为空字符串。
+  let CURRENT_CASE = '';
+  let STATIC_MODE = false;
+
+  /* ================= 案例切换（静态站特性，ADR-005） ================= */
+  // 从 URL 读取案例 id：?case=xxx。无参数返回空串（表示默认案例）。
+  function readCaseId() {
+    try {
+      const v = new URLSearchParams(location.search).get('case');
+      // 只允许安全字符，防止路径穿越或注入到 fetch 路径
+      return v && /^[a-z0-9-]{1,64}$/.test(v) ? v : '';
+    } catch (e) { return ''; }
+  }
+
+  /**
+   * 加载指定案例的内容。
+   * 返回 { data, ok }：ok=false 表示该案例 id 无效 / 加载失败（供上层回退）。
+   */
+  async function loadCase(id) {
+    try {
+      const res = await fetch('./cases/' + encodeURIComponent(id) + '.json', { cache: 'no-cache' });
+      if (!res.ok) return { data: null, ok: false };
+      const data = await res.json();
+      if (data && data.settings) return { data, ok: true };
+      return { data: null, ok: false };
+    } catch (e) { return { data: null, ok: false }; }
+  }
 
   /* ================= 渲染 ================= */
   function twoLines(title) {
@@ -380,6 +407,36 @@
     $('#fab').addEventListener('click', openModal);
   }
 
+  /* ================= P5：图片加载失败降级 ================= */
+  // 本地图片虽稳，但部署漏传 / 文件损坏时 <img> 会显示裂图图标。
+  // 监听 load 失败的图片（capture 阶段可捕获 img 的 error 事件），替换为占位块。
+  function bindImageFallback() {
+    document.querySelectorAll('.g-item img, .cta-qr, .modal-qr').forEach((img) => {
+      img.addEventListener('error', () => {
+        const ph = document.createElement('div');
+        ph.className = 'img-fallback';
+        ph.textContent = '🖼';
+        ph.setAttribute('aria-label', '图片加载失败');
+        if (img.parentNode) img.parentNode.replaceChild(ph, img);
+      }, { once: true });
+    });
+  }
+
+  /* ================= 页脚/页眉的演示声明（静态模式） ================= */
+  // P1 的运行时配套：静态演示案例需在页面显著位置声明「虚构」，
+  // 不能只靠内容里的徽章（案例 1 是真实模板内容，不声明）。
+  function renderDemoNotice() {
+    if (!STATIC_MODE || !CURRENT_CASE) return;
+    const isFictional = !!SITE.settings.fictional;
+    if (!isFictional) return;
+    const bar = document.createElement('div');
+    bar.className = 'demo-notice';
+    bar.setAttribute('role', 'note');
+    bar.innerHTML = '<b>🎭 模板演示</b> · 本页企业名称、联系方式与内容均为虚构示例，非真实机构。'
+      + ' <a href="./themes-demo.html">← 返回案例总览</a>';
+    document.body.insertBefore(bar, document.body.firstChild);
+  }
+
   /* ================= 启动 ================= */
   function applyTheme() {
     const t = (SITE.settings && SITE.settings.theme) || 'aurora';
@@ -389,45 +446,117 @@
   }
 
   /**
-   * 加载内容。
-   * 1) 优先后端 API —— 本地或服务器部署时走这条，后台改动即时生效
-   * 2) 拿不到 API 时回退静态快照 content.json —— GitHub Pages 等纯静态托管走这条
-   *    静态环境没有 Node 服务，官网照常展示，后台入口会自动隐藏
+   * 渲染全站（P3：切换案例时被完整调用，确保无上一个案例的残留）。
+   * 顺序：主题 → 标题 → 各区块 → 图片降级 → 演示声明。
+   */
+  function renderAll() {
+    applyTheme();
+    renderNav(); renderHero(); renderTicker(); renderSections(); renderCTA(); renderFooter();
+    bindImageFallback();
+    renderDemoNotice();
+  }
+
+  /**
+   * 加载内容（ADR-005 四级回退）。
+   * 1) 优先后端 API —— 本地或 Node 服务器部署走这条，后台改动即时生效
+   * 2) 指定了 ?case=xxx → 读 cases/<id>.json（纯静态多案例切换）
+   * 3) 未指定 / 案例无效 → 读 ./content.json 快照（默认案例，兼容旧部署）
+   * 4) 全失败 → 提示错误，界面降级为空（不白屏）
+   *
+   * P4：指定案例加载失败时**自动回退默认案例**，而不是停在那里报错。
    */
   async function loadContent() {
+    // 1) 后端 API
     try {
       const res = await fetch('/api/content');
       if (res.ok) {
         const data = await res.json();
-        if (data && data.settings) return data;
+        if (data && data.settings) { CURRENT_CASE = ''; return data; }
       }
     } catch (e) { /* 无后端，继续走静态回退 */ }
 
+    // 进入静态模式：隐藏后台入口，显示案例切换器
+    STATIC_MODE = true;
+    document.documentElement.classList.add('static-mode');
+
+    // 2) 指定案例
+    const wantedId = readCaseId();
+    if (wantedId) {
+      const { data, ok } = await loadCase(wantedId);
+      if (ok) {
+        CURRENT_CASE = wantedId;
+        console.info(`[xy-club] 静态预览模式：内容来自 cases/${wantedId}.json`);
+        return data;
+      }
+      // P4：案例无效 → 回退默认，并提示
+      console.warn(`[xy-club] 案例「${wantedId}」不存在，已回退默认案例`);
+      document.dispatchEvent(new CustomEvent('xy:case-invalid', { detail: { id: wantedId } }));
+    }
+
+    // 3) 默认快照
     try {
       const res = await fetch('./content.json');
       if (res.ok) {
         const data = await res.json();
         if (data && data.settings) {
-          document.documentElement.classList.add('static-mode');
-          console.info('[xy-club] 静态预览模式：内容来自 content.json，后台功能不可用。');
+          console.info('[xy-club] 静态预览模式：内容来自 content.json');
           return data;
         }
       }
     } catch (e) { /* 快照也不存在 */ }
 
-    console.error('加载内容失败：API 与静态快照均不可用');
+    // 4) 全失败
+    console.error('加载内容失败：API、案例文件与静态快照均不可用');
     toast('⚠ 内容加载失败，请检查网络后刷新页面', 6000);
     return { settings: {}, sections: [] };
   }
 
   async function init() {
     SITE = await loadContent();
-    applyTheme();
-    renderNav(); renderHero(); renderTicker(); renderSections(); renderCTA(); renderFooter();
+    renderAll();
     bindGlobal(); bindReveal(); bindScroll(); bindCountUp(); bindTilt(); bindSpotlight(); bindRipple();
   }
   init();
 
+  /* ================= 对外 API（供 case-switcher.js 调用） ================= */
+  // P3：reload 会完整重走「加载 → 全量重渲染」，确保切换案例后无任何残留。
+  // 渲染完成后派发 xy:rendered，让切换器刷新自身状态（选中项 / 按钮文案）。
+  function afterRender() {
+    document.dispatchEvent(new CustomEvent('xy:rendered', { detail: { caseId: CURRENT_CASE } }));
+  }
+
+  window.XYClub = {
+    toast,
+    get caseId() { return CURRENT_CASE; },
+    async reload(caseId) {
+      const id = caseId || '';
+      if (id) {
+        const { data, ok } = await loadCase(id);
+        if (ok) {
+          CURRENT_CASE = id; SITE = data;
+          renderAll(); bindReveal(); bindScroll(); bindCountUp(); bindTilt();
+          afterRender();
+          return;
+        }
+        toast(`⚠ 案例「${id}」不存在，已显示默认案例`);
+      }
+      // 回默认
+      try {
+        const res = await fetch('./content.json', { cache: 'no-cache' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.settings) {
+            CURRENT_CASE = ''; SITE = data;
+            renderAll(); bindReveal(); bindScroll(); bindCountUp(); bindTilt();
+            afterRender();
+            return;
+          }
+        }
+      } catch (e) { /* 忽略 */ }
+      toast('⚠ 案例加载失败，请检查网络', 5000);
+    }
+  };
+
   // 供 Node 测试复用纯函数（浏览器中 module 未定义，自动跳过）
-  if (typeof module !== 'undefined' && module.exports) module.exports = { esc, interp };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { esc, interp, parseStat, twoLines, readCaseId };
 })();

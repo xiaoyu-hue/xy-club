@@ -7,6 +7,7 @@
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
@@ -35,6 +36,63 @@ describe('scripts/build-static.js', () => {
   test('快照已被 gitignore（不会误提交）', () => {
     const gi = fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8');
     assert.match(gi, /public\/content\.json/);
+  });
+
+  test('构建脚本同时校验多案例资产（v1.8.0 / ADR-005）', () => {
+    // build-static.js 除生成快照外，还负责在 CI 阶段拦截坏案例资产。
+    // 这里验证它确实读并检查了 cases 目录，且失败时会以非 0 退出。
+    const src = fs.readFileSync(path.join(ROOT, 'scripts', 'build-static.js'), 'utf8');
+    assert.match(src, /cases/, '构建脚本应处理 public/cases/');
+    assert.match(src, /manifest\.json/, '构建脚本应校验 manifest.json');
+    assert.match(src, /process\.exit\(1\)/, '校验失败必须以退出码 1 阻断 CI');
+  });
+
+  test('构建脚本在案例资产损坏时确实报错退出（负向用例）', () => {
+    // 造一份坏 manifest，确认脚本会拒绝构建 —— 防止校验逻辑沦为摆设。
+    const CASES = path.join(ROOT, 'public', 'cases');
+    const manifestPath = path.join(CASES, 'manifest.json');
+    const backup = fs.readFileSync(manifestPath, 'utf8');
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'xy-build-neg-'));
+    try {
+      // 指向一个不存在的案例文件
+      fs.writeFileSync(manifestPath, JSON.stringify({
+        cases: [{ id: 'definitely-not-exist', name: 'X', industry: 'X', emoji: 'X', theme: 'aurora' }]
+      }, null, 2));
+
+      let code = 0;
+      try {
+        execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'build-static.js')], {
+          cwd: ROOT, stdio: 'pipe'
+        });
+      } catch (e) {
+        code = e.status;
+      }
+      assert.equal(code, 1, '坏 manifest 应导致构建失败（退出码 1）');
+    } finally {
+      fs.writeFileSync(manifestPath, backup);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('多案例 · 静态托管产物完整性', () => {
+  test('部署需要的案例资产都在 public/ 内（相对 public 根可寻址）', () => {
+    const manifestPath = path.join(ROOT, 'public', 'cases', 'manifest.json');
+    assert.ok(fs.existsSync(manifestPath), 'cases/manifest.json 应随 public/ 一起部署');
+    const m = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    for (const c of m.cases) {
+      assert.ok(
+        fs.existsSync(path.join(ROOT, 'public', 'cases', c.id + '.json')),
+        `${c.id}.json 应随 public/ 一起部署`
+      );
+    }
+  });
+
+  test('图片授权台账随产物部署（对外可查）', () => {
+    assert.ok(
+      fs.existsSync(path.join(ROOT, 'public', 'cases', 'CREDITS.md')),
+      'CREDITS.md 需放在 public/ 内，部署后用户可查图片来源'
+    );
   });
 });
 

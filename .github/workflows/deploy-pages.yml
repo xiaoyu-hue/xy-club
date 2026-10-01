@@ -27,7 +27,7 @@ jobs:
           node-version: '20'
 
       - name: 安装依赖
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: 单元测试（部署质量门：失败则阻断部署）
         run: npm test
@@ -38,7 +38,32 @@ jobs:
       - name: 移除后台文件（静态环境没有服务端）
         run: |
           rm -f public/admin.html public/js/admin.js public/css/admin.css
-          ls -R public | head -20
+
+      - name: 校验部署产物完整性（多案例 + 密码零泄露）
+        run: |
+          set -e
+          echo "—— 产物目录结构 ——"
+          ls -1 public/
+          echo "—— 多案例资产 ——"
+          ls -1 public/cases/
+          test -f public/cases/manifest.json || { echo "✗ 缺少 cases/manifest.json"; exit 1; }
+          test -f public/cases/CREDITS.md    || { echo "✗ 缺少 cases/CREDITS.md（图片授权台账）"; exit 1; }
+          # 每个案例必须有对应 JSON
+          CASE_COUNT=$(node -e "console.log(require('./public/cases/manifest.json').cases.length)")
+          echo "manifest 声明案例数: $CASE_COUNT"
+          node -e "
+            const fs=require('fs'),m=require('./public/cases/manifest.json');
+            let bad=0;
+            for(const c of m.cases){ if(!fs.existsSync('public/cases/'+c.id+'.json')){ console.error('✗ 缺少 '+c.id+'.json'); bad++; } }
+            process.exit(bad?1:0);
+          "
+          # 图片授权台账非空
+          test -s public/cases/CREDITS.md || { echo "✗ CREDITS.md 为空"; exit 1; }
+          # 后台文件确认已移除
+          for f in public/admin.html public/js/admin.js public/css/admin.css; do
+            if [ -e "$f" ]; then echo "✗ 后台文件未被移除: $f"; exit 1; fi
+          done
+          echo "✓ 部署产物校验通过"
 
       - name: 配置 Pages
         uses: actions/configure-pages@v5

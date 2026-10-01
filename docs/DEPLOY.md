@@ -57,8 +57,16 @@ PORT=8080 node server.js
 ### 构建
 
 ```bash
-node scripts/build-static.js     # 生成 public/content.json（已剔除密码字段）
+node scripts/build-static.js     # 生成 public/content.json 并校验 public/cases/ 多案例资产
 ```
+
+这一步会做两件事：
+
+1. 生成 `public/content.json`（默认案例快照，已剔除密码字段）
+2. **校验** `public/cases/` 下的多案例资产——结构、板块类型、凭据字段、manifest 对应关系、图片引用
+
+> ⚠️ 第 2 步失败会以**退出码 1** 结束。CI 里这意味着**阻断部署**，是刻意设计：防止坏案例资产被发到线上。
+> 本地手动跑时若看到 `✗ 静态构建校验失败`，请先修好再发布。
 
 产物就是整个 `public/` 目录。建议**在发布前删除后台相关文件**，避免误以为后台能用：
 
@@ -66,17 +74,33 @@ node scripts/build-static.js     # 生成 public/content.json（已剔除密码�
 rm -f public/admin.html public/js/admin.js public/css/admin.css
 ```
 
+### 多案例资产随产物一起发布
+
+`public/cases/` 必须完整上传，否则**案例切换下拉框不出现**（切换器读不到 `manifest.json` 会静默跳过）：
+
+```
+public/cases/manifest.json      # 必须有：案例清单
+public/cases/<id>.json          # 必须有：每个案例的内容
+public/cases/images/*.webp      # 必须有：演示图片
+public/cases/CREDITS.md         # 建议有：图片授权台账（对外可查）
+```
+
+仓库的 [`.github/workflows/deploy-pages.yml`](../.github/workflows/deploy-pages.yml) 已内置「校验部署产物完整性」步骤，
+会自动确认以上文件随产物发布、后台文件确已移除、案例数与 manifest 一致。
+
 ### 部署
 
-把 `public/` 作为站点根目录上传即可。注意：若部署在子路径（如 GitHub Pages 的 `/xy-club/`），快照用相对路径 `./content.json` 读取，无需改配置。
+把 `public/` 作为站点根目录上传即可。注意：若部署在子路径（如 GitHub Pages 的 `/xy-club/`），快照用相对路径 `./content.json` 读取，案例图片也用相对路径 `./cases/images/...`，均无需改配置。
 
 ### 更新内容
 
 静态站没有后台，改内容只能：
 
-1. 编辑 `defaults.js`
+1. 编辑 `defaults.js`（改默认案例）或 `public/cases/*.json`（改某个案例）
 2. 重新跑 `node scripts/build-static.js`
 3. 重新发布
+
+新增一个案例：复制任一份 `public/cases/*.json` 改内容，在 `manifest.json` 的 `cases` 数组登记一行（`id` 只用小写字母/数字/连字符），补上图片，再跑一次构建脚本。**不需要改代码。**
 
 ---
 
@@ -93,5 +117,9 @@ rm -f public/admin.html public/js/admin.js public/css/admin.css
 | 重启后内容变回默认 | `data/` 没挂持久卷 |
 | 官网空白或只有标题 | 静态托管缺少 `content.json`，跑一次构建脚本 |
 | 后台能登录但保存无效 | 静态托管环境，没有后端可写 |
+| 案例切换下拉框不显示 | `public/cases/manifest.json` 没上传，或上传路径不对 |
+| 切到某案例白屏 | 该案例的 `<id>.json` 没随产物上传，或 JSON 有语法错误 |
+| 案例图片裂图 | `public/cases/images/` 没上传；或 JSON 里写成了绝对路径而非 `./cases/images/...` |
+| 分享的案例链接打开还是默认案例 | 链接里的 `?case=<id>` 参数丢了，或被托管平台的重写规则抹掉 |
 | 多副本部署后内容互相覆盖 | 违反单进程要求，改成单实例 |
 | 上传的图片 404 | `public/uploads/` 没持久化，或路径不对 |

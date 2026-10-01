@@ -21,7 +21,7 @@ A **reusable club website template**: liquid-glass visuals + micro-interactions,
 
 <br>
 
-**[🔗 Live preview (GitHub Pages)](https://xiaoyu-hue.github.io/xy-club/)** · **[🚀 Quick Start](#quick-start)** · **[🔁 Reuse the template](#reuse)** · **[📚 Docs](docs/README.md)** · **[⚠️ Not for](#not-recommended)** · **[🧩 Companion Tool](#companion)**
+**[🔗 Live preview (GitHub Pages)](https://xiaoyu-hue.github.io/xy-club/)** · **[🎭 5 industry cases](https://xiaoyu-hue.github.io/xy-club/themes-demo.html)** · **[🚀 Quick Start](#quick-start)** · **[🔁 Reuse the template](#reuse)** · **[📚 Docs](docs/README.md)** · **[⚠️ Not for](#not-recommended)** · **[🧩 Companion Tool](#companion)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
@@ -54,6 +54,29 @@ The site and the admin panel share a single JSON document. Whatever you edit in 
 | 📦 **Template reuse** | Export / import the whole site as JSON, plus one-click restore to defaults |
 | 🚀 **No database** | Single-port HTTP + JSON file storage — runs anywhere Node.js runs |
 | 🍦 **Zero frontend framework** | Vanilla HTML/CSS/JS, no build step; save and refresh |
+| 🎭 **5 cross-industry cases** | The preview site ships with 5 demo cases across industries (coffee / law / SaaS / photography), switchable from a header dropdown — proof the template is not club-only |
+
+---
+
+## 🎭 Multi-case demo (new in v1.8.0)
+
+In one sentence: **this template is not club-only.**
+
+The preview site has a case dropdown in the header that switches between 5 websites across different industries instantly — no page reload, browser back/forward works, and links are shareable:
+
+| Case | Industry | Theme | Notes |
+|------|----------|-------|-------|
+| 💎 **XY Club** | Companion service | Aurora | Real site content |
+| ☕ **Qingwu Coffee** | Specialty coffee | Oat Warm | Fictional demo |
+| ⚖️ **Henghe Law Firm** | Legal services | Classic Navy | Fictional demo |
+| ☁️ **Cloudpivot** | SaaS product | Cloud Gray | Fictional demo |
+| 📷 **Shiguang Photo** | Photography studio | Mist | Fictional demo |
+
+**How to see it**: open the [live preview](https://xiaoyu-hue.github.io/xy-club/) and use the case dropdown in the top right, or go straight to the [case overview page](https://xiaoyu-hue.github.io/xy-club/themes-demo.html) to see all 5 cases and 8 themes at a glance.
+
+**How it works**: each case is a plain static JSON file (`public/cases/<id>.json`) shaped exactly like `content.json`, assembled from the existing 8 section types — so **you can add a new case without writing code, and without a server**. Switching uses the query parameter `?case=<id>`, which means purely static hosting (GitHub Pages) works too. See [ADR-005](docs/adr/ADR-005.md) for the full decision record.
+
+> ⚠️ **About the demo cases**: the organisation names, contact details and addresses in the four non-club cases are **fictional** and exist only to show the template's industry range — they are not real businesses. Images come from Unsplash (free for commercial use) and are logged per-file with source and licence in [public/cases/CREDITS.md](public/cases/CREDITS.md).
 
 ---
 

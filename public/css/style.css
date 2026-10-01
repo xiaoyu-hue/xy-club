@@ -623,3 +623,83 @@ html.static-mode .admin-link { display: none; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .2s !important; }
   html { scroll-behavior: auto; }
 }
+
+/* ============================================================
+   参考案例切换器 & 演示声明（v1.8.0 · ADR-005）
+   仅在 static-mode（纯静态托管）下出现；全部引用主题变量。
+   ============================================================ */
+.case-switcher { position: relative; }
+/* 默认隐藏——由 case-switcher.js 在静态模式填充后才显示（去掉 hidden 属性） */
+.case-switcher:empty { display: none; }
+html:not(.static-mode) .case-switcher { display: none !important; }
+
+.case-btn {
+  display: flex; align-items: center; gap: 7px;
+  height: 38px; padding: 0 13px;
+  background: var(--glass-3); border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border-radius: 999px; color: var(--ink);
+  font-size: 13.5px; font-weight: 600; cursor: pointer;
+  transition: background .25s, transform .2s;
+}
+.case-btn:hover { background: var(--glass-1); }
+.case-emoji { font-size: 15px; }
+.case-caret { font-size: 10px; opacity: .7; }
+@media (max-width: 860px) { .case-label { display: none; } }
+
+.case-menu {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  width: 290px; padding: 8px;
+  background: var(--glass-1); border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(20px) saturate(150%); backdrop-filter: blur(20px) saturate(150%);
+  border-radius: 16px; box-shadow: 0 18px 50px var(--shadow);
+  z-index: 60;
+}
+.case-menu-head {
+  font-size: 11.5px; color: var(--faint); padding: 6px 10px 8px;
+  letter-spacing: .04em;
+}
+.case-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 9px 10px; border: 0; border-radius: 11px;
+  background: transparent; color: var(--ink); text-align: left;
+  cursor: pointer; transition: background .2s; font: inherit;
+}
+.case-item:hover { background: var(--glass-3); }
+.case-item.active { background: var(--glass-3); outline: 1px solid var(--accent); }
+.ci-emoji { font-size: 18px; flex: none; }
+.ci-body { display: flex; flex-direction: column; min-width: 0; }
+.ci-body b { font-size: 13.5px; font-weight: 600; }
+.ci-body small { font-size: 11.5px; color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ci-tag {
+  margin-left: auto; flex: none; font-size: 10px; padding: 2px 7px;
+  border-radius: 999px; background: var(--glass-3); color: var(--muted);
+  border: 1px solid var(--line);
+}
+.case-menu-foot {
+  margin-top: 6px; padding: 8px 10px 4px; border-top: 1px solid var(--line);
+  font-size: 11px; color: var(--faint);
+}
+.case-menu-foot a { color: var(--accent); text-decoration: none; }
+.case-menu-foot a:hover { text-decoration: underline; }
+
+/* ---------------- 顶部演示声明条 ---------------- */
+.demo-notice {
+  position: relative; z-index: 50;
+  padding: 9px 18px; text-align: center;
+  font-size: 12.5px; color: var(--ink);
+  background: var(--glass-3);
+  border-bottom: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.demo-notice b { color: var(--accent); }
+.demo-notice a { color: var(--accent); text-decoration: none; margin-left: 6px; }
+.demo-notice a:hover { text-decoration: underline; }
+
+/* ---------------- 图片加载失败占位（P5） ---------------- */
+.img-fallback {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; aspect-ratio: 4 / 3;
+  background: var(--glass-3); border: 1px dashed var(--line);
+  border-radius: 14px; font-size: 34px; color: var(--faint);
+}
