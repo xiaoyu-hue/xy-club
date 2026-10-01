@@ -114,6 +114,23 @@
       (_, k) => `<span style="animation-delay:${k * 90}ms">★</span>`).join('');
   }
 
+  /* -------- 图形字段：表情 或 图片 --------
+   * 后台的「图标/头像」字段支持两种值：
+   *   - 表情符号（如 ✨）        → 按文本渲染
+   *   - 图片路径（/uploads/x）   → 渲染为 <img>
+   * 向后兼容：老数据（纯表情）输出与改造前完全一致。
+   * 图片加载失败时回落到 alt 文本，不让页面出现破图。
+   */
+  const isGfxImage = (x) => typeof x === 'string' && /^(\/|https?:\/\/|data:image\/)/.test(x.trim());
+  function gfx(x, fallback, cls) {
+    const val = (x == null || x === '') ? fallback : String(x);
+    if (isGfxImage(val)) {
+      return `<img class="${cls}" src="${esc(val.trim())}" alt="" loading="lazy"
+        onerror="this.replaceWith(document.createTextNode('${fallback.replace(/'/g, "\\'")}'))">`;
+    }
+    return `<span class="${cls}">${esc(val)}</span>`;
+  }
+
   function sectionHTML(s) {
     const st = SITE.settings;
     const head = `<div class="sec-head reveal">
@@ -131,7 +148,7 @@
       case 'cards':
         body = `<div class="card-grid">${items.map((it, i) => `
           <div class="f-card tilt reveal" style="--i:${i}">
-            <span class="ic">${esc(it.icon || '✨')}</span>
+            <span class="ic">${gfx(it.icon, '✨', 'ic-gfx')}</span>
             <h3>${esc(it.title)}</h3><p>${esc(it.desc)}</p>
           </div>`).join('')}</div>`;
         break;
@@ -140,12 +157,12 @@
           <div class="r-card tilt reveal" style="--i:${i}"><span class="quote">”</span>
             <div class="r-stars">${stars(it.rating)}</div>
             <p class="r-text">${esc(it.text)}</p>
-            <div class="r-who"><span class="r-avatar">${esc(it.emoji || '🙂')}</span><b>${esc(it.who)}</b></div>
+            <div class="r-who"><span class="r-avatar">${gfx(it.emoji, '🙂', 'r-avatar-gfx')}</span><b>${esc(it.who)}</b></div>
           </div>`).join('')}</div>`;
         break;
       case 'notice':
         body = `<div class="notice-list">${items.map((it, i) => `
-          <div class="n-item reveal" style="--i:${i}"><span class="ni">${esc(it.icon || '•')}</span><span>${esc(it.text)}</span></div>`).join('')}</div>`;
+          <div class="n-item reveal" style="--i:${i}"><span class="ni">${gfx(it.icon, '•', 'ni-gfx')}</span><span>${esc(it.text)}</span></div>`).join('')}</div>`;
         break;
       case 'faq':
         body = `<div class="faq-list">${items.map((it, i) => `

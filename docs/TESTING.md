@@ -40,7 +40,14 @@ npm test
 | `tests/frontend-util.test.js` | `esc()` 转义与 `TYPES` 板块类型定义（前端纯函数） | XSS 第一防线 + 类型定义一致性 |
 | `tests/cases.test.js` | 案例 JSON 结构 / 板块类型白名单 / 凭据零容忍 / 虚构声明 / 图片溯源 / 相对路径 / 主题合法性 / `heroStats` 格式（29 项） | v1.8.0 多案例内容资产的契约门禁（ADR-005 P7） |
 | `tests/case-isolation.test.js` | 服务端不引用 `cases/`、`DB_FILE`/`UPLOAD_DIR` 越界检查、前端回退顺序、改案例不影响 API、服务端写入不落 `cases/`（13 项） | 守住「静态案例 ↔ 服务端内容」两条路径永不交叉（ADR-005 P8） |
+| `tests/admin-perf.test.js` | 后台禁用 `backdrop-filter` / 光斑禁用 `blur` / 断点数量 / 44px 触控尺寸 / 条目操作不得整列表重绘 / 三板块支持传图（18 项） | 把手机端性能与响应式约束固化为门禁，防止模糊与全量重绘回归（v1.9.0） |
 | `tests/harness.js` | （非测试文件）临时目录隔离 + 内存服务器启动 | 所有测试的公共底座 |
+
+> **为什么需要 `admin-perf.test.js`**：手机后台卡顿的根因**不在 JavaScript，而在 CSS**。
+> 后台原有 25 个元素使用 `backdrop-filter: blur(20px)`，且叠在 `blur(80px)` 的持续动画色块之上——
+> 手机 GPU 被迫每帧执行十几次实时高斯模糊。实测（CPU 4 倍降速）：关闭后 **FPS 46.7 → 60.2，最长帧 30.7ms → 17.4ms**。
+> 这类问题**不会报错、不会崩溃**，只是"整体都卡"，且容易被误判为 JS 性能问题而浪费时间。
+> 该文件把这些实测出来的红线写成断言，任何把模糊或全量重绘加回来的改动都会立刻变红。
 
 > **为什么需要 `case-isolation.test.js`**：v1.8.0 后内容有两条来源——服务端的 `data/db.json` 与静态的 `public/cases/*.json`。
 > 二者的分离在架构上天然成立（`server.js` 完全不认识 `cases/` 目录），但那是**隐式约定**。一旦被无意打破，

@@ -85,13 +85,16 @@ Source of truth: `data/db.json`, shaped by `DEFAULT_DB` in `defaults.js`.
 
 ## 6. Acceptance Criteria
 
-- [ ] `npm test` green (currently **190 cases / 52 suites**, the only mandatory gate)
+- [ ] `npm test` green (currently **223 cases / 60 suites**, the only mandatory gate)
 - [ ] No console errors on the home page
 - [ ] All 8 themes render correctly with readable text
 - [ ] Admin login → edit → save → refresh keeps content consistent
 - [ ] No breakage at 375px
 - [ ] **All 5 cases switch, share and support back/forward; an invalid `?case=` degrades gracefully**
 - [ ] **Home CTA block and footer render correctly** (the live bug fixed in v1.8.0, now locked by a test)
+- [ ] **Admin panel has no horizontal overflow at 320/360/390/430/768/1280px** (v1.9.0)
+- [ ] **On mobile the admin panel uses ≥44px touch targets, single-column forms and vertically stacked item rows** (v1.9.0)
+- [ ] **Cards / testimonials / notice sections support image upload, and legacy emoji-only data renders unchanged** (v1.9.0)
 - [ ] Chinese/English docs synced, CHANGELOG entry added
 - [ ] No new runtime dependency, no front-end framework introduced
 - [ ] Auth / upload / render changes covered by tests
@@ -100,6 +103,7 @@ Source of truth: `data/db.json`, shaped by `DEFAULT_DB` in `defaults.js`.
 
 | Version | Type | Summary |
 |---------|------|---------|
+| 1.9.0 | minor | Admin mobile usability: removed frosted glass (FPS 46.7→60.2), local DOM updates for item operations, 4-breakpoint responsive layout, image upload for three more sections |
 | 1.8.0 | minor | Multi-case demo site: 5 switchable cross-industry cases; fixed the live bug where the home CTA and footer never rendered |
 | 1.7.1 | patch | Removed the conflicting `eslint.config.js` (root cause of the lint crash) |
 | 1.7.0 | minor | Security hardening: removed the default weak password, closed a rate-limit bypass, tightened CSP, added upload magic-byte checks and audit logging |

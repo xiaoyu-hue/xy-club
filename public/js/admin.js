@@ -131,6 +131,83 @@
     document.documentElement.dataset.theme = D.settings.theme || 'aurora';
   }
 
+  /* ================= 局部更新工具（v1.9.0 性能改造） =================
+   *
+   * 背景：此前所有条目操作（增/删/移）都调用 renderSecList() —— 重建整个
+   * 板块列表的 innerHTML。实测在手机（CPU 4x 降速）上，条目多时单次操作
+   * 耗时可达数十毫秒，且会丢失节点状态（滚动位置、输入法组合态）。
+   *
+   * 现改为只操作受影响的 DOM 节点：
+   *   - 新增：appendChild 单行
+   *   - 删除：removeChild 单行
+   *   - 移动：insertBefore 交换两个节点
+   * 并同步刷新剩余的 data-i 序号（移动/删除后索引会变）。
+   */
+
+  // itemsBox(sid): 取某板块的条目容器
+  const itemsBox = (sid) => document.querySelector(`.sec-card[data-id="${sid}"] .items-box`);
+
+  // refreshItemIndexes(sid): 重排某板块内所有条目的 data-i / data-bind / 文案序号
+  function refreshItemIndexes(sid) {
+    const box = itemsBox(sid);
+    if (!box) return;
+    const s = secById(sid);
+    Array.from(box.children).forEach((row, i) => {
+      row.dataset.i = String(i);
+      row.querySelectorAll('[data-bind^="item:"]').forEach(el => {
+        const parts = el.dataset.bind.split(':');
+        // item:<sid>:<idx>:<field>
+        parts[2] = String(i);
+        el.dataset.bind = parts.join(':');
+      });
+      row.querySelectorAll('[data-i]').forEach(el => { el.dataset.i = String(i); });
+    });
+    // 同步条数文案
+    const card = document.querySelector(`.sec-card[data-id="${sid}"]`);
+    const counter = card && card.querySelector('.items-count');
+    if (counter && s) {
+      const t = TYPES[s.type];
+      counter.textContent = `${t.itemLabel}列表（共 ${(s.items || []).length} 个）`;
+    }
+  }
+
+  // addItemLocal(sid): 只追加一行，不重建整个列表
+  function addItemLocal(sid) {
+    const box = itemsBox(sid);
+    const s = secById(sid);
+    if (!box || !s) { renderSecList(); return; }
+    const i = s.items.length - 1; // 刚 push 进去的那条
+    const tmp = document.createElement('div');
+    tmp.innerHTML = itemRowHTML(s, s.items[i], i);
+    const row = tmp.firstElementChild;
+    box.appendChild(row);
+    refreshItemIndexes(sid);
+    row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  // removeItemLocal(sid, i): 只移除一行
+  function removeItemLocal(sid, i) {
+    const box = itemsBox(sid);
+    if (!box || !box.children[i]) { renderSecList(); return; }
+    box.children[i].remove();
+    refreshItemIndexes(sid);
+  }
+
+  // moveItemLocal(sid, from, to): 交换两行的 DOM 位置
+  function moveItemLocal(sid, from, to) {
+    const box = itemsBox(sid);
+    if (!box) { renderSecList(); return; }
+    const a = box.children[from], b = box.children[to];
+    if (!a || !b) { renderSecList(); return; }
+    // 用占位符交换，避免 insertBefore 自身导致顺序错乱
+    const marker = document.createElement('span');
+    box.insertBefore(marker, a);
+    box.insertBefore(a, b);
+    box.insertBefore(b, marker);
+    marker.remove();
+    refreshItemIndexes(sid);
+  }
+
   /* ================= 修改状态 ================= */
   function markDirty() {
     if (!dirty) { dirty = true; updateSaveState(); }
@@ -332,6 +409,24 @@
       </div>`;
     const input = (f, ph) => `<input ${b(f)} value="${v(it[f])}" placeholder="${ph}">`;
 
+    // 图形字段：表情符号 与 图片 二选一
+    // - 值为表情（如 ✨）→ 输入框旁显示表情预览
+    // - 值为图片路径（以 / 或 http 开头）→ 显示缩略图 + 「移除」按钮
+    // 向后兼容：老数据（纯表情）行为完全不变。
+    const isImg = (x) => typeof x === 'string' && /^(\/|https?:\/\/|data:image\/)/.test(x.trim());
+    const gfx = (f, ph) => {
+      const cur = it[f] == null ? '' : String(it[f]);
+      const img = isImg(cur);
+      return `<div class="gfx-field">
+        <input ${b(f)} value="${v(cur)}" placeholder="${ph}">
+        <span class="gfx-preview">${img
+          ? `<img src="${v(cur)}" alt="">`
+          : `<em>${v(cur || '–')}</em>`}</span>
+        <button type="button" class="op-btn wide" data-iact="iupload" data-i="${i}" data-field="${f}" title="上传图片" aria-label="上传图片到 ${f}">📤</button>
+        ${img ? `<button type="button" class="op-btn" data-iact="iclear" data-i="${i}" data-field="${f}" title="移除图片（改回表情）" aria-label="移除图片">↺</button>` : ''}
+      </div>`;
+    };
+
     switch (s.type) {
       case 'services':
         return `<div class="item-row">
@@ -339,15 +434,15 @@
           ${ops}</div>`;
       case 'cards':
         return `<div class="item-row v4">
-          ${input('icon', '图标')}${input('title', '标题')}${input('desc', '描述')}
+          ${gfx('icon', '图标表情 或 图片')}${input('title', '标题')}${input('desc', '描述')}
           ${ops}</div>`;
       case 'testimonials':
         return `<div class="item-row">
-          ${input('emoji', '头像')}${input('who', '客户昵称')}<input ${b('rating')} type="number" min="1" max="5" value="${v(it.rating || 5)}" title="星级">
+          ${gfx('emoji', '头像表情 或 图片')}${input('who', '客户昵称')}<input ${b('rating')} type="number" min="1" max="5" value="${v(it.rating || 5)}" title="星级">
           ${input('text', '评价内容')}${ops}</div>`;
       case 'notice':
         return `<div class="item-row v2">
-          ${input('icon', '图标')}${input('text', '须知内容')}
+          ${gfx('icon', '图标表情 或 图片')}${input('text', '须知内容')}
           ${ops}</div>`;
       case 'faq':
         return `<div class="item-row v3">
@@ -419,9 +514,8 @@
         const s = secById(id);
         s.items = s.items || [];
         s.items.push(blankItem(s.type));
-        markDirty(); renderSecList();
-        const box = $(`.sec-card[data-id="${id}"] .items-box`);
-        if (box && box.lastElementChild) box.lastElementChild.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        markDirty();
+        addItemLocal(id);   // 局部追加，不重建整个列表
       }
       return;
     }
@@ -433,18 +527,47 @@
         const j = iact === 'iup' ? i - 1 : i + 1;
         if (j < 0 || j >= s.items.length) return;
         [s.items[i], s.items[j]] = [s.items[j], s.items[i]];
-        markDirty(); renderSecList();
+        markDirty();
+        moveItemLocal(s.id, i, j);   // 只交换这两个节点
       } else if (iact === 'idel') {
-        if (confirm('确定删除这一条吗？')) { s.items.splice(i, 1); markDirty(); renderSecList(); }
+        if (confirm('确定删除这一条吗？')) {
+          s.items.splice(i, 1);
+          markDirty();
+          removeItemLocal(s.id, i);  // 只移除这一个节点
+        }
       } else if (iact === 'iupload') {
+        // data-field 指定写入哪个字段（cards/notice 用 icon，testimonials 用 emoji，gallery 用 url）
+        const field = btn.dataset.field || 'url';
         pickFile(async (file) => {
           toast('上传中…');
           try {
-            s.items[i].url = await uploadImage(file);
-            markDirty(); renderSecList();
+            const url = await uploadImage(file);
+            s.items[i][field] = url;
+            markDirty();
+            // 局部更新：只刷新该行的图形预览，不重建列表
+            const row = itemsBox(s.id) && itemsBox(s.id).children[i];
+            if (row) {
+              const inp = row.querySelector(`input[data-bind$=":${field}"]`);
+              if (inp) inp.value = url;
+              const prev = row.querySelector('.gfx-preview');
+              if (prev) prev.innerHTML = `<img src="${esc(url)}" alt="">`;
+              // 首次上传后需要补出「移除」按钮
+              const gf = row.querySelector('.gfx-field');
+              if (gf && !gf.querySelector('[data-iact="iclear"]')) {
+                renderSecList();  // 结构有变化时才整体重绘一次
+              }
+            }
             toast('✅ 图片已上传，记得保存');
           } catch (err) { toast(err.message, true); }
         });
+      } else if (iact === 'iclear') {
+        // 把图形字段改回表情符号（清空后回落到默认）
+        const field = btn.dataset.field || 'icon';
+        const fallback = s.type === 'testimonials' ? '🙂' : '✨';
+        s.items[i][field] = fallback;
+        markDirty();
+        renderSecList();  // 按钮本身要消失，整体重绘一次
+        toast('已改回表情符号');
       }
     }
   });

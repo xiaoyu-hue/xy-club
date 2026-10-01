@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.9.0] - 2026-10-01
+
+**Theme: admin mobile usability** — make the admin panel genuinely usable on a phone: smooth, tappable, and capable of uploading images.
+
+### ⚡ Performance (the core of this release)
+
+- **Removed `backdrop-filter` frosted glass**: the admin panel had 25 elements using `backdrop-filter: blur(20px)`, stacked on top of continuously animating blurred blobs, forcing the phone GPU to run a dozen-plus real-time Gaussian blurs every frame. Replaced with "translucent solid colour + hairline border + inner highlight"; the visual difference is negligible.
+  - Measured (CPU throttled 4× to emulate a phone): **FPS 46.7 → 60.2**, longest frame **30.7ms → 17.4ms** (−43%).
+- **Removed the `blur(80px)` background blobs and their continuous animation**: replaced with plain radial gradients (rasterised once and cached), which look the same soft-light effect.
+- **Item add/edit/delete now update the DOM locally**: previously "add item", "move up", "move down", and "delete" all called `renderSecList()` and rebuilt the entire section list's `innerHTML`. They now touch only the affected node (`appendChild` / `removeChild` / `insertBefore`) and re-index the `data-i` attributes.
+  - Measured (CPU throttled 4×): add item **4.1ms**, delete item **0.72ms**.
+
+### ✨ Added: image upload for three more section types
+
+Previously only the «🖼 Gallery» section could upload images — and **the default dataset contains no gallery section at all**, so users never saw an upload entry point. Now:
+
+| Section | Graphic slot | Accepted forms |
+|---|---|---|
+| 🃏 Cards | icon | emoji **or** image |
+| 💖 Testimonials | avatar | emoji **or** image |
+| 📌 Notice | icon | emoji **or** image |
+
+- A **📤 Upload** button and a **↺ Remove** button (to revert an image back to an emoji) now sit beside the graphic field.
+- A **live preview** next to the input: emoji renders as text, an image path renders as a thumbnail.
+- The front end decides per value whether to render text or an `<img>`; **if the image fails to load it falls back to the emoji**, so no broken images appear.
+- **Fully backward compatible**: legacy data (emoji only) renders exactly as before.
+
+### 📱 Responsive rework
+
+- Breakpoints expanded from **1 to 4**: `≤1024px` / `≤860px` / `≤640px` / `≤400px`.
+- From `≤640px`: forms become single column; item rows switch from a multi-column grid to **vertical stacking** (the inputs used to be squeezed into near-unusable slivers).
+- Touch targets enlarged to **≥44px** (Apple HIG / WCAG 2.5.5).
+- Top bar and sidebar now use opaque backgrounds (after removing the blur, a translucent bar let scrolling content bleed through as a "ghost" artefact).
+- Added `prefers-reduced-motion` support: all non-essential motion is disabled when the OS "Reduce Motion" setting is on.
+- Added `@media (hover: none)` handling: touch devices get `:active` feedback instead of `:hover` (touch has no hover, so the old CSS left states "stuck").
+
+### 🧪 Tests
+
+- Added `tests/admin-perf.test.js` (18 cases): turns the above performance and responsive constraints into executable assertions, preventing future changes from reintroducing the blur.
+- Total tests **205 → 223**, all passing.
+
+### 🐛 Fixed
+
+- Fixed scrolling content bleeding through the admin top bar and sidebar as a ghost image (a side effect of removing `backdrop-filter`; solved with opaque backgrounds).
+
+---
+
 ## [v1.8.0] - 2026-10-01
 
 **Theme: Multi-case demo site** — one template now showcases five website cases across five industries, proving it is not "club-only".

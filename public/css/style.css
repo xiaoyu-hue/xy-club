@@ -457,6 +457,19 @@ img { max-width: 100%; display: block; }
 .r-card:hover .r-avatar { transform: rotate(8deg) scale(1.08); }
 .r-who b { font-size: 13px; font-weight: 600; color: var(--muted); }
 
+/* ---- 图形字段：表情 或 图片（v1.9.0）----
+ * 后台的图标/头像字段现在既能填表情，也能传图片。
+ * `*_gfx` 是图片态的类，负责把图片裁进原来的形状里。
+ */
+.f-card .ic img.ic-gfx {
+  width: 52px; height: 52px; border-radius: 14px; object-fit: cover; display: block;
+  border: 1px solid var(--line);
+}
+.r-avatar img.r-avatar-gfx { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.n-item .ni img.ni-gfx { width: 32px; height: 32px; border-radius: 10px; object-fit: cover; display: block; }
+/* 后端返回的表情态包一层 span，避免影响原有 flex/行内布局 */
+.f-card .ic > span.ic-gfx, .r-avatar > span.r-avatar-gfx, .n-item .ni > span.ni-gfx { display: inline; }
+
 /* 须知 */
 .notice-list { display: flex; flex-direction: column; gap: 12px; max-width: 680px; margin: 0 auto; }
 .n-item {

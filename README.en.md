@@ -50,7 +50,8 @@ The site and the admin panel share a single JSON document. Whatever you edit in 
 | 🌈 **8 themes** | 3 dark (Aurora / Ocean / Sunset) + 5 light-business (Mist, Morning-Mist, Cloud-Gray, Oat-Warm, Classic-Navy) — one-click switch in the admin |
 | ✨ **8 micro-interactions** | Cursor highlight, 3D card tilt, button ripple, count-up numbers, scroll progress, back-to-top, nav highlighting, staggered reveal |
 | 🧩 **8 section types** | Services / Cards / Testimonials / FAQ / Notice / Gallery / Rich text / Custom |
-| 🛠 **Visual admin** | Add, edit, delete, reorder (↑↓) and toggle (👁) any section at any time |
+| 🛠 **Visual admin** | Add, edit, delete, reorder (↑↓) and toggle (👁) any section at any time; **usable on mobile** (≥44px touch targets, single-column forms, stacked item rows) |
+| 🖼 **Emoji or image** | Card icons / testimonial avatars / notice icons / gallery all accept direct image uploads, and still work with emoji |
 | 📦 **Template reuse** | Export / import the whole site as JSON, plus one-click restore to defaults |
 | 🚀 **No database** | Single-port HTTP + JSON file storage — runs anywhere Node.js runs |
 | 🍦 **Zero frontend framework** | Vanilla HTML/CSS/JS, no build step; save and refresh |
@@ -77,6 +78,39 @@ The preview site has a case dropdown in the header that switches between 5 websi
 **How it works**: each case is a plain static JSON file (`public/cases/<id>.json`) shaped exactly like `content.json`, assembled from the existing 8 section types — so **you can add a new case without writing code, and without a server**. Switching uses the query parameter `?case=<id>`, which means purely static hosting (GitHub Pages) works too. See [ADR-005](docs/adr/ADR-005.md) for the full decision record.
 
 > ⚠️ **About the demo cases**: the organisation names, contact details and addresses in the four non-club cases are **fictional** and exist only to show the template's industry range — they are not real businesses. Images come from Unsplash (free for commercial use) and are logged per-file with source and licence in [public/cases/CREDITS.md](public/cases/CREDITS.md).
+
+---
+
+## 📱 Admin on mobile (new in v1.9.0)
+
+The admin panel now works properly on a phone. Three things made that happen:
+
+**1. Performance: frosted glass removed**
+
+The admin panel had 25 elements using `backdrop-filter: blur(20px)`, stacked on `blur(80px)` continuously animating background blobs — forcing the phone GPU to run a dozen-plus real-time Gaussian blurs every frame. Replaced with "translucent solid colour + hairline border + inner highlight":
+
+| Metric | Before | After |
+|---|---|---|
+| FPS (CPU throttled 4× to emulate a phone) | 46.7 | **60.2** |
+| Longest frame | 30.7 ms | **17.4 ms** |
+| Time to add an item | full-list rebuild | **4.1 ms** (local update) |
+
+**2. Responsive: four breakpoints**
+
+| Breakpoint | Target |
+|---|---|
+| ≤1024px | Tablet / small laptop: narrower sidebar |
+| ≤860px | Large phone landscape: sidebar becomes a horizontal scroller, buttons grow to 44px |
+| ≤640px | Mainstream phone portrait: single-column forms, vertically stacked item rows, two-column theme grid |
+| ≤400px | Small phones: tighter spacing |
+
+It also honours the OS "Reduce Motion" setting, and touch devices get `:active` feedback instead of `:hover`.
+
+**3. Graphic fields: emoji or image, your choice**
+
+Card icons, testimonial avatars, notice icons and the gallery — all four now accept direct image uploads (≤8MB, jpg/png/webp/gif), and you can still use an emoji instead. If an image fails to load it falls back to the emoji, so no broken images appear.
+
+> **Why could sections not add images before?** Only the «Gallery» section had an upload entry point — and the default dataset happens to contain no gallery section at all, so the button was never visible. That capability now covers three commonly used sections.
 
 ---
 
