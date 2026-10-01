@@ -144,6 +144,25 @@ describe('多案例 · 结构契约', () => {
       }
     }
   });
+
+  test('heroStats 每段必须以数字开头（否则首页统计会显示成 0）', () => {
+    // 前端 parseStat() 用 /^([\d.]+)(.*)$/ 解析：数字必须紧贴段首。
+    // 写成「执业律师32人」会让 val=0，页面上就是一个刺眼的 0。
+    // 正确写法是把数字挪到最前：「32人执业律师」或「32+执业律师」。
+    for (const c of cases) {
+      const raw = String(readCase(c.id).settings.heroStats || '');
+      assert.ok(raw.trim(), `${c.id} 的 heroStats 为空`);
+      const segs = raw.split(',').map((s) => s.trim()).filter(Boolean);
+      assert.ok(segs.length > 0, `${c.id} 的 heroStats 解析为空`);
+      for (const seg of segs) {
+        assert.match(
+          seg,
+          /^[\d.]/,
+          `${c.id} 的 heroStats 段「${seg}」未以数字开头，首页会显示为 0`
+        );
+      }
+    }
+  });
 });
 
 describe('多案例 · 安全契约（零容忍）', () => {

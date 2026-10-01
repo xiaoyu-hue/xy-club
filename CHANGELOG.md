@@ -26,6 +26,7 @@
 
 ### 🔧 修复
 
+- **演示案例首页统计数字显示为 0**：律所 / SaaS / 摄影三个案例的 `heroStats` 把数字写在了词组中间（如「执业律师32人」「平均提速40%」），而前端 `parseStat()` 要求**数字紧贴段首**才能识别，导致首页四个统计全变成刺眼的 `0`。已把数字挪到段首（「32人执业律师」「40%平均提速」），并**补测试固化这个格式约定**（新增测试项：`heroStats` 每段必须以数字开头），防止再次写错
 - **⚠️ 修复线上事故：首页底部 CTA 区块与整个页脚从未渲染**（v1.8.0 之前所有版本均受影响）
   - **根因**：`public/index.html` 中 CTA 的 `<section>` 被错误地放在 `<main id="app">` **内部**。而 `renderSections()` 执行 `$('#app').innerHTML = ...` 会整体替换 `#app` 的内容，连带删除 `<div id="ctaCard">`；随后 `renderCTA()` 访问该已消失的元素并抛出 `Cannot set properties of null (setting 'innerHTML')`。由于异常中断了后续初始化，**页脚也一并未渲染**
   - **修复**：把 CTA `<section>` 移出 `#app` 之外，并补测试固化这个约束（见 `tests/cases.test.js`），避免回归

@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🔧 Fixed
 
+- **Demo case hero stats rendered as 0**: the law / SaaS / photography cases wrote their `heroStats` numbers mid-phrase (e.g. "执业律师32人", "平均提速40%"), but the frontend `parseStat()` only recognises a number **at the very start of a segment** — so all four hero stats showed a glaring `0`. Numbers moved to the front ("32人执业律师", "40%平均提速"), and a **test now locks the format convention** (new case: `heroStats` segments must start with a digit) to prevent recurrence
 - **⚠️ Fixed a live production bug: the homepage bottom CTA block and the entire footer never rendered** (affects every release before v1.8.0)
   - **Root cause**: in `public/index.html` the CTA `<section>` was mistakenly placed **inside** `<main id="app">`. `renderSections()` runs `$('#app').innerHTML = ...`, which replaces all of `#app`'s content and thereby removes `<div id="ctaCard">`; `renderCTA()` then touches that now-missing element and throws `Cannot set properties of null (setting 'innerHTML')`. Because the exception aborted the remaining initialization, **the footer failed to render as well**
   - **Fix**: moved the CTA `<section>` outside `#app` and added a test locking the constraint (see `tests/cases.test.js`) to prevent regressions
