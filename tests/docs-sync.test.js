@@ -40,6 +40,32 @@ describe('版本号同步', () => {
       assert.deepEqual(stale, [], `${file} 里残留旧版本号：${stale.join(', ')}`);
     }
   });
+
+  // v1.10.0 补：PRD 版本头此前长期停在 1.5.2 而无人发现 —— 因为上面的残留检查
+  // 只覆盖了 README。DOC_SYNC.md 第四节的「版本一致性」要求
+  // package.json = CHANGELOG = docs 头部 = tag，这里把 docs 头部也纳入门禁。
+  test('docs 版本头必须与 package.json 一致', () => {
+    const heads = [
+      ['docs/PRD.md', /^>\s*版本：([\d.]+)/m],
+      ['docs/PRD.en.md', /^>\s*Version:\s*([\d.]+)/m],
+    ];
+    for (const [file, re] of heads) {
+      const m = read(file).match(re);
+      assert.ok(m, `${file} 缺少版本头（形如 "> 版本：x.y.z"）`);
+      assert.equal(m[1], pkgVersion, `${file} 版本头 ${m[1]} 与 package.json ${pkgVersion} 不一致`);
+    }
+  });
+
+  test('PRD 版本历史表首行与当前版本一致', () => {
+    for (const [file, re] of [
+      ['docs/PRD.md', /\|\s*([\d.]+)\s*\|\s*(?:major|minor|patch)\s*\|/],
+      ['docs/PRD.en.md', /\|\s*([\d.]+)\s*\|\s*(?:major|minor|patch)\s*\|/],
+    ]) {
+      const m = read(file).match(re);
+      assert.ok(m, `${file} 未找到版本历史表首行`);
+      assert.equal(m[1], pkgVersion, `${file} 版本历史表首行 ${m[1]} 与 package.json ${pkgVersion} 不一致`);
+    }
+  });
 });
 
 describe('中英文 README 配对', () => {

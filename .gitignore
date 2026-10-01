@@ -27,3 +27,6 @@ blob-report/
 
 # 本地发布辅助脚本（含个人使用说明，不入库）
 push-v1.8.0.sh
+
+# 内部工作文档（审查报告/计划方案/工作总结，按 GLOBAL.md 规则不入库）
+docs/IMAGE-AUDIT.md

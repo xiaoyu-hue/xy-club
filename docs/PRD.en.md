@@ -1,6 +1,6 @@
 # Product Requirements Document (PRD) — XY Club Website Template
 
-> Version: 1.5.2
+> Version: 1.10.0
 > Status: Maintained
 > Last updated: 2026-09-28
 > Scope: This document is the **source of truth for requirements**; implementation details live in `ARCHITECTURE.md` / `API.md`, decisions in `docs/adr/`.
@@ -53,7 +53,7 @@ It is a **ready-to-use template**, not a custom site for one club — anyone can
 - Cases are plain static JSON (`public/cases/*.json`) shaped exactly like `DEFAULT_DB`, assembled only from the existing 8 section types
 - Switching uses `?case=<id>`, so pure static hosting works; `history.pushState` + `popstate` support browser back/forward
 - All 4 non-club cases are **entirely fictional** — names, phones, addresses and logos are demo content, explicitly declared as fictional on the hero
-- Case images are **original photography owned by the project author**, documented in `public/cases/CREDITS.md` (from v1.10.0; the earlier third-party stock ledger was dropped as unverifiable — see `docs/IMAGE-AUDIT.md`)
+- Case images are **original photography owned by the project author**, documented in `public/cases/CREDITS.md` (from v1.10.0; the earlier third-party stock ledger was dropped as unverifiable)
 - Case assets are validated at both build time (`scripts/build-static.js`) and test time (`tests/cases.test.js`): structure / types / credentials / image references
 
 ## 4. Data Specification
@@ -103,6 +103,7 @@ Source of truth: `data/db.json`, shaped by `DEFAULT_DB` in `defaults.js`.
 
 | Version | Type | Summary |
 |---------|------|---------|
+| 1.10.0 | minor | Image licensing compliance: removed 16 third-party images with unverifiable provenance, replaced with original works; added licensing tests |
 | 1.9.0 | minor | Admin mobile usability: removed frosted glass (FPS 46.7→60.2), local DOM updates for item operations, 4-breakpoint responsive layout, image upload for three more sections |
 | 1.8.0 | minor | Multi-case demo site: 5 switchable cross-industry cases; fixed the live bug where the home CTA and footer never rendered |
 | 1.7.1 | patch | Removed the conflicting `eslint.config.js` (root cause of the lint crash) |

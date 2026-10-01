@@ -17,7 +17,7 @@ npm test
 | 运行器 | `node --test`（Node 内置） |
 | 依赖 | 无（只需 `express` 跑起来，测试本身零依赖） |
 | 用例位置 | `tests/*.test.js` |
-| 用例规模 | 234 项 / 63 suites |
+| 用例规模 | 236 项 / 63 suites |
 | 耗时参考 | 约 10–40 秒（视机器性能） |
 
 ### 文件与职责
@@ -36,7 +36,7 @@ npm test
 | `tests/static-build.test.js` | 静态快照不含凭据、资源用相对路径 | GitHub Pages 子路径托管白屏 / 泄密的防线 |
 | `tests/resilience.test.js` | `db.json` 损坏时备份现场并回退默认 | 第一原则：不破坏用户已有数据 |
 | `tests/contract-defaults.test.js` | 板块类型 ↔ 渲染分支 ↔ 主题 ↔ 后台选项 | 防"加了类型忘了渲染""加了主题后台没选项" |
-| `tests/docs-sync.test.js` | 版本号漂移、中英 README 断链、API 表与路由不一致 | 把「改了行为必须同步文档」自动化 |
+| `tests/docs-sync.test.js` | 版本号三方一致（package.json / CHANGELOG / docs 版本头）/ 旧版本号残留 / 中英 README 配对 / API 表与真实路由一致（11 项） | 防止版本与文档漂移（v1.10.0 起纳入 docs 版本头门禁） |
 | `tests/frontend-util.test.js` | `esc()` 转义与 `TYPES` 板块类型定义（前端纯函数） | XSS 第一防线 + 类型定义一致性 |
 | `tests/cases.test.js` | 案例 JSON 结构 / 板块类型白名单 / 凭据零容忍 / 虚构声明 / 图片溯源 / 相对路径 / 主题合法性 / `heroStats` 格式（29 项） | v1.8.0 多案例内容资产的契约门禁（ADR-005 P7） |
 | `tests/case-isolation.test.js` | 服务端不引用 `cases/`、`DB_FILE`/`UPLOAD_DIR` 越界检查、前端回退顺序、改案例不影响 API、服务端写入不落 `cases/`（13 项） | 守住「静态案例 ↔ 服务端内容」两条路径永不交叉（ADR-005 P8） |

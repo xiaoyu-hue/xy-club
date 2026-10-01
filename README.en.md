@@ -77,7 +77,7 @@ The preview site has a case dropdown in the header that switches between 5 websi
 
 **How it works**: each case is a plain static JSON file (`public/cases/<id>.json`) shaped exactly like `content.json`, assembled from the existing 8 section types — so **you can add a new case without writing code, and without a server**. Switching uses the query parameter `?case=<id>`, which means purely static hosting (GitHub Pages) works too. See [ADR-005](docs/adr/ADR-005.md) for the full decision record.
 
-> ⚠️ **About the demo cases**: the organisation names, contact details and addresses in the four non-club cases are **fictional** and exist only to show the template's industry range — they are not real businesses. Case images are **original photography owned by the project author**, with licensing documented in [public/cases/CREDITS.md](public/cases/CREDITS.md) and the audit record in [docs/IMAGE-AUDIT.md](docs/IMAGE-AUDIT.md).
+> ⚠️ **About the demo cases**: the organisation names, contact details and addresses in the four non-club cases are **fictional** and exist only to show the template's industry range — they are not real businesses. Case images are **original photography owned by the project author**, with licensing documented in [public/cases/CREDITS.md](public/cases/CREDITS.md).
 
 ---
 

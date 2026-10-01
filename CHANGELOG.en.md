@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🔒 Security / Compliance (the core of this release)
 
 - **Removed all 16 third-party images**: the "临界摄影" case's 16 images were recorded as Unsplash free-commercial, but an audit showed the ledger could not prove itself — the recorded URLs used **12-character hex IDs**, whereas Unsplash photo IDs are actually **11-character short codes** (`varchar(11)`). The format does not match, so the links cannot resolve. Additionally, **12 of the 16 were never referenced by any case** — dead weight with no purpose.
-  - See `docs/IMAGE-AUDIT.md` for the full audit.
+  - The audit process and conclusions are kept in an internal document (audit reports are not committed, per project policy).
 - **Replaced with original photography owned by the project author**: 4 new original botanical / natural-light works with clear ownership, free of any third-party restrictions.
   - Repository image size dropped from roughly **930KB to 160KB**.
 
@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - the ledger **must not contain 12-character hex pseudo-Unsplash IDs** (no fabricated ledgers);
   - per-image size ceiling.
   - Validated with deliberate-break experiments: orphan file / broken reference / re-inserted pseudo ID were all caught.
-- Test scale **223 cases / 60 suites → 234 cases / 63 suites**.
+- Test scale **223 cases / 60 suites → 236 cases / 63 suites**.
 
 ### 🐛 Fixed
 
@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📝 Docs
 
-- Added `docs/IMAGE-AUDIT.md`: the full image copyright audit, with findings, risk grading, and remediation options.
+- Completed the image copyright audit: per-image provenance checks, risk grading, and remediation decisions (**the audit report is not committed, per project policy**; conclusions are folded into this CHANGELOG and `CREDITS.md`).
 - Rewrote `public/cases/CREDITS.md`: from a third-party stock ledger to an original-works statement with clear ownership and usage scope.
 - **Follow-up**: corrected 4 remaining stale licensing claims — `README.en.md`, `docs/PRD.en.md`, the user-visible footer of `public/themes-demo.html`, and the image-source entries in `docs/adr/ADR-005.md` (original text kept, change note appended — history is not rewritten).
 - `docs-sync.test.js` only checked version numbers and CHANGELOGs, so it could not catch content drift — assertions were added to `credits.test.js` to prevent this class of miss from recurring.
