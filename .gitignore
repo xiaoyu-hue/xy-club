@@ -24,3 +24,6 @@ blob-report/
 # 日志与系统文件
 *.log
 .DS_Store
+
+# 本地发布辅助脚本（含个人使用说明，不入库）
+push-v1.8.0.sh
