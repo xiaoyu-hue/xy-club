@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.7.1] - 2026-10-01
+
+### 🔧 Fixes
+
+- **Removed the conflicting `eslint.config.js`**: it coexisted with `.eslintrc.js` and contained the nonexistent rule `no-new-promises`, the root cause of the crashing `npm run lint`. The deletion was missed in v1.7.0 and is restored here (config unified to `.eslintrc.js`)
+
+---
+
 ## [v1.7.0] - 2026-10-01
 
 ### 🔒 Security
