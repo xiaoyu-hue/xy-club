@@ -17,7 +17,7 @@ npm test
 | 运行器 | `node --test`（Node 内置） |
 | 依赖 | 无（只需 `express` 跑起来，测试本身零依赖） |
 | 用例位置 | `tests/*.test.js` |
-| 用例规模 | 244 项 / 65 suites |
+| 用例规模 | 245 项 / 65 suites |
 | 耗时参考 | 约 10–40 秒（视机器性能） |
 
 ### 文件与职责
@@ -42,7 +42,7 @@ npm test
 | `tests/case-isolation.test.js` | 服务端不引用 `cases/`、`DB_FILE`/`UPLOAD_DIR` 越界检查、前端回退顺序、改案例不影响 API、服务端写入不落 `cases/`（13 项） | 守住「静态案例 ↔ 服务端内容」两条路径永不交叉（ADR-005 P8） |
 | `tests/admin-perf.test.js` | 后台禁用 `backdrop-filter` / 光斑禁用 `blur` / 断点数量 / 44px 触控尺寸 / 条目操作不得整列表重绘 / 三板块支持传图（18 项） | 把手机端性能与响应式约束固化为门禁，防止模糊与全量重绘回归（v1.9.0） |
 | `tests/credits.test.js` | 台账与图片目录双向一致 / 无僵尸图片 / 引用真实存在 / 拒绝 12 位伪 Unsplash ID / 图片体积上限 / 对外文案不得再宣称 Unsplash（11 项） | 把图片版权合规固化为门禁：防止僵尸文件、失效引用与编造台账（v1.10.0） |
-| `tests/doc-policy.test.js` | 过程产物不得进主线（审查报告/版本计划/工作总结，`docs/_archive/` 除外）/ 禁推清单自检（防误杀流程工具）/ tag 格式统一 / tag 版本不得高于 `package.json`（6 项） | 让「GLOBAL.md 写了但没人执行」的规则真正可执行（v1.10.2） |
+| `tests/doc-policy.test.js` | 过程产物不得进主线（审查报告/版本计划/工作总结，`docs/_archive/` 除外）/ 禁推清单自检（防误杀流程工具）/ tag 格式统一 / tag 版本不得高于 `package.json`（7 项） | 让「GLOBAL.md 写了但没人执行」的规则真正可执行（v1.10.2） |
 | `tests/harness.js` | （非测试文件）临时目录隔离 + 内存服务器启动 | 所有测试的公共底座 |
 
 > **为什么需要 `admin-perf.test.js`**：手机后台卡顿的根因**不在 JavaScript，而在 CSS**。
@@ -75,6 +75,25 @@ npm test
 > `FIX_SUMMARY.md`（这次做了什么）会过期，是过程产物 → 归档；
 > `DECISION_REVIEW.md`（以后该怎么做）长期有效，是流程工具 → 保留。
 > 判据是「描述过去的一次动作」还是「描述未来的行为准则」。
+
+> ⚠️ **写依赖 git 的测试前必读：`actions/checkout@v4` 默认 `fetch-depth=1` 且不抓取标签。**
+>
+> `doc-policy.test.js` 初版断言「`git tag -l` 必须非空」，本地全绿、**CI 三个 Node 版本全红**——
+> 因为 CI 里 `git tag -l` 返回空。这是典型的"在我机器上是好的"。
+>
+> **规避方式**：环境前提不满足时**跳过并说明原因**，不要断言其存在：
+>
+> ```js
+> const tags = git(['tag','-l','v*']).split('\n').filter(Boolean);
+> if (tags.length === 0) return t.skip('本地无标签（CI 浅克隆不抓标签，属预期）');
+> ```
+>
+> **验证方式**：任何依赖 git 历史的测试，都必须在干净检出里跑一遍再提交：
+>
+> ```bash
+> git clone --depth 1 --no-tags file://$PWD /tmp/ci-sim && cd /tmp/ci-sim
+> node --test tests/*.test.js
+> ```
 
 > **为什么需要 `case-isolation.test.js`**：v1.8.0 后内容有两条来源——服务端的 `data/db.json` 与静态的 `public/cases/*.json`。
 > 二者的分离在架构上天然成立（`server.js` 完全不认识 `cases/` 目录），但那是**隐式约定**。一旦被无意打破，
