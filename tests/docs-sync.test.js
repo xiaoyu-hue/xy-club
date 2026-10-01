@@ -41,6 +41,37 @@ describe('版本号同步', () => {
     }
   });
 
+  // v1.10.1 补：release 徽章曾显示 v1.8.0 而非 v1.10.0。
+  // 根因是 shields.io 默认走 GitHub /releases/latest，它按「创建时间」判定而非
+  // SemVer 大小 —— v1.9.0/v1.10.0 的 created_at 相同，谁被选中不确定。
+  // 这个缺陷不会让任何测试变红（徽章是外链图片），只能靠静态断言锁住参数。
+  test('release 徽章必须带 sort=semver，避免显示旧版本', () => {
+    for (const file of ['README.md', 'README.en.md']) {
+      const doc = read(file);
+      const badges = doc.match(/https:\/\/img\.shields\.io\/github\/v\/release\/[^\s")]+/g) || [];
+      assert.ok(badges.length >= 1, `${file} 未找到 release 徽章`);
+      for (const url of badges) {
+        assert.ok(
+          /[?&]sort=semver\b/.test(url),
+          `${file} 的 release 徽章缺少 sort=semver，会显示错误的旧版本：${url}`
+        );
+      }
+    }
+  });
+
+  test('release 徽章指向正确的仓库', () => {
+    for (const file of ['README.md', 'README.en.md']) {
+      const badges = read(file).match(/https:\/\/img\.shields\.io\/github\/v\/release\/[^\s")?]+/g) || [];
+      for (const url of badges) {
+        assert.match(
+          url,
+          /img\.shields\.io\/github\/v\/release\/xiaoyu-hue\/xy-club$/,
+          `${file} 的 release 徽章仓库路径不对：${url}`
+        );
+      }
+    }
+  });
+
   // v1.10.0 补：PRD 版本头此前长期停在 1.5.2 而无人发现 —— 因为上面的残留检查
   // 只覆盖了 README。DOC_SYNC.md 第四节的「版本一致性」要求
   // package.json = CHANGELOG = docs 头部 = tag，这里把 docs 头部也纳入门禁。

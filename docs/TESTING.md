@@ -17,7 +17,7 @@ npm test
 | 运行器 | `node --test`（Node 内置） |
 | 依赖 | 无（只需 `express` 跑起来，测试本身零依赖） |
 | 用例位置 | `tests/*.test.js` |
-| 用例规模 | 236 项 / 63 suites |
+| 用例规模 | 238 项 / 63 suites |
 | 耗时参考 | 约 10–40 秒（视机器性能） |
 
 ### 文件与职责
@@ -36,7 +36,7 @@ npm test
 | `tests/static-build.test.js` | 静态快照不含凭据、资源用相对路径 | GitHub Pages 子路径托管白屏 / 泄密的防线 |
 | `tests/resilience.test.js` | `db.json` 损坏时备份现场并回退默认 | 第一原则：不破坏用户已有数据 |
 | `tests/contract-defaults.test.js` | 板块类型 ↔ 渲染分支 ↔ 主题 ↔ 后台选项 | 防"加了类型忘了渲染""加了主题后台没选项" |
-| `tests/docs-sync.test.js` | 版本号三方一致（package.json / CHANGELOG / docs 版本头）/ 旧版本号残留 / 中英 README 配对 / API 表与真实路由一致（11 项） | 防止版本与文档漂移（v1.10.0 起纳入 docs 版本头门禁） |
+| `tests/docs-sync.test.js` | 版本号三方一致（package.json / CHANGELOG / docs 版本头）/ 旧版本号残留 / 中英 README 配对 / API 表与真实路由一致 / **release 徽章必须带 `sort=semver`**（13 项） | 防止版本与文档漂移（v1.10.0 起纳入 docs 版本头门禁，v1.10.1 起纳入徽章参数门禁） |
 | `tests/frontend-util.test.js` | `esc()` 转义与 `TYPES` 板块类型定义（前端纯函数） | XSS 第一防线 + 类型定义一致性 |
 | `tests/cases.test.js` | 案例 JSON 结构 / 板块类型白名单 / 凭据零容忍 / 虚构声明 / 图片溯源 / 相对路径 / 主题合法性 / `heroStats` 格式（29 项） | v1.8.0 多案例内容资产的契约门禁（ADR-005 P7） |
 | `tests/case-isolation.test.js` | 服务端不引用 `cases/`、`DB_FILE`/`UPLOAD_DIR` 越界检查、前端回退顺序、改案例不影响 API、服务端写入不落 `cases/`（13 项） | 守住「静态案例 ↔ 服务端内容」两条路径永不交叉（ADR-005 P8） |
@@ -54,6 +54,12 @@ npm test
 > 但登记的 URL 用的是 **12 位十六进制 ID**，而 Unsplash 的照片 ID 实为 **11 位短码**（`varchar(11)`）——
 > 格式对不上，说明台账无法自证授权。同时 16 张图里只有 4 张被真正引用。
 > 本测试把「台账必须可核验、不许有僵尸文件」变成 CI 门禁，杜绝此类问题复发（v1.10.0）。
+
+> **为什么 `docs-sync.test.js` 要管 release 徽章的 URL 参数**：v1.10.0 发版后徽章仍显示 `v1.8.0`。
+> 起初以为是 CDN 缓存，实为**语义错误**——shields.io 默认走 GitHub `/releases/latest`，
+> 而该接口按**创建时间**判定 latest，不是按 SemVer 大小。v1.9.0 与 v1.10.0 的 `created_at` 完全相同
+> （同为 `05:41:17`），因此"哪个是 latest"在 API 层就是不确定的。加上 `?sort=semver` 后口径才与版本号一致。
+> 这类缺陷**不会让任何测试变红**（徽章是外链图片、不会被解析），只能靠静态断言锁参数——故补此门禁（v1.10.1）。
 
 > **为什么需要 `case-isolation.test.js`**：v1.8.0 后内容有两条来源——服务端的 `data/db.json` 与静态的 `public/cases/*.json`。
 > 二者的分离在架构上天然成立（`server.js` 完全不认识 `cases/` 目录），但那是**隐式约定**。一旦被无意打破，

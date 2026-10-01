@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.10.1] - 2026-10-01
+
+**Theme: fix release badge showing a stale version**
+
+### 🐛 Fixed
+
+- **Fixed the README release badge showing an outdated version**: after v1.10.0 shipped, the badge still read `v1.8.0`.
+  - **Root cause (not caching)**: shields.io defaults to GitHub's `/releases/latest` endpoint, which determines "latest" by **Release creation time**, not by SemVer magnitude. `v1.9.0` and `v1.10.0` share an **identical** `created_at` (`2026-10-01T05:41:17Z`, with `published_at` only 8 seconds apart), so "which is latest" is genuinely undefined at the API level — `v1.8.0` won on `id` ordering.
+  - **Fix**: append `?sort=semver` to the badge URL so the ordering matches version magnitude. Measured at the same moment: default → `v1.8.0` (wrong), `?sort=semver` → `v1.10.0` (correct).
+  - Files affected: `README.md`, `README.en.md`.
+
+### ✅ Tests
+
+- **`docs-sync.test.js` grew to 13 cases**, adding 2 assertions:
+  - the release badge URL **must** carry `sort=semver`;
+  - the release badge must point at the correct repository path.
+- **Why static assertions are the only option**: the badge is an external image; the browser never parses its contents, so no runtime test would ever go red over it. Such silent errors must be caught by locking the URL parameters themselves.
+- Test count 236 → **238 cases** (63 suites unchanged).
+
+---
+
 ## [v1.10.0] - 2026-10-01
 
 **Theme: image licensing compliance** — remove third-party images of unverifiable provenance, replace them with original works, and add an automated gate to prevent recurrence.
