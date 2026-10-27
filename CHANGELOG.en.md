@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.10.3] - 2026-10-27
+
+**Theme: license cleanup**
+
+### License
+
+- **LICENSE-DOCS rewritten with the seven essentials**: copyright line / `SPDX-License-Identifier: CC-BY-4.0` / covered scope / grant and conditions / attribution example / third-party exclusion / verbatim legal text. Documentation is CC BY 4.0; code stays MIT.
+- **Copyright holder unified**: the `LICENSE` line changed from `Copyright (c) 2026 XY Club` to `Copyright (c) 2026 xiaoyu-hue`. Repo, commits and releases all belong to the account holder — naming a project here only makes "who grants this license" ambiguous.
+
+### Docs
+
+- README license table synced with the two rows above.
+
 ## [v1.10.2] - 2026-10-01
 
 **Theme: documentation governance — turn written-but-unenforced rules into gates**
