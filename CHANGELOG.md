@@ -7,6 +7,35 @@
 
 ---
 
+## [v1.11.0] - 2026-10-28（预渲染 · 媒体库 · 版本历史）
+
+**主题：从"能改"到"能长期用"**
+
+### ✨ 新增
+- **构建期预渲染**：`npm run build:static` 会把首页正文、标题与 Open Graph / Twitter 卡片直接写进 `index.html`，爬虫和微信/推特的链接预览不再拿到空壳
+- **后台媒体库**：列出全部已上传图片，显示占用总量与「被几处内容引用」，支持复制路径、删除未被引用的图片（被引用时会再确认一次）
+- **内容版本历史**：每次保存、回滚、重置后自动留快照（最多保留 30 份），后台可预览并一键回滚；密码不随内容回滚
+- **会话持久化**：登录状态写入 `data/sessions.json`（权限 0600），重启服务器不再掉线
+- **Docker 部署**：新增 `Dockerfile` / `docker-compose.yml` / `.dockerignore`，`data` 与 `public/uploads` 两个命名卷持久化
+- **3 个新演示案例**：铁木健身、星芽少儿编程、爪印宠物医院，案例总数达 8 个
+
+### 🐛 修复
+- 首页图片回落改用事件委托：原先的内联 `onerror` 被自身 CSP（`script-src 'self'`）拦截，Node 部署下图片加载失败只剩破图
+- 切换案例不再重复累积滚动监听与 `IntersectionObserver`（所有 `bind*` 改为幂等）
+- `toast()` 的第二个参数（显示时长）不再被忽略
+- CSRF 中间件的豁免路径改为集合比对，移除永远不成立的判断
+- 订单按钮由 `javascript:void(0)` 改为 `<button data-order>`，消除 CSP 控制台报错
+
+### 🔧 内部
+- 抽出 `public/js/render.js` 纯函数渲染层，官网与构建脚本共用同一套 `sectionHTML` / `fragments`
+- ESLint 改为「正确性 error、风格 off」，`npm run lint` 加 `--max-warnings 0`
+- E2E（`@playwright/test`）纳入 CI，Node 22 单独跑一份
+- 文档与版本同步：README / README.en / AGENTS / PRD / TESTING 全部对齐 262 项测试、69 suites
+
+### ⚠️ 升级提示
+- 无破坏性变更，旧 `data/db.json` 直接可用
+- 新增的 `data/sessions.json`、`data/history/` 已在 `.gitignore` 中，请勿提交
+
 ## [v1.10.3] - 2026-10-27（许可收口）
 
 ### 🗂 许可

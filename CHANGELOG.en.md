@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.11.0] - 2026-10-28 (prerender, media library, version history)
+
+**Theme: from editable to maintainable**
+
+### Added
+- **Build-time prerendering**: `npm run build:static` writes the homepage content, title and Open Graph / Twitter cards straight into `index.html`, so crawlers and link previews no longer see an empty shell
+- **Admin media library**: lists every uploaded image with total disk usage and reference count, supports copying paths and deleting unreferenced files (confirmation when referenced)
+- **Content version history**: a snapshot after every save, restore and reset (up to 30 kept), preview and one-click rollback in the admin; passwords never roll back with content
+- **Session persistence**: login state is stored in `data/sessions.json` (mode 0600), so restarts no longer log you out
+- **Docker deployment**: `Dockerfile` / `docker-compose.yml` / `.dockerignore`, with named volumes for `data` and `public/uploads`
+- **3 new demo cases**: Ironwood Gym, Starseed Coding, Pawcare Vet — 8 cases in total
+
+### Fixed
+- Image fallback now uses event delegation: the inline `onerror` was blocked by the project's own CSP (`script-src 'self'`), leaving broken images under Node
+- Switching cases no longer stacks scroll listeners and `IntersectionObserver`s (all `bind*` helpers are idempotent)
+- `toast()`'s second argument (duration) is no longer ignored
+- CSRF exemption paths are matched against a set instead of dead `req.path` checks
+- The order button uses `<button data-order>` instead of `javascript:void(0)`, removing CSP console errors
+
+### Internal
+- Extracted `public/js/render.js` as a pure rendering layer shared by the site and the build script (`sectionHTML` / `fragments`)
+- ESLint now fails on correctness rules and ignores style rules; `npm run lint` adds `--max-warnings 0`
+- E2E (`@playwright/test`) runs in CI on Node 22
+- Docs synced: README / README.en / AGENTS / PRD / TESTING all report 262 tests / 69 suites
+
+### Upgrade notes
+- No breaking changes; existing `data/db.json` keeps working
+- `data/sessions.json` and `data/history/` are git-ignored
+
 ## [v1.10.3] - 2026-10-27
 
 **Theme: license cleanup**

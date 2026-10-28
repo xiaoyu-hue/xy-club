@@ -21,7 +21,7 @@
 
 <br>
 
-**[🔗 在线预览（GitHub Pages）](https://xiaoyu-hue.github.io/xy-club/)** · **[🎭 5 个跨行业案例](https://xiaoyu-hue.github.io/xy-club/themes-demo.html)** · **[🚀 快速开始](#quick-start)** · **[🔁 复用模板](#reuse)** · **[📚 文档](docs/README.md)** · **[⚠️ 不适合什么场景](#not-recommended)** · **[🧩 配套工具](#companion)**
+**[🔗 在线预览（GitHub Pages）](https://xiaoyu-hue.github.io/xy-club/)** · **[🎭 8 个跨行业案例](https://xiaoyu-hue.github.io/xy-club/themes-demo.html)** · **[🚀 快速开始](#quick-start)** · **[🔁 复用模板](#reuse)** · **[📚 文档](docs/README.md)** · **[⚠️ 不适合什么场景](#not-recommended)** · **[🧩 配套工具](#companion)**
 
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
@@ -33,6 +33,15 @@
 </div>
 
 ---
+
+### 📣 最新版本 v1.11.0（2026-10-28）
+
+- **预渲染 + SEO**：首页正文、title/description 与 Open Graph 标签直接写进 HTML —— 爬虫、微信与社交分享卡片终于能读到内容
+- **后台媒体库**：图片集中管理，看占用、看被谁引用、一键删除没在用的图
+- **内容版本历史**：每次保存与重置前自动快照（最多 30 份），改错了能预览并回滚
+- **会话持久化 + Docker**：重启不掉登录；`docker compose up -d` 一条命令起站，数据落在命名卷里
+
+完整变更见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 🎯 项目简介
 
@@ -55,7 +64,7 @@
 | 📦 **模板复用** | 整站配置导出 / 导入 JSON，一键恢复默认内容 |
 | 🚀 **零数据库** | 单端口 HTTP + JSON 文件存储，任何支持 Node.js 的平台都能跑 |
 | 🍦 **零前端框架** | 原生 HTML/CSS/JS，无构建步骤，改完刷新即生效 |
-| 🎭 **5 个跨行业案例** | 预览站内置 5 个不同行业的示范案例（咖啡 / 律所 / SaaS / 摄影），顶部下拉框即时切换，证明模板不止能做俱乐部 |
+| 🎭 **8 个跨行业案例** | 预览站内置 8 个不同行业的示范案例（咖啡 / 律所 / SaaS / 摄影 / 健身 / 教培 / 宠物医疗），顶部下拉框即时切换，证明模板不止能做俱乐部 |
 
 ---
 
@@ -63,7 +72,7 @@
 
 一句话：**模板不止能做俱乐部。**
 
-预览站顶部有个案例下拉框，可以在 5 个不同行业的网站之间即时切换（页面不刷新，浏览器前进/后退可用，链接可分享）：
+预览站顶部有个案例下拉框，可以在 8 个不同行业的网站之间即时切换（页面不刷新，浏览器前进/后退可用，链接可分享）：
 
 | 案例 | 行业 | 主题 | 说明 |
 |------|------|------|------|
@@ -72,12 +81,15 @@
 | ⚖️ **衡合律师事务所** | 法律服务 | 藏蓝·经典 | 虚构演示 |
 | ☁️ **叠云协作** | SaaS 产品 | 浅灰·云影 | 虚构演示 |
 | 📷 **临界摄影** | 摄影工作室 | 晨雾白 | 虚构演示 |
+| 🏋️ **铁木健身** | 健身工作室 | 落日金 | 虚构演示 |
+| 🧠 **星芽少儿编程** | 少儿编程 | 深海蓝 | 虚构演示 |
+| 🐾 **爪印宠物医院** | 宠物医疗 | 米白·晨雾 | 虚构演示 |
 
-**怎么看**：打开 [在线预览](https://xiaoyu-hue.github.io/xy-club/)，点右上角案例下拉框；或直接访问 [案例总览页](https://xiaoyu-hue.github.io/xy-club/themes-demo.html)，5 张案例卡片 + 8 套主题一眼看全。
+**怎么看**：打开 [在线预览](https://xiaoyu-hue.github.io/xy-club/)，点右上角案例下拉框；或直接访问 [案例总览页](https://xiaoyu-hue.github.io/xy-club/themes-demo.html)，8 张案例卡片 + 8 套主题一眼看全。
 
 **怎么做的**：每个案例是一份纯静态 JSON（`public/cases/<id>.json`），与 `content.json` 同构，用现有的 8 种板块类型拼装——**不需要新增代码就能造一个新案例，也不需要服务端**。切换走查询参数 `?case=<id>`，因此纯静态托管（GitHub Pages）也能用。详细决策见 [ADR-005](docs/adr/ADR-005.md)。
 
-> ⚠️ **关于演示案例**：4 个非俱乐部案例的机构名、联系方式、地址均为**虚构**，仅用于展示模板的行业适配能力，非真实企业。案例配图为**项目作者自有版权**的原创摄影作品，版权说明见 [public/cases/CREDITS.md](public/cases/CREDITS.md)。
+> ⚠️ **关于演示案例**：7 个非俱乐部案例的机构名、联系方式、地址均为**虚构**，仅用于展示模板的行业适配能力，非真实企业。案例配图为**项目作者自有版权**的原创摄影作品，版权说明见 [public/cases/CREDITS.md](public/cases/CREDITS.md)。
 
 ---
 
@@ -146,12 +158,7 @@
 | | 燕麦·暖调 `neutral_oat` | 温和知性 | 文化/餐饮行业 |
 | | 藏蓝·经典 `neutral_navy` | 最正式 | 金融/法律机构 |
 
-👉 [查看主题案例展示](themes-demo.html)
-|------|------|------|
-| 🌌 极光紫 `aurora` | 深色 · 紫蓝渐变 | 游戏 / 陪玩 / 潮玩社群 |
-| 🌊 深海蓝 `ocean` | 深色 · 青蓝渐变 | 技术 / 户外 / 运动俱乐部 |
-| ☁️ 晨雾白 `mist` | **浅色** · 灰白渐变 | 读书 / 亲子 / 生活服务 |
-| 🌇 落日金 `sunset` | 深色 · 橙金渐变 | 餐饮 / 派对 / 兴趣社交 |
+👉 [查看主题案例展示](themes-demo.html)（8 套主题 × 8 个案例，可直接对比）
 
 ---
 
@@ -254,7 +261,7 @@ xy-club/
     ├── admin.html       # 后台管理系统
     ├── uploads/         # 后台上传的图片
     ├── css/             # style.css（官网）· admin.css（后台）
-    └── js/              # main.js（官网渲染+微交互）· admin.js（后台逻辑）
+    └── js/              # render.js（渲染层，浏览器/构建期共用）· main.js（官网页逻辑）· admin.js（后台逻辑）
 ```
 
 ### API 一览
@@ -270,6 +277,9 @@ xy-club/
 | POST | `/api/password` | 修改管理密码（需鉴权 + CSRF） |
 | POST | `/api/upload` | 上传图片，≤8MB（需鉴权 + CSRF） |
 | POST | `/api/reset` | 恢复默认内容（需鉴权 + CSRF） |
+| GET | `/api/history` | 内容版本列表（需鉴权） |
+| POST | `/api/history/restore` | 回滚到指定版本（需鉴权 + CSRF） |
+| GET | `/api/media` | 媒体库文件列表与用量（需鉴权） |
 | GET | `/api/health` | 健康检查（公开，探活用） |
 
 ---
@@ -343,6 +353,30 @@ PORT=8080 node server.js     # 平台会注入 PORT，服务已监听 0.0.0.0
 
 静态资源与 API 同端口提供，不存在跨域问题。
 
+### 方式一：Docker（推荐，一条命令）
+
+```bash
+docker compose up -d          # 起站；日志里会打印首次生成的管理密码
+docker compose logs -f        # 看密码 / 排错
+```
+
+或在任意机器上：
+
+```bash
+docker run -d -p 3000:3000 \
+  -e ADMIN_PASSWORD='换成你的强密码' \
+  -v xy-data:/app/data -v xy-uploads:/app/public/uploads \
+  --name xy-club xy-club
+```
+
+镜像以非 root 运行，带 `/api/health` 健康检查；`data/`（内容 + 会话 + 版本历史）与 `public/uploads/`（图片）都在命名卷里。
+
+### 方式二：直接跑 Node
+
+```bash
+PORT=8080 node server.js
+```
+
 > ⚠️ **务必挂载持久卷**保存 `data/` 与 `public/uploads/`，否则重启后内容和图片都会丢失。建议前面加一层反向代理提供 HTTPS 与限流。
 
 ---
@@ -359,7 +393,7 @@ PORT=8080 node server.js     # 平台会注入 PORT，服务已监听 0.0.0.0
 
 ### 已完成 ✅
 
-- 液态玻璃视觉体系与 4 套主题
+- 液态玻璃视觉体系与 8 套主题
 - 8 处微交互
 - 7 种板块类型与可视化后台
 - 图片上传、密码修改、配置导入导出
@@ -371,12 +405,20 @@ PORT=8080 node server.js     # 平台会注入 PORT，服务已监听 0.0.0.0
 - CSRF 防护：写操作强制校验 token，与 session 绑定
 - HTTP 安全头（nosniff / X-Frame-Options / CSP 等）与输入验证强化（字段白名单、原型链污染防御）
 
+- **预渲染 + SEO / Open Graph**：构建期写进 HTML（纯静态托管），Node 部署则每次请求按当前内容注入 —— 爬虫与分享卡片随时读到最新内容（v1.11.0）
+- **媒体库**：列出全部上传图片、显示用量与引用数、支持一次多选上传、删除前提示引用位置（v1.11.0）
+- **内容版本历史**：每次保存前自动留快照（最近 30 份），可一键回滚，回滚本身也能撤回（v1.11.0）
+- **Docker 一键部署**：`docker compose up -d` 起站，数据落在命名卷里（v1.11.0）
+- **登录状态持久化**：重启服务不再把所有人踢下线（v1.11.0）
+- **E2E 进 CI**：Chromium 冒烟测试随每次推送跑（v1.11.0）
+- lint 从「只拦 error」改为 `--max-warnings 0` 硬门禁（v1.11.0）
+
 ### 计划中 🚀
 
-- 多图批量上传与图片管理面板
-- SEO 元数据与 Open Graph 卡片
-- Dockerfile 与一键部署配置
-- 内容版本历史与撤销
+- 后台富文本 / Markdown 编辑（当前是纯文本 + 换行）
+- 多管理员与角色权限（当前仍是单密码单管理员）
+- 图片裁剪与压缩（当前只做格式校验，不重编码）
+- 站点地图 `sitemap.xml` 与结构化数据 `JSON-LD`
 
 ---
 
@@ -385,7 +427,7 @@ PORT=8080 node server.js     # 平台会注入 PORT，服务已监听 0.0.0.0
 ## 🧪 测试
 
 ```bash
-npm test          # 单元测试：158 项，零新增依赖（Node 内置 node --test）
+npm test          # 单元测试：266 项 / 70 suites，零新增依赖（Node 内置 node --test）
 ```
 
 `npm test` 是唯一的强制门禁，CI 会在 Node 18 / 20 / 22 上各跑一遍。它覆盖的是真正有风险的层面：密码哈希与登录限流、CSRF token、HTTP 安全头、输入验证与原型链污染防御、上传格式白名单、内容读写与数据容错、静态快照不含凭据、以及「文档与代码是否还对齐」。

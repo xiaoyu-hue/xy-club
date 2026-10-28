@@ -200,11 +200,16 @@ describe('后台功能：图片上传能力', () => {
     );
   });
 
-  test('前端 main.js 必须能渲染图片形态的图形字段', () => {
-    const MAIN_JS = fs.readFileSync(path.join(ROOT, 'public', 'js', 'main.js'), 'utf8');
+  test('前端必须能渲染图片形态的图形字段', () => {
+    // v1.11.0 起渲染层抽到 public/js/render.js（浏览器与构建期预渲染共用），
+    // 断言改为「两份源码里至少有一份实现了图片分支」。
+    const dir = path.join(ROOT, 'public', 'js');
+    const src = ['main.js', 'render.js']
+      .map((f) => { try { return fs.readFileSync(path.join(dir, f), 'utf8'); } catch (e) { return ''; } })
+      .join('\n');
     assert.ok(
-      /isGfxImage|isImgPath|gfx\s*\(/.test(MAIN_JS),
-      'main.js 未实现「图形字段可为图片」的渲染分支，后台传了图前端也不显示。'
+      /isGfxImage|isImgPath|gfx\s*\(/.test(src),
+      '未实现「图形字段可为图片」的渲染分支，后台传了图前端也不显示。'
     );
   });
 });

@@ -1,6 +1,16 @@
+/**
+ * lint 策略（v1.11.0 起）
+ *
+ * 旧配置把 no-console / no-alert / indent / max-len / no-unused-vars 全设成 warn，
+ * 而 CI 只跑 `eslint .`（不设 --max-warnings），于是 159 条警告长期被无视，
+ * lint 实际上只剩「没写分号」一个信号。现在分成两类：
+ *   - 正确性规则 = error（真的会拦住 bug）
+ *   - 风格规则 = off（项目没有格式化器，风格规则只会制造噪音）
+ * 并让 CI 跑 `eslint . --max-warnings 0`：从此任何一条警告都会让流水线变红。
+ */
 module.exports = {
   root: true,
-  ignorePatterns: ['tests/', 'node_modules/'],
+  ignorePatterns: ['tests/', 'node_modules/', 'public/content.json'],
   env: {
     browser: true,
     node: true,
@@ -12,32 +22,28 @@ module.exports = {
     sourceType: 'script'
   },
   rules: {
-    // 允许使用 console（开发调试需要）
-    'no-console': 'warn',
-    // 允许使用 alert/confirm（移动端友好）
-    'no-alert': 'warn',
-    // 禁止使用 eval（安全考虑）
+    // ---- 正确性：error ----
     'no-eval': 'error',
-    // 禁止使用 with
     'no-with': 'error',
-    // 要求使用分号
+    'no-undef': 'error',
+    'no-unused-vars': 'error',
+    'no-dupe-keys': 'error',
+    'no-unreachable': 'error',
+    'no-fallthrough': 'error',
+    'no-redeclare': 'error',
     'semi': ['error', 'always'],
-    // 允许使用 var（向后兼容）
-    'no-var': 'warn',
-    // 允许函数表达式（IIFE 风格）
+
+    // ---- 风格：off（交给人读，不交给流水线）----
+    // console 就是本项目的审计日志（server.js 的 audit 直接写 stdout），不该被警告
+    'no-console': 'off',
+    // confirm 用于「删除/覆盖」这类不可逆操作，是刻意选择
+    'no-alert': 'off',
+    'no-var': 'off',
+    'indent': 'off',
+    'max-len': 'off',
+    'quotes': 'off',
+    'strict': 'off',
     'func-style': 'off',
-    // 允许嵌套函数
-    'no-inner-declarations': 'off',
-    // 允许未使用的变量（开发中常见）
-    'no-unused-vars': 'warn',
-    // 缩进 2 空格
-    'indent': ['warn', 2],
-    // 允许最大行长 120
-    'max-len': ['warn', { code: 120 }],
-    // 允许单引号或双引号
-    'quotes': ['warn', 'single'],
-    // 允许不使用严格模式（IIFE 内部已有）
-    'strict': 'off'
+    'no-inner-declarations': 'off'
   }
 };
-

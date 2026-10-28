@@ -1,0 +1,25 @@
+# 一条命令跑起来：docker compose up -d
+#
+# 首次启动会自动生成管理密码并打印在日志里（docker compose logs -f），
+# 也可以在这里写死 ADMIN_PASSWORD（推荐，免得忘记）。
+services:
+  xy-club:
+    build: .
+    image: xy-club:latest
+    container_name: xy-club
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # 强烈建议改成你自己的强密码（>=12 位混合字符）
+      ADMIN_PASSWORD: "change-me-please-12chars"
+      # 上传目录总配额（MB），默认 512
+      UPLOAD_QUOTA_MB: "512"
+      # 部署在反向代理后面时，才会需要它（默认 false，防 XFF 伪造绕限流）
+      # TRUST_PROXY: "1"
+    volumes:
+      - xy-data:/app/data
+      - xy-uploads:/app/public/uploads
+volumes:
+  xy-data:
+  xy-uploads:

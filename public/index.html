@@ -3,8 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>XY俱乐部 · 有趣的人，都在这里</title>
-  <meta name="description" content="XY俱乐部 —— 游戏陪玩 / 陪聊树洞 / 受气包服务，24小时在线陪伴。">
+  <title data-xy="title">XY俱乐部 · 有趣的人，都在这里</title>
+  <meta name="description" data-xy-attr="description" content="XY俱乐部 · 有趣的人，都在这里 · 游戏陪玩 · 陪聊树洞 · 受气包服务 —— 你掌心的一方小世界，接住每一个不开心的瞬间。">
+  <meta name="theme-color" content="#0b1020">
+  <!-- 社交分享卡片：构建期（node scripts/build-static.js）按内容填充，运行时也会被 main.js 更新 -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" data-xy-attr="siteName" content="XY俱乐部">
+  <meta property="og:title" data-xy-attr="title" content="XY俱乐部 · 有趣的人，都在这里">
+  <meta property="og:description" data-xy-attr="description" content="XY俱乐部 · 有趣的人，都在这里 · 游戏陪玩 · 陪聊树洞 · 受气包服务 —— 你掌心的一方小世界，接住每一个不开心的瞬间。">
+  <meta property="og:image" data-xy-attr="ogImage" content="cases/images/work-backlit-sky.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" data-xy-attr="title" content="XY俱乐部 · 有趣的人，都在这里">
+  <meta name="twitter:description" data-xy-attr="description" content="XY俱乐部 · 有趣的人，都在这里 · 游戏陪玩 · 陪聊树洞 · 受气包服务 —— 你掌心的一方小世界，接住每一个不开心的瞬间。">
+  <meta name="twitter:image" data-xy-attr="ogImage" content="cases/images/work-backlit-sky.webp">
+  <link rel="canonical" data-xy-href="canonical" href="/">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -22,10 +34,10 @@
   <nav class="navbar" id="navbar" role="navigation" aria-label="主导航">
     <div class="nav-inner container">
       <a class="brand" href="#top">
-        <span class="brand-logo" id="brandLogo">💎</span>
-        <span class="brand-name" id="brandName">XY俱乐部</span>
+        <span class="brand-logo" id="brandLogo" data-xy="brandLogo">💎</span>
+        <span class="brand-name" id="brandName" data-xy="brandName">XY俱乐部</span>
       </a>
-      <div class="nav-links" id="navLinks"></div>
+      <div class="nav-links" id="navLinks" data-xy-html="navLinks"><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a><a href="#sec-s-reviews">客户好评</a></div>
       <div class="nav-actions">
         <!-- 参考案例切换器：仅在纯静态托管（static-mode）下由 case-switcher.js 填充 -->
         <div class="case-switcher" id="caseSwitcher" hidden></div>
@@ -33,17 +45,80 @@
         <button class="menu-btn" id="menuBtn" aria-label="菜单"><span></span><span></span><span></span></button>
       </div>
     </div>
-    <div class="mobile-menu" id="mobileMenu"></div>
+    <div class="mobile-menu" id="mobileMenu" data-xy-html="mobileMenu"><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a><a href="#sec-s-reviews">客户好评</a><button type="button" class="link-btn" data-order>📞 联系下单</button></div>
   </nav>
 
   <!-- 首屏 Hero -->
   <header class="hero container" id="top" role="banner">
     <div class="hero-card glass glass-sheen" id="heroCard">
-      <div class="hero-badge" id="heroBadge"></div>
-      <h1 class="hero-title" id="heroTitle"></h1>
-      <p class="hero-sub" id="heroSub"></p>
-      <div class="hero-btns" id="heroBtns"></div>
-      <div class="hero-stats" id="heroStats"></div>
+      <div class="hero-badge" id="heroBadge" data-xy="heroBadge">✨ 24小时在线 · 温柔陪伴 · 官方正品 ✨</div>
+      <h1 class="hero-title" id="heroTitle" data-xy-html="heroTitle"><span class="t1">遇见有趣的人</span><span class="t2 grad-text">从这里开始</span></h1>
+      <p class="hero-sub" id="heroSub" data-xy="heroSub">游戏陪玩 · 陪聊树洞 · 受气包服务 —— 你掌心的一方小世界，接住每一个不开心的瞬间。</p>
+      <div class="hero-btns" id="heroBtns" data-xy-html="heroBtns"><button class="btn btn-primary btn-lg" data-order>🚀 立即下单</button>
+       <a class="btn btn-ghost btn-lg" href="#app">📋 查看价目</a></div>
+      <div class="hero-stats" id="heroStats" data-xy-html="heroStats"><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="5000" data-dec="0">0</span>+</b>
+        <span>开心客户</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="50" data-dec="0">0</span>+</b>
+        <span>星级陪玩官</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="24" data-dec="0">0</span></b>
+        <span>h在线陪伴</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="98" data-dec="0">0</span>%</b>
+        <span>好评率</span></div></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="50" data-dec="0">0</span>+</b>
+        <span>星级陪玩官</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="24" data-dec="0">0</span></b>
+        <span>h在线陪伴</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="98" data-dec="0">0</span>%</b>
+        <span>好评率</span></div></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="50" data-dec="0">0</span>+</b>
+        <span>星级陪玩官</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="24" data-dec="0">0</span></b>
+        <span>h在线陪伴</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="98" data-dec="0">0</span>%</b>
+        <span>好评率</span></div></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="50" data-dec="0">0</span>+</b>
+        <span>星级陪玩官</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="24" data-dec="0">0</span></b>
+        <span>h在线陪伴</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="98" data-dec="0">0</span>%</b>
+        <span>好评率</span></div></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="50" data-dec="0">0</span>+</b>
+        <span>星级陪玩官</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="24" data-dec="0">0</span></b>
+        <span>h在线陪伴</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="98" data-dec="0">0</span>%</b>
+        <span>好评率</span></div></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="50" data-dec="0">0</span>+</b>
+        <span>星级陪玩官</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="24" data-dec="0">0</span></b>
+        <span>h在线陪伴</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="98" data-dec="0">0</span>%</b>
+        <span>好评率</span></div></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="50" data-dec="0">0</span>+</b>
+        <span>星级陪玩官</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="24" data-dec="0">0</span></b>
+        <span>h在线陪伴</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="98" data-dec="0">0</span>%</b>
+        <span>好评率</span></div></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="50" data-dec="0">0</span>+</b>
+        <span>星级陪玩官</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="24" data-dec="0">0</span></b>
+        <span>h在线陪伴</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="98" data-dec="0">0</span>%</b>
+        <span>好评率</span></div></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="50" data-dec="0">0</span>+</b>
+        <span>星级陪玩官</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="24" data-dec="0">0</span></b>
+        <span>h在线陪伴</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="98" data-dec="0">0</span>%</b>
+        <span>好评率</span></div></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="50" data-dec="0">0</span>+</b>
+        <span>星级陪玩官</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="24" data-dec="0">0</span></b>
+        <span>h在线陪伴</span></div><div class="stat">
+        <b class="gold-text"><span class="count-up" data-val="98" data-dec="0">0</span>%</b>
+        <span>好评率</span></div></div>
     </div>
     <a class="scroll-hint" href="#app" aria-label="向下浏览">
       <span class="mouse"><span class="dot"></span></span>
@@ -54,25 +129,399 @@
   <div class="container">
     <div class="ticker" id="ticker" hidden>
       <span class="ticker-icon">📢</span>
-      <div class="ticker-body"><span id="tickerText"></span></div>
+      <div class="ticker-body"><span id="tickerText" data-xy="tickerText">新客专享：9.9 元体验单 · 15 分钟任意项目；老客户 / 连单享受 8.8 折</span></div>
     </div>
   </div>
 
   <!-- 动态板块区 -->
-  <main class="container" id="app" role="main"></main>
+  <main class="container" id="app" role="main" data-xy-html="sections"><section class="section" id="sec-s-features"><div class="sec-head reveal">
+        <span class="sec-icon">✨</span>
+        <h2 class="grad-text">我们的优势</h2>
+        <p class="sec-sub">为什么选择我们</p>
+      </div><div class="card-grid">
+          <div class="f-card tilt reveal" style="--i:0">
+            <span class="ic"><span class="ic-gfx">🌟</span></span>
+            <h3>星级陪玩官</h3><p>每位陪玩官均通过试单考核，声音好听、技术在线、情商超高</p>
+          </div>
+          <div class="f-card tilt reveal" style="--i:1">
+            <span class="ic"><span class="ic-gfx">⚡</span></span>
+            <h3>极速响应</h3><p>全天 24 小时接单，最快 1 分钟为你匹配专属陪伴</p>
+          </div>
+          <div class="f-card tilt reveal" style="--i:2">
+            <span class="ic"><span class="ic-gfx">🔒</span></span>
+            <h3>隐私安全</h3><p>全程线上服务，严格保护双方隐私，聊天记录绝不外泄</p>
+          </div>
+          <div class="f-card tilt reveal" style="--i:3">
+            <span class="ic"><span class="ic-gfx">💝</span></span>
+            <h3>售后保障</h3><p>服务不满意可联系客服协调，让每一次消费都安心</p>
+          </div></div></section><section class="section" id="sec-s-game"><div class="sec-head reveal">
+        <span class="sec-icon">🎮</span>
+        <h2 class="grad-text">游戏陪玩</h2>
+        <p class="sec-sub">上分开黑 · 快乐加倍</p>
+      </div><div class="price-list"><div class="price-row reveal" style="--i:0">
+      <div class="pr-info">
+        <div class="pr-name">普通娱乐陪玩</div>
+        <div class="pr-desc">闲聊娱乐局，气氛拉满</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">19.9-29.9</span><span class="unit">元/小时</span></div>
+    </div><div class="price-row reveal" style="--i:1">
+      <div class="pr-info">
+        <div class="pr-name">技术陪玩 / 上分车</div>
+        <div class="pr-desc">实力带飞，稳稳上分</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">29.9-49.9</span><span class="unit">元/小时</span></div>
+    </div><div class="price-row reveal" style="--i:2">
+      <div class="pr-info">
+        <div class="pr-name">按局计费（普通局）</div>
+        <div class="pr-desc">轻松来一局，随时开</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">9.9-15</span><span class="unit">元/局</span></div>
+    </div><div class="price-row reveal" style="--i:3">
+      <div class="pr-info">
+        <div class="pr-name">按局计费（包赢局）</div>
+        <div class="pr-desc">包赢局，赢了再走</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">15-25</span><span class="unit">元/局</span></div>
+    </div><div class="price-row reveal" style="--i:4">
+      <div class="pr-info">
+        <div class="pr-name">通宵陪玩（8小时）</div>
+        <div class="pr-desc">整夜陪伴，性价比之选</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">99-168</span><span class="unit">元/晚</span></div>
+    </div><div class="price-row reveal" style="--i:5">
+      <div class="pr-info">
+        <div class="pr-name">连麦开黑（纯语音）</div>
+        <div class="pr-desc">纯语音连麦，配合默契</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">15-25</span><span class="unit">元/小时</span></div>
+    </div></div>
+          </section><section class="section" id="sec-s-chat"><div class="sec-head reveal">
+        <span class="sec-icon">💬</span>
+        <h2 class="grad-text">陪聊服务</h2>
+        <p class="sec-sub">你的心事，我们好好听着</p>
+      </div><div class="price-list"><div class="price-row reveal" style="--i:0">
+      <div class="pr-info">
+        <div class="pr-name">文字陪聊</div>
+        <div class="pr-desc">打字聊天，随心畅聊</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">9.9-15</span><span class="unit">元/小时</span></div>
+    </div><div class="price-row reveal" style="--i:1">
+      <div class="pr-info">
+        <div class="pr-name">语音陪聊（连麦）</div>
+        <div class="pr-desc">声音治愈，越聊越上头</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">15-29.9</span><span class="unit">元/小时</span></div>
+    </div><div class="price-row reveal" style="--i:2">
+      <div class="pr-info">
+        <div class="pr-name">哄睡 / 晚安电话</div>
+        <div class="pr-desc">温柔哄睡，一觉到天亮</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">19.9-39.9</span><span class="unit">元/小时</span></div>
+    </div><div class="price-row reveal" style="--i:3">
+      <div class="pr-info">
+        <div class="pr-name">情感树洞 / 倾诉倾听</div>
+        <div class="pr-desc">认真倾听，绝不评判</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">15-25</span><span class="unit">元/小时</span></div>
+    </div><div class="price-row reveal" style="--i:4">
+      <div class="pr-info">
+        <div class="pr-name">早叫晚安提醒（包周）</div>
+        <div class="pr-desc">每天准时叫醒 / 道晚安</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">19.9-39.9</span><span class="unit">元/周</span></div>
+    </div><div class="price-row reveal" style="--i:5">
+      <div class="pr-info">
+        <div class="pr-name">假装情侣（语音·按天）</div>
+        <div class="pr-desc">一天心动体验，甜度自选</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">66-99</span><span class="unit">元/天</span></div>
+    </div></div>
+          </section><section class="section" id="sec-s-vent"><div class="sec-head reveal">
+        <span class="sec-icon">😤</span>
+        <h2 class="grad-text">受气包服务</h2>
+        <p class="sec-sub">情绪垃圾桶 · 只接骂不还嘴</p>
+      </div><div class="price-list"><div class="price-row reveal" style="--i:0">
+      <div class="pr-info">
+        <div class="pr-name">文字挨骂（听完安慰你）</div>
+        <div class="pr-desc">随便骂，骂完温柔安慰</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">9.9-19.9</span><span class="unit">元/半小时</span></div>
+    </div><div class="price-row reveal" style="--i:1">
+      <div class="pr-info">
+        <div class="pr-name">语音受气包（听你发泄）</div>
+        <div class="pr-desc">在线接骂，全程认错</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">19.9-39.9</span><span class="unit">元/小时</span></div>
+    </div><div class="price-row reveal" style="--i:2">
+      <div class="pr-info">
+        <div class="pr-name">发泄 + 事后哄好安抚</div>
+        <div class="pr-desc">先发泄再哄好，一条龙</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">29.9-59.9</span><span class="unit">元/小时</span></div>
+    </div><div class="price-row reveal" style="--i:3">
+      <div class="pr-info">
+        <div class="pr-name">定制吐槽（按剧本配合）</div>
+        <div class="pr-desc">按你的剧本来，整活专用</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">19.9-49.9</span><span class="unit">元/次</span></div>
+    </div><div class="price-row reveal" style="--i:4">
+      <div class="pr-info">
+        <div class="pr-name">假装吵架再和好（整活）</div>
+        <div class="pr-desc">朋友整蛊 / 短视频素材</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">52-99</span><span class="unit">元/次</span></div>
+    </div></div>
+          <p class="sec-tip reveal">只挨骂不还嘴，骂完负责哄好，绝不放心上</p></section><section class="section" id="sec-s-package"><div class="sec-head reveal">
+        <span class="sec-icon">📦</span>
+        <h2 class="grad-text">超值套餐</h2>
+        <p class="sec-sub">买得越多 · 省得越多</p>
+      </div><div class="price-list"><div class="price-row reveal" style="--i:0">
+      <div class="pr-info">
+        <div class="pr-name">体验单 · 15分钟任意项目</div>
+        <div class="pr-desc">新人专享，先体验后决定</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">9.9</span><span class="unit">元</span></div>
+    </div><div class="price-row reveal" style="--i:1">
+      <div class="pr-info">
+        <div class="pr-name">畅聊包夜 23:00–7:00</div>
+        <div class="pr-desc">一整晚的贴心陪伴</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">128-198</span><span class="unit">元/晚</span></div>
+    </div><div class="price-row reveal" style="--i:2">
+      <div class="pr-info">
+        <div class="pr-name">周陪伴卡 · 每天1小时任选</div>
+        <div class="pr-desc">天天有约，项目任换</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">99-199</span><span class="unit">元/周</span></div>
+    </div><div class="price-row reveal" style="--i:3">
+      <div class="pr-info">
+        <div class="pr-name">全能随心卡 · 混选10小时</div>
+        <div class="pr-desc">多项目随心混搭，超值</div>
+      </div>
+      <div class="pr-price"><span class="num gold-text">199</span><span class="unit">元起</span></div>
+    </div></div>
+          </section><section class="section" id="sec-s-reviews"><div class="sec-head reveal">
+        <span class="sec-icon">💖</span>
+        <h2 class="grad-text">客户好评</h2>
+        <p class="sec-sub">来自大家的真实反馈</p>
+      </div><div class="review-grid">
+          <div class="r-card tilt reveal" style="--i:0"><span class="quote">”</span>
+            <div class="r-stars"><span style="animation-delay:0ms">★</span><span style="animation-delay:90ms">★</span><span style="animation-delay:180ms">★</span><span style="animation-delay:270ms">★</span><span style="animation-delay:360ms">★</span></div>
+            <p class="r-text">哄睡电话真的太治愈了，声音温柔到骨子里，失眠星人的救星！</p>
+            <div class="r-who"><span class="r-avatar"><span class="r-avatar-gfx">🌙</span></span><b>小星星</b></div>
+          </div>
+          <div class="r-card tilt reveal" style="--i:1"><span class="quote">”</span>
+            <div class="r-stars"><span style="animation-delay:0ms">★</span><span style="animation-delay:90ms">★</span><span style="animation-delay:180ms">★</span><span style="animation-delay:270ms">★</span><span style="animation-delay:360ms">★</span></div>
+            <p class="r-text">技术大哥带我一晚上从白银上到铂金，稳！</p>
+            <div class="r-who"><span class="r-avatar"><span class="r-avatar-gfx">🏆</span></span><b>荣耀王者·哥</b></div>
+          </div>
+          <div class="r-card tilt reveal" style="--i:2"><span class="quote">”</span>
+            <div class="r-stars"><span style="animation-delay:0ms">★</span><span style="animation-delay:90ms">★</span><span style="animation-delay:180ms">★</span><span style="animation-delay:270ms">★</span><span style="animation-delay:360ms">★</span></div>
+            <p class="r-text">受气包服务绝了，骂完还温柔哄我，情绪价值直接拉满哈哈哈</p>
+            <div class="r-who"><span class="r-avatar"><span class="r-avatar-gfx">😄</span></span><b>今天也要开心鸭</b></div>
+          </div>
+          <div class="r-card tilt reveal" style="--i:3"><span class="quote">”</span>
+            <div class="r-stars"><span style="animation-delay:0ms">★</span><span style="animation-delay:90ms">★</span><span style="animation-delay:180ms">★</span><span style="animation-delay:270ms">★</span><span style="animation-delay:360ms">★</span></div>
+            <p class="r-text">文字陪聊的小哥哥超会接话，聊了一小时根本停不下来</p>
+            <div class="r-who"><span class="r-avatar"><span class="r-avatar-gfx">🫧</span></span><b>匿名的小可爱</b></div>
+          </div></div></section><section class="section" id="sec-s-notice"><div class="sec-head reveal">
+        <span class="sec-icon">📌</span>
+        <h2 class="grad-text">下单须知</h2>
+        
+      </div><div class="notice-list">
+          <div class="n-item reveal" style="--i:0"><span class="ni"><span class="ni-gfx">🕐</span></span><span>深夜时段（23:00–8:00）加收 30%</span></div>
+          <div class="n-item reveal" style="--i:1"><span class="ni"><span class="ni-gfx">💰</span></span><span>先付款后服务，开始后不退款</span></div>
+          <div class="n-item reveal" style="--i:2"><span class="ni"><span class="ni-gfx">🚫</span></span><span>不接违法违规内容 · 不露脸 · 不线下</span></div>
+          <div class="n-item reveal" style="--i:3"><span class="ni"><span class="ni-gfx">🎁</span></span><span>老客户 / 连单享受 8.8 折</span></div></div></section><section class="section" id="sec-s-faq"><div class="sec-head reveal">
+        <span class="sec-icon">❓</span>
+        <h2 class="grad-text">常见问题</h2>
+        <p class="sec-sub">下单前先看看这里</p>
+      </div><div class="faq-list">
+          <details class="faq-item reveal" style="--i:0">
+            <summary><span><span class="q-mark">Q.</span>如何下单？</span><span class="arrow">▼</span></summary>
+            <div class="faq-a">添加客服微信（页面底部可一键复制），告诉客服你想选择的项目和时长，付款后即可安排专属陪玩官。</div>
+          </details>
+          <details class="faq-item reveal" style="--i:1">
+            <summary><span><span class="q-mark">Q.</span>可以指定陪玩官吗？</span><span class="arrow">▼</span></summary>
+            <div class="faq-a">可以。下单时告知客服你喜欢的类型（声音 / 技术 / 性格），我们会为你优先安排。</div>
+          </details>
+          <details class="faq-item reveal" style="--i:2">
+            <summary><span><span class="q-mark">Q.</span>深夜加收是什么意思？</span><span class="arrow">▼</span></summary>
+            <div class="faq-a">每日 23:00 至次日 8:00 为深夜时段，所有项目加收 30%，感谢深夜依然在线陪伴的陪玩官们~</div>
+          </details>
+          <details class="faq-item reveal" style="--i:3">
+            <summary><span><span class="q-mark">Q.</span>服务不满意怎么办？</span><span class="arrow">▼</span></summary>
+            <div class="faq-a">请第一时间联系客服说明情况，我们会根据实际情况为你协调补时或其他补偿方案。</div>
+          </details>
+          <details class="faq-item reveal" style="--i:4">
+            <summary><span><span class="q-mark">Q.</span>会泄露我的隐私吗？</span><span class="arrow">▼</span></summary>
+            <div class="faq-a">俱乐部严格遵守保密原则，全程线上服务，聊天与通话内容绝不外泄，请放心消费。</div>
+          </details></div></section><section class="section" id="sec-s-about"><div class="sec-head reveal">
+        <span class="sec-icon">💎</span>
+        <h2 class="grad-text">关于我们</h2>
+        
+      </div><div class="text-wrap reveal">XY俱乐部是一家专注于「线上陪伴服务」的年轻团队。
+我们相信，每一个有点孤单的瞬间，都值得被认真接住。
+
+在这里，你可以：
+· 找一位技术大佬带你轻松上分
+· 和声音好听的小哥哥小姐姐连麦畅聊
+· 累了倦了，来一通哄睡电话安然入梦
+· 受委屈了，我们的「专业受气包」随时在线接住你的情绪
+
+有趣的人，都在这里。</div></section></main>
 
   <!-- 底部下单 CTA（必须放在 #app 之外：
        renderSections() 会整体替换 #app 的 innerHTML，
        若 #ctaCard 在 #app 内会被一并删除，导致 renderCTA() 崩溃） -->
   <section class="container">
-    <div class="cta-card glass glass-sheen" id="ctaCard"></div>
+    <div class="cta-card glass glass-sheen" id="ctaCard" data-xy-html="cta">
+      <h2 class="grad-text">准备好开启陪伴了吗？</h2>
+      <p>有趣的人，都在这里 添加客服微信，备注【官网】享新客礼</p>
+      <div class="cta-wx">💚 微信号：<b>XYCLUB-666</b></div>
+      <div class="cta-btns">
+        <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
+        <button class="btn btn-ghost btn-lg" data-copy="XYCLUB-666">📋 复制微信号</button>
+      </div>
+      </div>
+      <div class="cta-btns">
+        <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
+        <button class="btn btn-ghost btn-lg" data-copy="XYCLUB-666">📋 复制微信号</button>
+      </div>
+      </div>
+      <div class="cta-btns">
+        <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
+        <button class="btn btn-ghost btn-lg" data-copy="XYCLUB-666">📋 复制微信号</button>
+      </div>
+      </div>
+      <div class="cta-btns">
+        <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
+        <button class="btn btn-ghost btn-lg" data-copy="XYCLUB-666">📋 复制微信号</button>
+      </div>
+      </div>
+      <div class="cta-btns">
+        <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
+        <button class="btn btn-ghost btn-lg" data-copy="XYCLUB-666">📋 复制微信号</button>
+      </div>
+      </div>
+      <div class="cta-btns">
+        <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
+        <button class="btn btn-ghost btn-lg" data-copy="XYCLUB-666">📋 复制微信号</button>
+      </div>
+      </div>
+      <div class="cta-btns">
+        <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
+        <button class="btn btn-ghost btn-lg" data-copy="XYCLUB-666">📋 复制微信号</button>
+      </div>
+      </div>
+      <div class="cta-btns">
+        <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
+        <button class="btn btn-ghost btn-lg" data-copy="XYCLUB-666">📋 复制微信号</button>
+      </div>
+      </div>
+      <div class="cta-btns">
+        <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
+        <button class="btn btn-ghost btn-lg" data-copy="XYCLUB-666">📋 复制微信号</button>
+      </div>
+      </div>
+      <div class="cta-btns">
+        <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
+        <button class="btn btn-ghost btn-lg" data-copy="XYCLUB-666">📋 复制微信号</button>
+      </div>
+      </div>
   </section>
 
   <!-- 页脚 -->
   <footer class="footer" role="contentinfo">
-    <div class="container footer-inner" id="footerInner"></div>
+    <div class="container footer-inner" id="footerInner" data-xy-html="footer">
+      <div class="f-brand">
+        <span class="brand-logo">💎</span>
+        <h3 class="grad-text">XY俱乐部</h3>
+        <p>XY俱乐部 · 有趣的人，都在这里
+线上纯语音 / 文字服务 · 不线下 · 不露脸 · 未成年人请勿消费</p>
+      </div>
+      <div class="f-col"><h4>快速导航</h4><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a></div>
+      <div class="f-col"><h4>联系方式</h4>
+        <span>微信：XYCLUB-666</span>
+        
+        
+        
+        <button type="button" class="link-btn" data-order>📞 联系下单</button>
+      </div></div>
+      <div class="f-col"><h4>快速导航</h4><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a></div>
+      <div class="f-col"><h4>联系方式</h4>
+        <span>微信：XYCLUB-666</span>
+        
+        
+        
+        <button type="button" class="link-btn" data-order>📞 联系下单</button>
+      </div></div>
+      <div class="f-col"><h4>快速导航</h4><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a></div>
+      <div class="f-col"><h4>联系方式</h4>
+        <span>微信：XYCLUB-666</span>
+        
+        
+        
+        <button type="button" class="link-btn" data-order>📞 联系下单</button>
+      </div></div>
+      <div class="f-col"><h4>快速导航</h4><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a></div>
+      <div class="f-col"><h4>联系方式</h4>
+        <span>微信：XYCLUB-666</span>
+        
+        
+        
+        <button type="button" class="link-btn" data-order>📞 联系下单</button>
+      </div></div>
+      <div class="f-col"><h4>快速导航</h4><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a></div>
+      <div class="f-col"><h4>联系方式</h4>
+        <span>微信：XYCLUB-666</span>
+        
+        
+        
+        <button type="button" class="link-btn" data-order>📞 联系下单</button>
+      </div></div>
+      <div class="f-col"><h4>快速导航</h4><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a></div>
+      <div class="f-col"><h4>联系方式</h4>
+        <span>微信：XYCLUB-666</span>
+        
+        
+        
+        <button type="button" class="link-btn" data-order>📞 联系下单</button>
+      </div></div>
+      <div class="f-col"><h4>快速导航</h4><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a></div>
+      <div class="f-col"><h4>联系方式</h4>
+        <span>微信：XYCLUB-666</span>
+        
+        
+        
+        <button type="button" class="link-btn" data-order>📞 联系下单</button>
+      </div></div>
+      <div class="f-col"><h4>快速导航</h4><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a></div>
+      <div class="f-col"><h4>联系方式</h4>
+        <span>微信：XYCLUB-666</span>
+        
+        
+        
+        <button type="button" class="link-btn" data-order>📞 联系下单</button>
+      </div></div>
+      <div class="f-col"><h4>快速导航</h4><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a></div>
+      <div class="f-col"><h4>联系方式</h4>
+        <span>微信：XYCLUB-666</span>
+        
+        
+        
+        <button type="button" class="link-btn" data-order>📞 联系下单</button>
+      </div></div>
+      <div class="f-col"><h4>快速导航</h4><a href="#sec-s-features">我们的优势</a><a href="#sec-s-game">游戏陪玩</a><a href="#sec-s-chat">陪聊服务</a><a href="#sec-s-vent">受气包服务</a><a href="#sec-s-package">超值套餐</a></div>
+      <div class="f-col"><h4>联系方式</h4>
+        <span>微信：XYCLUB-666</span>
+        
+        
+        
+        <button type="button" class="link-btn" data-order>📞 联系下单</button>
+      </div></div>
     <div class="container footer-base">
-      <span id="copyright">© 2026 XY俱乐部</span>
+      <span id="copyright" data-xy="copyright">© 2026 XY俱乐部 · 有趣的人，都在这里</span>
       <a class="admin-link" href="admin.html" title="后台管理">管理</a>
     </div>
   </footer>
@@ -90,6 +539,7 @@
   <div class="toast" id="toast"></div>
 
   <noscript><p style="text-align:center;padding:40px">请启用 JavaScript 以浏览本站</p></noscript>
+  <script src="js/render.js"></script>
   <script src="js/main.js"></script>
   <script src="js/case-switcher.js"></script>
 </body>

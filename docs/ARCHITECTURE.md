@@ -128,6 +128,10 @@ GitHub Pages 之类的环境没有 Node 进程，`/api/content` 会 404。此时
 node scripts/build-static.js    # 写出 public/content.json（已剔除密码字段）
 ```
 
+> v1.11.0 起构建还会做**首页预渲染**：`scripts/prerender.js` 用 `public/js/render.js` 的同一套纯函数，
+> 把正文、title/description 与 Open Graph 标签写进 `index.html`，爬虫和链接预览不再拿到空壳。
+> Node 部署则不需要这一步——`server.js` 在响应 `GET /` 时按当前内容即时注入（`PRERENDER=off` 可关闭）。
+
 > 静态模式下官网完整可用，**后台不可用**（没有服务端可写）。
 
 ## 多案例（v1.8.0 / ADR-005）

@@ -9,17 +9,21 @@
 **核心取舍**：零前端框架、零构建、单运行时依赖（`express`）、单个 JSON 文件存储。
 这个取舍是为了让"不懂代码的人改完内容刷新就能看到"——任何削弱它的改动都必须先得到作者同意。
 
-当前形态：
-- 7 种板块类型、4 套主题、8 处微交互
-- 官网数据驱动，后台可视化编辑
-- 支持纯静态托管（回退读 `content.json`）
+当前形态（v1.11.0）：
+- 8 种板块类型、8 套主题、8 处微交互、8 个跨行业演示案例
+- 官网数据驱动，后台可视化编辑（含媒体库 / 版本历史）
+- 首页内容注入：构建期写进 `index.html`（纯静态托管），Node 运行期每次请求按当前内容注入（改完刷新即可被抓取），浏览器端再接管交互
+- 三种部署形态：Node 服务器 / Docker / 纯静态托管（回退读 `content.json`）
 
 源码分层：
-- `server.js` — 静态托管 + REST API + 登录鉴权 + 图片上传
+- `server.js` — 静态托管 + REST API + 登录鉴权 + 图片上传 + 媒体库 / 版本历史 / 会话持久化
 - `defaults.js` — 出厂内容（改这里等于改模板默认值）
-- `public/js/main.js` — 官网渲染（`render*`）与微交互（`bind*`）
+- `public/js/render.js` — **纯函数渲染层**（`sectionHTML` / `fragments` / `esc`）；浏览器与构建脚本共用，不得访问 DOM
+- `public/js/main.js` — 官网 DOM 落地（`applyFragments`）与微交互（`bind*`）
 - `public/js/admin.js` — 后台逻辑
 - `public/css/style.css` — 官网样式与主题变量；`admin.css` — 后台样式
+- `scripts/prerender.js` — 首页内容注入（构建期与运行期共用同一份）
+- `scripts/build-static.js` — 生成静态快照 + 校验案例资产 + **预渲染首页与 OG 标签**
 
 ## 二、第一原则
 
@@ -29,13 +33,13 @@
 3. 不确定怎么改时，先做三件事再动手：
    - 读现有实现（不要凭印象）
    - 确认数据契约（`data/db.json` 的字段名）
-   - 确认涉及哪几套主题（共 4 套，缺一即为破版）
+   - 确认涉及哪几套主题（共 8 套，缺一即为破版）
 
 ## 三、安全红线（最重要）
 
 1. **禁止引入前端框架与打包器**：React / Vue / Svelte / Vite / Webpack 一律不许。
 2. **禁止新增运行时依赖**：`express` 是唯一的运行时依赖。开发期工具需说明理由。
-3. **禁止把凭据写入版本库或日志**：`data/db.json` 含明文管理密码，已在 `.gitignore` 中；任何时候都不要把密码、token 写进日志、注释或文档。
+3. **禁止把凭据写入版本库或日志**：`data/db.json` 存的是 scrypt 哈希（不是明文），`data/sessions.json` 含会话 token，两者都在 `.gitignore` 中；任何时候都不要把密码、token、哈希写进日志、注释、文档或历史快照。
 4. **涉及鉴权 / 上传 / 用户输入渲染的改动，必须先说明防护方式**：
    - 用户输入渲染到 DOM 前必须转义（现有 `esc()` 函数）
    - 上传必须限制大小（当前 ≤8MB）
@@ -46,10 +50,10 @@
 
 | 你要做的事 | 必须同步修改的文件 |
 |------------|--------------------|
-| 新增板块类型 | `defaults.js`（示例数据）+ `main.js` 的 `renderSection` + `admin.js` 的编辑表单 + `docs/SECTIONS.md` |
-| 新增主题 | `style.css` 的 `html[data-theme="xxx"]` 全部变量 + `admin.js` 的主题选项 + README 主题表 |
+| 新增板块类型 | `defaults.js`（示例数据）+ `render.js` 的 `sectionHTML` + `admin.js` 的编辑表单 + `docs/SECTIONS.md` |
+| 新增主题 | `style.css` 的 `html[data-theme="xxx"]` 全部变量 + `main.js` 的 `applyTheme` 白名单 + `admin.js` 的主题选项 + `themes-demo.js` + README 主题表 |
 | 新增微交互 | `main.js` 新增 `bind*` 函数并在 `init()` 注册 + 尊重 `prefers-reduced-motion` + 触屏降级 |
-| 新增 API | `server.js` + README 的 API 表 + 明确鉴权要求（`docs-sync.test.js` 会校验方法名与路径） |
+| 新增 API | `server.js` + `docs/API.md` + README/README.en 的 API 表 + 明确鉴权要求（`docs-sync.test.js` 会双向校验路由与文档） |
 | 任何行为变更 | `README.md` + `README.en.md` + `CHANGELOG.md` + `CHANGELOG.en.md` |
 | 新增/修改安全相关逻辑 | `tests/` 下对应用例（`auth.test.js` / `upload.test.js` / `content-api.test.js`） |
 | 新增板块类型 | 另需 `defaults.js` 示例数据，`contract-defaults.test.js` 会校验渲染分支是否齐全 |
@@ -57,8 +61,8 @@
 ## 五、视觉规范
 
 - 颜色一律走主题变量（`var(--ink)` / `var(--glass-1)` / `var(--accent)`），**禁止硬编码颜色**
-- 玻璃效果统一复用 `.glass`，不要各写一套 `backdrop-filter`
-- 四套主题必须同时补齐，任一缺失视为破版
+- 玻璃效果统一复用 `.glass`，不要各写一套 `backdrop-filter`（后台除外：v1.9.0 起后台刻意去掉毛玻璃保 60fps）
+- **8 套主题必须同时补齐**，任一缺失视为破版（`tests/theme-sync.test.js` 会拦）
 - 动画必须尊重 `prefers-reduced-motion`；高光 / 倾斜仅在鼠标设备生效
 
 ## 六、提交规范
@@ -87,14 +91,14 @@ refactor: 抽出主题应用逻辑为 applyTheme()
 3. **新增功能必须同时新增测试**；涉及鉴权 / 上传 / 用户输入渲染的改动，必须留下对应用例。
 4. **测试用临时目录**（`tests/harness.js` 已处理），绝不允许用例读写开发者真实的 `data/db.json`。
 5. **文档里的测试数量必须以 `npm test` 实际输出为准**，禁止凭印象写数字。
-6. E2E 是可选层（需要 `@playwright/test`）；未安装时 `npm run test:e2e` 会自动跳过，不算失败。
+6. E2E（`@playwright/test`）**已进 CI**（v1.11.0，仅 Node 22 跑一份）。本地未装浏览器时 `npm run test:e2e` 会跳过；CI 里设 `FORCE_E2E=1`，缺依赖直接失败。
 
 ## 八、文档与版本同步（发布必查）
 
 任何发版（bump 版本 + tag + Release）、功能变更、依赖变化、CI 变化、新增文档 / ADR，都必须走 `docs/DOC_SYNC.md` 的同步清单。要点：
 
 1. **版本号问 `package.json`**：它是唯一真源，其他文档（CHANGELOG / PRD / ARCHITECTURE / README 徽章）从它派生。
-2. **数字问测试输出**：测试数（当前 **158 项 / 45 suites**）以 `npm test` 实际输出为准，禁止凭印象写数字、禁止改数字假装一致。
+2. **数字问测试输出**：测试数（当前 **266 项 / 70 suites**）以 `npm test` 实际输出为准，禁止凭印象写数字、禁止改数字假装一致。
 3. **描述问代码**：功能 / 架构描述不得超出实现；文档声明的能力代码里必须真有。
 4. **中英文档同步**：中文为基准，改中文文档必须同步 `.en.md`（README / CHANGELOG / CODE_OF_CONDUCT / SECURITY / AUTHOR / PRD / ARCHITECTURE）。
 5. **发布前验证必跑**：旧版本号残留 grep、版本一致性、CHANGELOG 转正、中英对查、`npm test` 与 CI 全绿。
@@ -114,13 +118,15 @@ refactor: 抽出主题应用逻辑为 applyTheme()
 
 - [ ] `npm test` 全绿（唯一强制门禁）
 - [ ] 官网首页无控制台报错
-- [ ] 四套主题均正常渲染且文字可读
+- [ ] 8 套主题均正常渲染且文字可读
 - [ ] 后台登录 → 编辑 → 保存 → 刷新，内容一致
 - [ ] 375px 窄屏未破版
 - [ ] 中英文文档已同步，CHANGELOG 已追加条目
 - [ ] 无新增运行时依赖，无引入前端框架
 - [ ] 涉及鉴权 / 上传 / 渲染的改动已补对应测试用例
+- [ ] `npx eslint . --max-warnings 0` 无任何输出（v1.11.0 起 warning 也会阻断 CI）
+- [ ] `npm run build:static` 后首页 HTML 里能搜到正文（预渲染没坏）
 
-可选（需要本地装 `@playwright/test`）：
+可选（需要本地装浏览器）：
 
 - [ ] `npm run test:e2e` 桌面 + 375px 两个视口通过

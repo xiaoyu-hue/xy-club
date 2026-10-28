@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log*
+.git
+.gitignore
+.github
+data
+public/uploads/*
+!public/uploads/.gitkeep
+coverage
+.nyc_output
+docs/_archive
+e2e
+tests
+playwright.config.js
+pnpm-lock.yaml
+*.md
+!README.md

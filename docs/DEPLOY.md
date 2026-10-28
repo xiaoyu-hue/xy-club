@@ -28,9 +28,30 @@ PORT=8080 node server.js
 
 平台通常会自己注入 `PORT`；服务已绑定 `0.0.0.0`，无需额外配置。
 
+### 方式二：Docker（一条命令）
+
+```bash
+ADMIN_PASSWORD=换成你的强密码 docker compose up -d
+```
+
+`docker-compose.yml` 已经声明两个命名卷（`xy-data`、`xy-uploads`），对应 `data/` 与 `public/uploads/`，
+所以重启、升级镜像都不会丢内容和图片。也可以不用 compose：
+
+```bash
+docker build -t xy-club .
+docker run -d --name xy-club -p 3000:3000 \
+  -e ADMIN_PASSWORD=换成你的强密码 \
+  -v xy-data:/app/data -v xy-uploads:/app/public/uploads \
+  xy-club
+```
+
+镜像以非 root 的 `node` 用户运行，自带 `HEALTHCHECK`（探 `/api/health`），日志直接 `docker logs -f xy-club`。
+
+> 生产环境请把镜像放到 443 后面（Nginx / Caddy / 云厂商负载均衡），并给站点配一个域名再设 `SITE_URL`。
+
 ### 三个硬性要求
 
-1. **挂载持久卷**：`data/` 与 `public/uploads/` 必须持久化。否则每次重启，内容和图片全没了。
+1. **挂载持久卷**：`data/`（含 `sessions.json`、`history/`）与 `public/uploads/` 必须持久化。否则每次重启，内容、图片、登录状态全没了。
 2. **只跑一个进程**：JSON 是全量读写的，多副本并发会写坏数据。**不要开多实例、不要开自动扩缩容**。
 3. **加一层反向代理**：主要提供 HTTPS。（登录限流已内置：同一 IP 连续 5 次错误锁定 5 分钟。）
 
@@ -39,6 +60,13 @@ PORT=8080 node server.js
 | 变量 | 默认 | 说明 |
 |------|------|------|
 | `PORT` | `3000` | 监听端口，平台一般会自动注入 |
+| `ADMIN_PASSWORD` | 首次启动随机生成 | 管理密码；设置后每次启动都以它为准 |
+| `DATA_DIR` | `./data` | 数据库目录（`db.json`、`sessions.json`、`history/` 都在这里） |
+| `UPLOAD_DIR` | `./public/uploads` | 上传图片目录 |
+| `UPLOAD_QUOTA_MB` | `512` | 上传总量上限（MB） |
+| `SITE_URL` | 空 | 站点绝对地址，用于生成 og:image / canonical |
+| `PRERENDER` | `on` | 设为 `off` 可关闭首页运行期注入（回到纯静态文件） |
+| `TRUST_PROXY` | `false` | 只有放在可信反向代理后面时才设为 `true`（否则限流可被伪造 XFF 绕过） |
 
 ### 部署后清单
 

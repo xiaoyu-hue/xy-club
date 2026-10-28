@@ -31,12 +31,51 @@ jobs:
       - name: 安装依赖
         run: npm ci --no-audit --no-fund
 
-      - name: Lint（质量门：error 级问题会阻断 CI）
+      # v1.11.0 起 lint 是硬门禁（--max-warnings 0）：
+      # 以前 159 条警告被长期无视，lint 只剩「没写分号」一个信号。
+      - name: Lint（质量门：任何 error 或 warning 都会阻断 CI）
         run: npm run lint
 
       - name: 运行单元测试
         run: npm test
 
-# 说明：E2E 不进 CI。它需要下载 Chromium（数分钟），而单元测试已经覆盖了
-# 鉴权 / 上传 / 数据完整性这些真正有风险的层面。E2E 留作本地发布前验证，
-# 见 docs/TESTING.md。
+  e2e:
+    name: E2E（Chromium 冒烟）
+    runs-on: ubuntu-latest
+    # v1.11.0：E2E 进 CI。它是唯一能证明「后台点得动、保存真的生效」的检查，
+    # 而这两条此前只有人工验证。只在 Node 22 上跑一份，控制总时长。
+    timeout-minutes: 15
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 准备 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 安装依赖
+        run: npm ci --no-audit --no-fund
+
+      - name: 缓存 Playwright 浏览器
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: 安装 Chromium
+        run: npx playwright install --with-deps chromium
+
+      # FORCE_E2E=1：缺 Playwright 时明确失败，而不是静默「跳过」后再报绿。
+      - name: 运行端到端测试
+        run: npm run test:e2e
+        env:
+          FORCE_E2E: '1'
+
+      - name: 失败时上传 Playwright 报告
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

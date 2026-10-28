@@ -2,9 +2,9 @@
 /**
  * E2E 入口
  *
- * Playwright 是**可选**工具：本项目不把它写进 package.json，
- * 这样 `express` 仍然是唯一声明的依赖，锁文件也不用跟着变。
- * 没装就直接跳过（退出码 0），绝不让 `npm run test:e2e` 因为缺依赖而炸掉。
+ * Playwright 自 v1.11.0 起是 **devDependency**（运行时依赖仍然只有 express）：
+ * CI 会装浏览器并跑 E2E，本地没装浏览器时则跳过（退出码 0），不让 `npm run test:e2e` 直接炸。
+ * CI 通过 FORCE_E2E=1 要求「必须真跑」，缺依赖即失败。
  *
  * 想跑起来：
  *   npm i -D @playwright/test
@@ -35,7 +35,7 @@ if (!cliPath) {
   console.log('跳过 E2E：未安装 @playwright/test。');
   console.log('');
   console.log('E2E 是可选的端到端验证，单元测试不需要它。');
-  console.log('如需运行，请先安装（不会写进 package.json 的依赖列表）：');
+  console.log('如需本地运行：');
   console.log('');
   console.log('  npm i -D @playwright/test');
   console.log('  npx playwright install chromium');

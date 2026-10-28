@@ -84,6 +84,26 @@
     t._tm = setTimeout(() => t.classList.remove('show'), 2400);
   }
 
+  // 复制文本：优先 clipboard API，非 HTTPS 环境（局域网 IP 访问）回退到 execCommand
+  function copyText(text) {
+    const done = () => toast('✅ 已复制：' + text);
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(done).catch(() => fallback());
+      return;
+    }
+    fallback();
+    function fallback() {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { toast('复制失败，请手动选择', true); }
+      ta.remove();
+    }
+  }
+
   /* ================= 登录 ================= */
   function showLogin() {
     $('#adminView').hidden = true;
@@ -223,6 +243,9 @@
   function switchTab(name) {
     $$('.side-item').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     $$('.tab-panel').forEach(p => p.hidden = p.id !== 'tab-' + name);
+    // 媒体库 / 版本历史按需拉取：不用每次登录都多打两个请求
+    if (name === 'media') renderMedia();
+    if (name === 'history') renderHistory();
   }
   $('#sideNav').addEventListener('click', (e) => {
     const btn = e.target.closest('.side-item');
@@ -784,6 +807,152 @@
       if ($('#resetPwd')) $('#resetPwd').value = '';
       toast('♻️ 已恢复为模板默认内容');
     } catch (e) { toast('恢复失败：' + e.message, true); }
+  });
+
+  /* ================= 媒体库（v1.11.0） =================
+   * 解决「图传多了不知道有哪些、传错了删不掉、磁盘满了没入口」。
+   * 支持一次选多张：逐张上传，任何一张失败都不影响其他张。
+   */
+  const fmtBytes = (n) => {
+    if (!n) return '0 B';
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1024 / 1024).toFixed(2) + ' MB';
+  };
+
+  async function renderMedia() {
+    const grid = $('#mediaGrid');
+    const meter = $('#mediaMeter');
+    grid.innerHTML = '<div class="empty-hint">加载中…</div>';
+    try {
+      const data = await api('/api/media');
+      const pct = data.quotaBytes ? Math.min(100, data.totalBytes / data.quotaBytes * 100) : 0;
+      meter.innerHTML = `<span>已用 <b>${fmtBytes(data.totalBytes)}</b> / ${fmtBytes(data.quotaBytes)}</span>
+        <span>${data.files.length} 张图片${pct > 80 ? ' · <b>空间快满了，建议清理</b>' : ''}</span>`;
+      if (!data.files.length) {
+        grid.innerHTML = '<div class="empty-hint">还没有上传过图片。点右上角「上传图片」试试。</div>';
+        return;
+      }
+      grid.innerHTML = data.files.map(f => `
+        <div class="media-card${f.refs ? '' : ' warn'}">
+          <a href="${esc(f.url)}" target="_blank" rel="noopener"><img src="${esc(f.url)}" alt="${esc(f.name)}" loading="lazy"></a>
+          <div class="media-meta">
+            <div><b>${fmtBytes(f.bytes)}</b> · ${esc(String(f.at).slice(0, 10))}</div>
+            <div>${f.refs ? `被引用 ${f.refs} 处` : '未被使用'}</div>
+          </div>
+          <div class="media-ops">
+            <button class="btn btn-ghost btn-sm" data-mcopy="${esc(f.url)}">复制链接</button>
+            <button class="btn btn-danger btn-sm" data-mdel="${esc(f.name)}" data-refs="${f.refs}">删除</button>
+          </div>
+        </div>`).join('');
+    } catch (e) {
+      grid.innerHTML = '<div class="empty-hint">加载失败：' + esc(e.message) + '</div>';
+    }
+  }
+
+  async function uploadMediaFiles(files) {
+    const list = Array.from(files || []);
+    if (!list.length) return;
+    let ok = 0;
+    for (const file of list) {
+      if (file.size > 8 * 1024 * 1024) { toast(`「${file.name}」超过 8MB，已跳过`, true); continue; }
+      try {
+        const data = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = reject;
+          r.readAsDataURL(file);
+        });
+        await api('/api/upload', { method: 'POST', body: { data } });
+        ok++;
+      } catch (e) { toast(`「${file.name}」上传失败：${e.message}`, true); }
+    }
+    if (ok) toast(`✅ 已上传 ${ok} 张图片`);
+    renderMedia();
+  }
+
+  async function deleteMedia(name, refs) {
+    if (refs > 0 && !confirm(`这张图还有 ${refs} 处内容在用，删除后会显示为占位图。确定删除？`)) return;
+    if (!refs && !confirm('确定删除这张图片？')) return;
+    try {
+      await api('/api/media/' + encodeURIComponent(name), { method: 'DELETE' });
+      toast('已删除');
+      renderMedia();
+    } catch (e) { toast('删除失败：' + e.message, true); }
+  }
+
+  $('#mediaUploadBtn').addEventListener('click', () => $('#mediaFile').click());
+  $('#mediaFile').addEventListener('change', (e) => {
+    uploadMediaFiles(e.target.files);
+    e.target.value = ''; // 允许再次选择同一张
+  });
+  $('#mediaGrid').addEventListener('click', (e) => {
+    const cp = e.target.closest('[data-mcopy]');
+    if (cp) { copyText(cp.dataset.mcopy); return; }
+    const del = e.target.closest('[data-mdel]');
+    if (del) deleteMedia(del.dataset.mdel, +del.dataset.refs || 0);
+  });
+
+  /* ================= 版本历史（v1.11.0） =================
+   * 每次保存前自动留快照；这里可以「看一眼之前长什么样」并回滚。
+   * 回滚会先给当前内容再留一份快照，所以点错了还能再退回来。
+   */
+  const reasonText = (r) => ({
+    save: '保存前', 'before-restore': '回滚前', 'before-reset': '恢复默认前'
+  }[r] || r || '保存前');
+
+  async function renderHistory() {
+    const box = $('#historyList');
+    box.innerHTML = '<div class="empty-hint">加载中…</div>';
+    try {
+      const data = await api('/api/history');
+      if (!data.versions.length) {
+        box.innerHTML = '<div class="empty-hint">还没有历史版本。第一次点「保存修改」后就会开始记录。</div>';
+        return;
+      }
+      box.innerHTML = data.versions.map(v => `
+        <div class="history-row">
+          <div class="hv">
+            <b>${esc(new Date(v.at).toLocaleString('zh-CN'))}</b>
+            <span>${esc(reasonText(v.reason))} · ${v.sections} 个板块 · ${fmtBytes(v.bytes)}</span>
+          </div>
+          <div class="history-ops">
+            <button class="btn btn-ghost btn-sm" data-hrestore="${esc(v.id)}">恢复到这版</button>
+            <button class="btn btn-ghost btn-sm" data-hdel="${esc(v.id)}">删除</button>
+          </div>
+        </div>`).join('');
+    } catch (e) {
+      box.innerHTML = '<div class="empty-hint">加载失败：' + esc(e.message) + '</div>';
+    }
+  }
+
+  async function restoreHistory(id) {
+    if (!confirm('恢复到这个版本？当前内容会先自动留一份快照，随时可以再退回来。')) return;
+    try {
+      const r = await api('/api/history/restore', { method: 'POST', body: { id } });
+      D.settings = r.settings;
+      D.sections = r.sections;
+      dirty = false;
+      renderSettings();
+      renderSecList();
+      renderTheme();
+      updateSaveState();
+      toast('✅ 已恢复到该版本');
+      renderHistory();
+    } catch (e) { toast('恢复失败：' + e.message, true); }
+  }
+
+  $('#historyRefreshBtn').addEventListener('click', renderHistory);
+  $('#historyList').addEventListener('click', (e) => {
+    const rs = e.target.closest('[data-hrestore]');
+    if (rs) { restoreHistory(rs.dataset.hrestore); return; }
+    const del = e.target.closest('[data-hdel]');
+    if (del) {
+      if (!confirm('删除这个历史版本？此操作不可撤销。')) return;
+      api('/api/history/' + encodeURIComponent(del.dataset.hdel), { method: 'DELETE' })
+        .then(() => { toast('已删除'); renderHistory(); })
+        .catch((err) => toast('删除失败：' + err.message, true));
+    }
   });
 
   /* ================= 启动 ================= */

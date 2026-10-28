@@ -108,6 +108,36 @@ describe('scripts/build-static.js', () => {
   });
 });
 
+describe('构建期预渲染（v1.11.0）', () => {
+  test('预渲染把内容写进了 index.html，并生成 OG 标签', () => {
+    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'xy-build-prerender-'));
+    try {
+      const pubCopy = path.join(sandbox, 'public');
+      fs.cpSync(path.join(ROOT, 'public'), pubCopy, { recursive: true });
+      execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'build-static.js')], {
+        cwd: ROOT,
+        stdio: 'pipe',
+        env: Object.assign({}, process.env, { BUILD_STATIC_PUBLIC_DIR: pubCopy })
+      });
+
+      const html = fs.readFileSync(path.join(pubCopy, 'index.html'), 'utf8');
+      assert.ok(html.includes('我们的优势'), '首屏正文应被预渲染进 HTML（爬虫与首屏都不再等 fetch）');
+      assert.match(html, /<meta[^>]+property="og:title"[^>]+content="[^"]+"/, 'og:title 应被填充');
+      assert.ok(!/data-xy-html="sections"[^>]*><\/main>/.test(html), '#app 不应是空壳');
+      assert.equal(html.includes('adminPassword'), false, '预渲染产物不得含凭据');
+    } finally {
+      fs.rmSync(sandbox, { recursive: true, force: true });
+    }
+  });
+
+  test('预渲染内容与运行时渲染同源（render.js 同时被浏览器与构建脚本加载）', () => {
+    const html = fs.readFileSync(path.join(ROOT, 'public', 'index.html'), 'utf8');
+    assert.match(html, /<script src="js\/render\.js">/, 'index.html 必须先加载渲染层');
+    const build = fs.readFileSync(path.join(ROOT, 'scripts', 'build-static.js'), 'utf8');
+    assert.match(build, /render\.js/, '构建脚本必须复用 render.js，不能另写一套模板');
+  });
+});
+
 describe('多案例 · 静态托管产物完整性', () => {
   test('部署需要的案例资产都在 public/ 内（相对 public 根可寻址）', () => {
     const manifestPath = path.join(ROOT, 'public', 'cases', 'manifest.json');

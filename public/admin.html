@@ -47,6 +47,8 @@
         <nav class="side-nav" id="sideNav">
           <button class="side-item active" data-tab="settings">🏠 网站设置</button>
           <button class="side-item" data-tab="sections">🧩 板块管理</button>
+          <button class="side-item" data-tab="media">🖼 媒体库</button>
+          <button class="side-item" data-tab="history">🕘 版本历史</button>
           <button class="side-item" data-tab="help">📖 使用说明</button>
         </nav>
       </aside>
@@ -146,6 +148,34 @@
           <div id="secList"></div>
         </div>
 
+        <!-- 媒体库 -->
+        <div class="tab-panel" id="tab-media" hidden>
+          <div class="sections-toolbar glass">
+            <div>
+              <b>🖼 媒体库</b>
+              <span class="toolbar-hint">后台上传过的图片都在这里；可一次选多张上传，删除前会提示还有几处在使用</span>
+            </div>
+            <div class="media-actions">
+              <button class="btn btn-primary" id="mediaUploadBtn" aria-label="上传图片">＋ 上传图片</button>
+              <input type="file" id="mediaFile" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+            </div>
+          </div>
+          <div class="media-meter glass" id="mediaMeter"></div>
+          <div class="media-grid" id="mediaGrid"></div>
+        </div>
+
+        <!-- 版本历史 -->
+        <div class="tab-panel" id="tab-history" hidden>
+          <div class="sections-toolbar glass">
+            <div>
+              <b>🕘 版本历史</b>
+              <span class="toolbar-hint">每次保存前自动留一份快照，最近 30 份；点「恢复」可回滚，回滚本身也能撤回</span>
+            </div>
+            <button class="btn btn-ghost" id="historyRefreshBtn">刷新</button>
+          </div>
+          <div id="historyList"></div>
+        </div>
+
         <!-- 使用说明 -->
         <div class="tab-panel" id="tab-help" hidden>
           <div class="panel-card glass help-panel">
@@ -154,7 +184,7 @@
               <li><b>改完必保存：</b>所有修改先存在本页，点击右上角「保存修改」后才同步到官网。</li>
               <li><b>板块管理：</b>官网首页的内容全部由「板块」组成。每个板块可 <em>编辑内容</em>、<em>↑↓排序</em>、<em>👁 显示/隐藏</em>、<em>删除</em>。</li>
               <li><b>添加新板块：</b>点击「＋ 添加新板块」，选择类型（价目表 / 卡片 / 评价 / 问答 / 须知 / 图集 / 图文），随时扩展官网内容。</li>
-              <li><b>7 种板块类型：</b>
+              <li><b>8 种板块类型：</b>
                 <ul>
                   <li>💰 <b>价目/列表</b>：带价格的条目，适合各种服务报价</li>
                   <li>🃏 <b>卡片网格</b>：图标+标题+描述，适合优势、活动、团队介绍</li>
@@ -167,7 +197,7 @@
                 </ul>
               </li>
               <li><b>图片上传：</b>客服二维码、图片集中的图片均支持直接上传（≤8MB），上传后保存在服务器。</li>
-              <li><b>换主题：</b>「网站设置 → 主题配色」可一键切换 4 套配色（极光紫 / 深海蓝 / 晨雾白 / 落日金），风格与内容完全分离。</li>
+              <li><b>换主题：</b>「网站设置 → 主题配色」可一键切换 8 套配色（极光紫 / 深海蓝 / 晨雾白 / 落日金），风格与内容完全分离。</li>
               <li><b>复用模板：</b>「导出配置」把整站内容存成 JSON；给新俱乐部用时，导入该配置 → 改名字、联系方式、板块内容即可，无需改代码。</li>
               <li><b>数据存储：</b>内容保存在服务器 data/db.json，重启不丢失。建议定期用「导出配置」备份。</li>
               <li><b>忘记密码：</b>联系技术人员编辑 data/db.json 中的 adminPassword 字段即可重置。</li>

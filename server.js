@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { DEFAULT_DB } = require('./defaults');
+const { inject: injectHome } = require('./scripts/prerender.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,6 +31,12 @@ const UPLOAD_WINDOW_MS = 10 * 60 * 1000;
 const UPLOAD_MAX_PER_WINDOW = 30;
 // 上传目录总容量上限（默认 512MB），超出后拒绝新上传
 const UPLOAD_QUOTA_BYTES = Number(process.env.UPLOAD_QUOTA_MB || 512) * 1024 * 1024;
+// 会话持久化：会话原本只在内存里，进程一重启所有人被踢下线。
+// 落盘到 DATA_DIR/sessions.json（仅存 token → 过期时间，不含密码），重启后仍有效。
+const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
+// 内容版本历史：每次保存前留一份快照，误删/改坏可回滚。只保留最近 30 份。
+const HISTORY_DIR = path.join(DATA_DIR, 'history');
+const HISTORY_MAX = 30;
 
 /* ---------------- 审计日志（S-A6） ---------------- */
 // 登录、改密、保存内容、恢复默认、上传 —— 这些关键动作必须留痕，否则出事无法溯源。
@@ -193,6 +200,8 @@ function writeDB(db) {
 }
 
 function safeSettings(db) {
+  // 解构丢弃密码字段（服务端唯一出口，避免任何响应把哈希带出去）
+  // eslint-disable-next-line no-unused-vars
   const { adminPassword, ...settings } = db.settings;
   return settings;
 }
@@ -368,19 +377,81 @@ app.use('/uploads', (req, res, next) => {
   next();
 });
 
-app.use(express.static(path.join(ROOT, 'public')));
-app.get('/admin', (req, res) => res.sendFile(path.join(ROOT, 'public', 'admin.html')));
+const PUBLIC_DIR = path.join(ROOT, 'public');
+const INDEX_FILE = path.join(PUBLIC_DIR, 'index.html');
+const PRERENDER_ON = String(process.env.PRERENDER || 'on').toLowerCase() !== 'off';
+
+let indexTemplateCache = { mtime: 0, html: '' };
+
+/** 读 index.html 模板（带 mtime 缓存，编辑后自动重新加载）。 */
+function indexTemplate() {
+  if (!fs.existsSync(INDEX_FILE)) return '';
+  const st = fs.statSync(INDEX_FILE);
+  if (st.mtimeMs !== indexTemplateCache.mtime) {
+    indexTemplateCache = { mtime: st.mtimeMs, html: fs.readFileSync(INDEX_FILE, 'utf8') };
+  }
+  return indexTemplateCache.html;
+}
+
+/** 把当前内容注入首页模板：爬虫与首屏都能直接拿到正文。 */
+function renderHome() {
+  return injectHome(indexTemplate(), readDB(), { siteUrl: process.env.SITE_URL || '' });
+}
+
+// 运行期注入首页：后台改完内容刷新即可被抓取，不必重跑构建（PRERENDER=off 可关闭）。
+if (PRERENDER_ON) {
+  app.get(['/', '/index.html'], (req, res, next) => {
+    const tpl = indexTemplate();
+    if (!tpl) return next();
+    try {
+      res.type('html').send(renderHome());
+    } catch (err) {
+      next(err);
+    }
+  });
+}
+// 静态资源放在注入路由之后：否则 /index.html 会被静态中间件直接送出未注入的模板。
+app.use(express.static(PUBLIC_DIR, { index: false }));
+app.get('/admin', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'admin.html')));
 
 /* ---------------- 登录鉴权 ---------------- */
 const sessions = new Map(); // token -> 过期时间
+
+// ---- 会话持久化（v1.11.0）----
+// 说明：只持久化 token 与过期时间，不写任何用户数据；文件权限 0600。
+// 读取时过滤掉已过期的条目，损坏文件按「无会话」处理（用户重新登录即可，不会白屏）。
+function loadSessions() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+    const now = Date.now();
+    for (const [k, exp] of Object.entries((raw && raw.sessions) || {})) {
+      const v = Number(exp);
+      if (v > now) sessions.set(k, v);
+    }
+  } catch (e) { /* 文件不存在或损坏：忽略 */ }
+}
+function saveSessions() {
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    const tmp = SESSIONS_FILE + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify({ sessions: Object.fromEntries(sessions) }), { mode: 0o600 });
+    fs.renameSync(tmp, SESSIONS_FILE);
+  } catch (e) {
+    // 落盘失败不影响本次会话（内存里仍然有效），只提示运维
+    console.error('⚠️ 会话持久化失败:', e.message);
+  }
+}
+loadSessions();
 
 // 定期清扫：过期条目必须从 Map 里真正删掉。
 // 旧实现只在读取时判断时间戳、从不 delete，长期运行会让 Map 无限增长（内存泄漏）。
 const sessionSweeper = setInterval(() => {
   const now = Date.now();
-  for (const [k, exp] of sessions) if (!(exp > now)) sessions.delete(k);
+  let removed = 0;
+  for (const [k, exp] of sessions) if (!(exp > now)) { sessions.delete(k); removed++; }
   for (const [k, v] of csrfTokens) if (!v || v.expiresAt < now) csrfTokens.delete(k);
   for (const [k, a] of loginAttempts) if (!a.until || a.until < now) loginAttempts.delete(k);
+  if (removed) saveSessions();
 }, SESSION_SWEEP_MS);
 // unref：定时器不阻止进程退出（测试 require 本文件时不会被挂住）
 if (sessionSweeper.unref) sessionSweeper.unref();
@@ -413,6 +484,7 @@ app.post('/api/login', jsonSmall, (req, res) => {
 
   const token = crypto.randomBytes(24).toString('hex');
   sessions.set(token, Date.now() + SESSION_TTL_MS);
+  saveSessions();
   res.json({ ok: true, token });
 });
 
@@ -434,6 +506,7 @@ app.post('/api/logout', (req, res) => {
   if (token) {
     sessions.delete(token);
     csrfTokens.delete(token);
+    saveSessions();
   }
   audit('logout', req);
   res.json({ ok: true });
@@ -468,11 +541,12 @@ app.get('/api/csrf-token', (req, res) => {
   res.json({ csrfToken: csrf });
 });
 
+// 不需要 CSRF 的路径白名单（同一份真源，避免两处判断各写一半而漏掉）。
+// 注意 req.path 的形态取决于挂载层级：app.use('/api', fn) 内是 '/login'，
+// 根中间件内是 '/api/login' —— 两种都收，否则白名单形同虚设。
+const CSRF_EXEMPT = new Set(['/api/login', '/login', '/api/csrf-token', '/csrf-token', '/api/health', '/health']);
 function csrfProtect(req, res, next) {
-  // 跳过不需要 CSRF 的路径
-  if (req.path === '/login' || req.path === '/api/csrf-token' || req.path === '/api/health') {
-    return next();
-  }
+  if (CSRF_EXEMPT.has(req.path)) return next();
   const csrf = req.headers['x-csrf-token'];
   const token = req.headers['x-token'];
   if (!csrf || !token) {
@@ -488,7 +562,7 @@ function csrfProtect(req, res, next) {
 // 在鉴权中间件之后，对写操作追加 CSRF 校验
 app.use((req, res, next) => {
   if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
-  if (req.path === '/login' || req.path === '/api/csrf-token') return next();
+  if (CSRF_EXEMPT.has(req.path)) return next();
   csrfProtect(req, res, next);
 });
 
@@ -534,6 +608,7 @@ app.put('/api/content', jsonSmall, (req, res) => {
     const s2 = extractInlineImages(clonedSections);
 
     const db = readDB();
+    snapshotDB(db, 'save'); // 覆盖前留底，误操作可回滚
     // Phase 1: 合并设置时确保使用普通对象（避免 null prototype 导致展开运算符问题）
     const mergedSettings = Object.assign({}, db.settings, s1.value);
     mergedSettings.adminPassword = db.settings.adminPassword; // 保留原密码
@@ -567,6 +642,7 @@ app.post('/api/password', jsonSmall, (req, res) => {
     const current = req.headers['x-token'];
     sessions.clear();
     if (current) sessions.set(current, Date.now() + SESSION_TTL_MS);
+    saveSessions();
     return { status: 200 };
   }).then(r => {
     if (r.status === 200) { audit('password.change', req); res.json({ ok: true }); }
@@ -585,6 +661,7 @@ app.post('/api/reset', jsonSmall, (req, res) => {
     if (!verifyPassword(currentPassword, stored)) {
       return { status: 400, error: '管理密码错误，无法恢复默认内容' };
     }
+    snapshotDB(db, 'before-reset');
     const fresh = JSON.parse(JSON.stringify(DEFAULT_DB));
     fresh.settings.adminPassword = db.settings.adminPassword; // 保留当前登录密码
     fresh.updatedAt = new Date().toISOString();
@@ -663,8 +740,167 @@ app.post('/api/upload', jsonUpload, (req, res) => {
   res.json({ ok: true, url: '/uploads/' + file });
 });
 
+/* ---------------- 内容版本历史（v1.11.0） ----------------
+ * 为什么要有：JSON 单文件存储 + 整份覆盖保存，一次误操作就能把整站内容拍平。
+ * 做法：每次成功保存前把**保存前**的内容留一份快照（不含密码），保留最近 30 份。
+ * 恢复时也会先给当前内容留快照 —— 恢复本身必须可回退。
+ */
+const HISTORY_ID_RE = /^\d{4}-\d{2}-\d{2}T[0-9-]+Z-[0-9a-f]{6}$/;
+
+function historyFiles() {
+  try { return fs.readdirSync(HISTORY_DIR).filter((n) => n.endsWith('.json')); }
+  catch (e) { return []; }
+}
+
+// 文件 id 以 ISO 时间开头，字典序即时间序；超量时删最旧的。
+function pruneHistory() {
+  const files = historyFiles().sort();
+  for (const n of files.slice(0, Math.max(0, files.length - HISTORY_MAX))) {
+    try { fs.unlinkSync(path.join(HISTORY_DIR, n)); } catch (e) { /* 忽略单个文件删除失败 */ }
+  }
+}
+
+function snapshotDB(db, reason) {
+  const copy = JSON.parse(JSON.stringify(db));
+  if (copy.settings) delete copy.settings.adminPassword; // 历史快照里绝不放凭据
+  const now = new Date();
+  const id = now.toISOString().replace(/[:.]/g, '-') + '-' + crypto.randomBytes(3).toString('hex');
+  copy._history = { id, at: now.toISOString(), reason: reason || 'save' };
+  try {
+    fs.mkdirSync(HISTORY_DIR, { recursive: true });
+    fs.writeFileSync(path.join(HISTORY_DIR, id + '.json'), JSON.stringify(copy, null, 2) + '\n');
+    pruneHistory();
+  } catch (e) {
+    console.error('⚠️ 版本历史写入失败:', e.message); // 历史只是保险，失败不能影响保存本身
+  }
+  return id;
+}
+
+function readSnapshot(id) {
+  if (!HISTORY_ID_RE.test(String(id || ''))) return null;
+  try { return JSON.parse(fs.readFileSync(path.join(HISTORY_DIR, id + '.json'), 'utf8')); }
+  catch (e) { return null; }
+}
+
+function listHistory() {
+  const out = [];
+  for (const name of historyFiles()) {
+    const id = name.replace(/\.json$/, '');
+    const st = (() => { try { return fs.statSync(path.join(HISTORY_DIR, name)); } catch (e) { return null; } })();
+    if (!st) continue;
+    let meta = {};
+    try {
+      const d = JSON.parse(fs.readFileSync(path.join(HISTORY_DIR, name), 'utf8'));
+      meta = { siteName: (d.settings && d.settings.siteName) || '', sections: (d.sections || []).length, reason: (d._history && d._history.reason) || 'save' };
+    } catch (e) { continue; }
+    out.push({ id, at: st.mtime.toISOString(), bytes: st.size, ...meta });
+  }
+  return out.sort((a, b) => (a.id < b.id ? 1 : -1)); // 新的在前
+}
+
+app.get('/api/history', (req, res) => {
+  res.json({ versions: listHistory(), max: HISTORY_MAX });
+});
+
+app.get('/api/history/:id', (req, res) => {
+  const snap = readSnapshot(req.params.id);
+  if (!snap) return res.status(404).json({ error: '版本不存在' });
+  res.json({ ok: true, settings: safeSettings(snap), sections: snap.sections || [], at: (snap._history && snap._history.at) || '' });
+});
+
+app.post('/api/history/restore', jsonSmall, (req, res) => {
+  const { id } = req.body || {};
+  const snap = readSnapshot(id);
+  if (!snap) return res.status(404).json({ error: '版本不存在' });
+  if (!snap.settings || !Array.isArray(snap.sections)) return res.status(400).json({ error: '该版本内容结构不完整' });
+  withDBLock(() => {
+    const db = readDB();
+    // 恢复前先留一份当前内容，恢复本身也可撤销
+    snapshotDB(db, 'before-restore');
+    const next = { settings: Object.assign({}, snap.settings), sections: snap.sections, updatedAt: new Date().toISOString() };
+    next.settings.adminPassword = db.settings.adminPassword; // 密码不随内容回滚
+    writeDB(next);
+    return { settings: safeSettings(next), sections: next.sections };
+  }).then((r) => {
+    audit('history.restore', req, { id });
+    res.json({ ok: true, ...r });
+  }).catch(() => res.status(500).json({ error: '恢复失败，请重试' }));
+});
+
+app.delete('/api/history/:id', (req, res) => {
+  const id = req.params.id;
+  if (!HISTORY_ID_RE.test(String(id))) return res.status(400).json({ error: '版本 id 非法' });
+  try { fs.unlinkSync(path.join(HISTORY_DIR, id + '.json')); }
+  catch (e) { return res.status(404).json({ error: '版本不存在' }); }
+  res.json({ ok: true });
+});
+
+/* ---------------- 媒体库（v1.11.0） ----------------
+ * 之前只能「上传后立刻用」，传错图、旧图、重复图都无从清理，
+ * 磁盘配额满了也没有入口。这里给出列表 + 引用统计 + 删除。
+ * 只删 uploads/ 下的文件，名字必须匹配白名单，杜绝路径穿越。
+ */
+const MEDIA_NAME_RE = /^[0-9A-Za-z_-]{1,80}\.(jpg|png|webp|gif)$/;
+
+function listMedia() {
+  const out = [];
+  let total = 0;
+  let names = [];
+  try { names = fs.readdirSync(UPLOAD_DIR); } catch (e) { return { files: out, totalBytes: 0 }; }
+  for (const name of names) {
+    if (!MEDIA_NAME_RE.test(name)) continue;
+    let st;
+    try { st = fs.statSync(path.join(UPLOAD_DIR, name)); } catch (e) { continue; }
+    if (!st.isFile()) continue;
+    total += st.size;
+    out.push({ name, url: '/uploads/' + name, bytes: st.size, at: st.mtime.toISOString() });
+  }
+  out.sort((a, b) => (a.at < b.at ? 1 : -1));
+  return { files: out, totalBytes: total };
+}
+
+// 统计内容里对某张图的使用次数，删图前提示「还有 N 处在使用」。
+function countMediaRefs(db, name) {
+  const needle = '/uploads/' + name;
+  let n = 0;
+  const walk = (v) => {
+    if (typeof v === 'string') { if (v.includes(needle)) n++; return; }
+    if (Array.isArray(v)) return v.forEach(walk);
+    if (v && typeof v === 'object') return Object.values(v).forEach(walk);
+  };
+  walk(db.settings);
+  walk(db.sections);
+  return n;
+}
+
+app.get('/api/media', (req, res) => {
+  const { files, totalBytes } = listMedia();
+  const db = readDB();
+  res.json({
+    files: files.map((f) => ({ ...f, refs: countMediaRefs(db, f.name) })),
+    totalBytes,
+    quotaBytes: UPLOAD_QUOTA_BYTES
+  });
+});
+
+app.delete('/api/media/:name', (req, res) => {
+  const name = req.params.name;
+  if (!MEDIA_NAME_RE.test(String(name))) return res.status(400).json({ error: '文件名非法' });
+  const full = path.join(UPLOAD_DIR, name);
+  // 双保险：解析后的路径必须仍在 uploads 目录内
+  if (!full.startsWith(path.resolve(UPLOAD_DIR) + path.sep)) {
+    return res.status(400).json({ error: '文件名非法' });
+  }
+  try { fs.unlinkSync(full); }
+  catch (e) { return res.status(404).json({ error: '文件不存在' }); }
+  audit('media.delete', req, { name });
+  res.json({ ok: true });
+});
+
 /* ---------------- 全局错误处理（Q4） ---------------- */
 // 路由内抛出的异常统一捕获，避免异步异常泄漏为挂起连接或进程级未处理
+// Express 要求错误中间件必须有 4 个参数才能被识别，next 不能省（故显式忽略）
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error('⚠️ 未处理的请求异常：', err && err.message);
   if (!res.headersSent) res.status(500).json({ error: '服务器内部错误' });
@@ -701,6 +937,14 @@ module.exports = {
   DATA_DIR,
   UPLOAD_DIR,
   DB_FILE: DB_PATH,
+  SESSIONS_FILE,
+  HISTORY_DIR,
+  HISTORY_MAX,
+  loadSessions,
+  saveSessions,
+  snapshotDB,
+  listHistory,
+  listMedia,
   // Phase 1: 导出输入验证工具
   deepClone,
   isSafeKey,

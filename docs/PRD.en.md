@@ -1,6 +1,6 @@
 # Product Requirements Document (PRD) — XY Club Website Template
 
-> Version: 1.10.3
+> Version: 1.11.0
 > Status: Maintained
 > Last updated: 2026-10-27
 > Scope: This document is the **source of truth for requirements**; implementation details live in `ARCHITECTURE.md` / `API.md`, decisions in `docs/adr/`.
@@ -103,6 +103,7 @@ Source of truth: `data/db.json`, shaped by `DEFAULT_DB` in `defaults.js`.
 
 | Version | Type | Summary |
 |---------|------|---------|
+| 1.11.0 | minor | Build-time prerendering and OG tags, admin media library, content version history with rollback, session persistence, Docker deployment, 3 new demo cases |
 | 1.10.3 | patch | License cleanup: seven-part doc license (CC BY 4.0), copyright holder unified to xiaoyu-hue |
 | 1.10.2 | patch | Doc governance: archive process artifacts to docs/_archive/, drop orphan tags, add doc-policy gate |
 | 1.10.1 | patch | Fix release badge showing a stale version: shields.io ranks "latest" by creation time, not SemVer; added `sort=semver` |

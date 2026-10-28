@@ -228,3 +228,55 @@ x-token: <登录时返回的 token>
 ---
 
 相关文档：[README](README.md) · [AGENTS.md](AGENTS.md) · [TESTING.md](TESTING.md) · [SECURITY.md](../SECURITY.md)
+
+### GET /api/history
+
+内容版本列表（**需鉴权**）。每次保存内容前会自动留一份快照，最多保留 30 份。
+
+```json
+{
+  "versions": [
+    { "id": "2026-10-28T05-12-33-123Z-1a2b3c", "at": "2026-10-28T05:12:34.000Z",
+      "bytes": 9123, "siteName": "XY俱乐部", "sections": 9, "reason": "save" }
+  ],
+  "max": 30
+}
+```
+
+### GET /api/history/:id
+
+读取某个版本的完整内容（**需鉴权**）。返回体与 `GET /api/content` 同构，**不含密码**。
+
+### POST /api/history/restore
+
+回滚到指定版本（**需鉴权 + CSRF**）。
+
+```json
+{ "id": "2026-10-28T05-12-33-123Z-1a2b3c" }
+```
+
+- 恢复前会先为「当前内容」留一份快照（`reason: "before-restore"`），因此回滚本身也可撤销
+- 管理密码不随内容回滚
+- 版本不存在 → `404 { "error": "版本不存在" }`
+
+### DELETE /api/history/:id
+
+删除某个历史版本（**需鉴权 + CSRF**）。id 格式非法 → `400`，不存在 → `404`。
+
+### GET /api/media
+
+媒体库列表（**需鉴权**）。返回 `uploads/` 下的图片、总用量与配额，并给出每张图在内容中的引用次数 `refs`。
+
+```json
+{
+  "files": [{ "name": "1695700000000-ab12cd34.png", "url": "/uploads/1695700000000-ab12cd34.png",
+              "bytes": 51200, "at": "2026-10-28T05:12:34.000Z", "refs": 2 }],
+  "totalBytes": 51200,
+  "quotaBytes": 536870912
+}
+```
+
+### DELETE /api/media/:name
+
+删除一张上传图（**需鉴权 + CSRF**）。文件名必须匹配白名单且解析后仍在 `uploads/` 内，否则 `400`；
+文件不存在 → `404`。删除前请先看 `refs`，避免删掉仍在使用的图。

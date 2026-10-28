@@ -180,13 +180,14 @@ describe('docs/API.md 详文档与真实路由一致', () => {
 
   test('API.md 记录的路由都真实存在于 server.js', () => {
     const src = read('server.js');
+    // 支持 Express 路径参数（:id），否则 /api/history/:id 这类路由会被截断成 /api/history/
     const real = new Set(
-      (src.match(/app\.(?:get|post|put|delete)\('(\/api\/[\w/-]+)'/g) || []).map((m) =>
+      (src.match(/app\.(?:get|post|put|delete)\('(\/api\/[\w/:-]+)'/g) || []).map((m) =>
         m.replace(/^app\.\w+\('/, '').replace(/'$/, '')
       )
     );
     const apiDoc = read('docs/API.md');
-    const docRoutes = [...apiDoc.matchAll(/^###\s+(?:GET|POST|PUT|DELETE)\s+`?(\/api\/[\w/-]+)`?/gm)].map((m) => m[1]);
+    const docRoutes = [...apiDoc.matchAll(/^###\s+(?:GET|POST|PUT|DELETE)\s+`?(\/api\/[\w/:-]+)`?/gm)].map((m) => m[1]);
     assert.ok(docRoutes.length >= 6, 'API.md 应至少记录 6 个接口');
     for (const d of docRoutes) {
       assert.ok(real.has(d), `docs/API.md 记录了不存在的路由 ${d}`);

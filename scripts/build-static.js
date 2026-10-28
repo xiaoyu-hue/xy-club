@@ -124,3 +124,42 @@ if (errors) {
 }
 console.log('✓ 多案例资产校验通过（结构 / 类型 / 凭据 / 图片引用）');
 console.log('  纯静态托管（如 GitHub Pages）会把 content.json 与 cases/ 一并作为内容来源。');
+
+/* ---------------- 3. 预渲染首页（SEO / 首屏 / 社交分享） ----------------
+ *
+ * 为什么必须预渲染：模板的正文完全由前端 fetch 后再渲染，
+ * 于是搜索引擎、微信/推特抓取、以及禁用 JS 的浏览器都只能拿到一个空 <main>。
+ * 这里在构建期用**同一份渲染函数**（public/js/render.js，浏览器与 Node 共用）
+ * 把内容直接写进 index.html：
+ *   - 首屏不再等 fetch → 无白屏
+ *   - 正文与 title/description 进了 HTML → 可被索引、可被分享
+ *   - 运行时 main.js 仍会用 API 数据覆盖一次，后台改动照样即时生效
+ *
+ * 唯一真源原则：预渲染不另写一套模板，直接复用 public/js/render.js；
+ * 注入逻辑抽在 scripts/prerender.js，server.js 运行期复用同一份。
+ */
+const indexFile = path.join(PUBLIC_DIR, 'index.html');
+// 测试模式下，若目标就是仓库自己的 public/，跳过预渲染：
+// node --test 会并行跑多个文件，改写真实 index.html 会让其他用例读到半成品。
+// （沙箱副本 BUILD_STATIC_PUBLIC_DIR 仍会正常预渲染，供 tests/static-build 验证。）
+const SKIP_REAL_WRITE = !!process.env.NODE_TEST_CONTEXT &&
+  path.resolve(PUBLIC_DIR) === path.resolve(path.join(__dirname, '..', 'public'));
+
+if (SKIP_REAL_WRITE) {
+  console.log('  测试环境：跳过对仓库 public/index.html 的就地预渲染。');
+} else if (!fs.existsSync(indexFile)) {
+  console.log('  未找到 index.html，跳过预渲染（沙箱构建属正常情况）。');
+} else {
+  const { inject } = require('./prerender.js');
+  const out = inject(fs.readFileSync(indexFile, 'utf8'), db, {
+    siteUrl: process.env.SITE_URL || '',
+    imageDir: path.join(PUBLIC_DIR, 'cases', 'images')
+  });
+
+  fs.writeFileSync(indexFile, out);
+  const kb = (Buffer.byteLength(out) / 1024).toFixed(1);
+  console.log(`✓ 已预渲染首页: public/index.html (${kb} KB)`);
+  if (!/property="og:image"[^>]*content="[^"]+"/.test(out)) {
+    console.log('  提示：内容里没有可用图片，og:image 为空；配置 SITE_URL 可生成绝对分享地址。');
+  }
+}

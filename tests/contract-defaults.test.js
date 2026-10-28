@@ -14,6 +14,9 @@ const { DEFAULT_DB } = require(path.join(ROOT, 'defaults'));
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const serverSrc = read('server.js');
+// v1.11.0：渲染层抽到 public/js/render.js（浏览器与构建期预渲染共用），
+// 「有没有对应渲染分支」应检查渲染层而不是 main.js。
+const renderJs = read('public/js/render.js');
 const mainJs = read('public/js/main.js');
 const styleCss = read('public/css/style.css');
 const adminHtml = read('public/admin.html');
@@ -21,13 +24,13 @@ const sectionsDoc = read('docs/SECTIONS.md');
 
 describe('板块类型契约', () => {
   const renderedTypes = new Set(
-    [...mainJs.matchAll(/case '([\w-]+)':/g)].map((m) => m[1])
+    [...renderJs.matchAll(/case '([\w-]+)':/g)].map((m) => m[1])
   );
 
   test('出厂内容里出现的每种板块，main.js 都有对应渲染分支', () => {
     const used = new Set(DEFAULT_DB.sections.map((s) => s.type));
     for (const t of used) {
-      assert.ok(renderedTypes.has(t), `main.js 缺少 "${t}" 的渲染分支`);
+      assert.ok(renderedTypes.has(t), `public/js/render.js 缺少 "${t}" 的渲染分支`);
     }
   });
 

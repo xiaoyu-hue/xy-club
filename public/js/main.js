@@ -2,16 +2,14 @@
 (() => {
   'use strict';
   const $ = (s) => document.querySelector(s);
-  const esc = (str) => String(str == null ? '' : str)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  // 占位符插值：{{custom.键名}} → settings.custom[键名]；键不存在返回空。
-  // 调用方需先 interp 再 esc，因此自定义值里的 HTML 会被转义，无 XSS 风险。
-  const interp = (text, custom) => {
-    const c = custom || {};
-    return String(text == null ? '' : text)
-      .replace(/\{\{\s*custom\.([\w.-]+)\s*\}\}/g, (m, k) => (k in c ? c[k] : ''));
-  };
+  // 渲染层（纯函数）抽在 js/render.js 里：浏览器端与构建期预渲染共用同一份实现，
+  // 避免「预渲染出来的 HTML」和「JS 渲染出来的 HTML」各写一遍后慢慢漂移。
+  // 浏览器：render.js 先于本文件加载，挂到 window.XYRender；
+  // Node（单元测试）：走 require。
+  const R = (typeof module !== 'undefined' && module.exports)
+    ? require('./render.js')
+    : window.XYRender;
+  const { esc, interp, parseStat, twoLines, fragments } = R;
   const fine = matchMedia('(pointer:fine)').matches;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let SITE = { settings: {}, sections: [] };
@@ -43,198 +41,63 @@
     } catch (e) { return { data: null, ok: false }; }
   }
 
-  /* ================= 渲染 ================= */
-  function twoLines(title) {
-    const parts = String(title || '').split('|');
-    if (parts.length > 1) {
-      return `<span class="t1">${esc(parts[0])}</span><span class="t2 grad-text">${esc(parts.slice(1).join('|'))}</span>`;
-    }
-    return `<span class="grad-text">${esc(parts[0] || '')}</span>`;
-  }
-
-  function parseStat(s) {
-    const m = String(s).match(/^([\d.]+)(.*)$/);
-    if (!m) return { val: 0, suffix: '', label: s };
-    const label = m[2] || '';
-    const sm = label.match(/^([^\d\u4e00-\u9fa5A-Za-z]*)/);
-    const suffix = sm ? sm[1] : '';
-    return { val: parseFloat(m[1]), suffix, label: label.slice(suffix.length) };
-  }
-
-  function renderNav() {
-    const st = SITE.settings;
-    $('#brandLogo').textContent = st.logoEmoji || '💎';
-    $('#brandName').textContent = st.siteName || '俱乐部';
-    const links = SITE.sections.filter(s => s.visible !== false).slice(0, 6);
-    const html = links.map(s => `<a href="#sec-${esc(s.id)}">${esc(s.title)}</a>`).join('');
-    $('#navLinks').innerHTML = html;
-    $('#mobileMenu').innerHTML = html + `<a href="javascript:void(0)" data-order>📞 联系下单</a>`;
-  }
-
-  function renderHero() {
-    const st = SITE.settings;
-    $('#heroBadge').textContent = st.heroBadge || '';
-    $('#heroTitle').innerHTML = twoLines(st.heroTitle);
-    $('#heroSub').textContent = st.heroSubtitle || '';
-    $('#heroBtns').innerHTML =
-      `<button class="btn btn-primary btn-lg" data-order>🚀 立即下单</button>
-       <a class="btn btn-ghost btn-lg" href="#app">📋 查看价目</a>`;
-    const stats = String(st.heroStats || '').split(/[,，]/).map(x => x.trim()).filter(Boolean);
-    $('#heroStats').innerHTML = stats.map(s => {
-      const p = parseStat(s);
-      const dec = (String(p.val).split('.')[1] || '').length;
-      return `<div class="stat">
-        <b class="gold-text"><span class="count-up" data-val="${p.val}" data-dec="${dec}">0</span>${esc(p.suffix)}</b>
-        <span>${esc(p.label)}</span></div>`;
-    }).join('');
-    document.title = `${st.siteName || '俱乐部'} · ${st.slogan || '官网'}`;
-    if (!reduced) requestAnimationFrame(() => $('#heroCard').classList.add('enter'));
-  }
-
-  function renderTicker() {
-    const t = String(SITE.settings.announcement || '').trim();
-    const el = $('#ticker');
-    if (!t) { el.hidden = true; return; }
-    el.hidden = false;
-    $('#tickerText').textContent = t;
-  }
-
-  /* -------- 各类型板块 -------- */
-  function priceRow(it, i) {
-    return `<div class="price-row reveal" style="--i:${i}">
-      <div class="pr-info">
-        <div class="pr-name">${esc(it.name)}</div>
-        ${it.desc ? `<div class="pr-desc">${esc(it.desc)}</div>` : ''}
-      </div>
-      <div class="pr-price"><span class="num gold-text">${esc(it.price)}</span>${it.original ? `<span class="pr-original">${esc(it.original)}</span>` : ''}<span class="unit">${esc(it.unit)}</span></div>
-    </div>`;
-  }
-  function stars(n) {
-    return Array.from({ length: Math.max(1, Math.min(5, +n || 5)) },
-      (_, k) => `<span style="animation-delay:${k * 90}ms">★</span>`).join('');
-  }
-
-  /* -------- 图形字段：表情 或 图片 --------
-   * 后台的「图标/头像」字段支持两种值：
-   *   - 表情符号（如 ✨）        → 按文本渲染
-   *   - 图片路径（/uploads/x）   → 渲染为 <img>
-   * 向后兼容：老数据（纯表情）输出与改造前完全一致。
-   * 图片加载失败时回落到 alt 文本，不让页面出现破图。
+  /* ================= 渲染 =================
+   * 具体 HTML 由 js/render.js 产出（纯函数），这里只负责「落地到 DOM」与微交互。
+   * 顺序：主题 → 片段 → 图片降级 → 演示声明。
    */
-  const isGfxImage = (x) => typeof x === 'string' && /^(\/|https?:\/\/|data:image\/)/.test(x.trim());
-  function gfx(x, fallback, cls) {
-    const val = (x == null || x === '') ? fallback : String(x);
-    if (isGfxImage(val)) {
-      return `<img class="${cls}" src="${esc(val.trim())}" alt="" loading="lazy"
-        onerror="this.replaceWith(document.createTextNode('${fallback.replace(/'/g, "\\'")}'))">`;
+  function applyFragments(f) {
+    $('#brandLogo').textContent = f.text.brandLogo;
+    $('#brandName').textContent = f.text.brandName;
+    $('#navLinks').innerHTML = f.html.navLinks;
+    $('#mobileMenu').innerHTML = f.html.mobileMenu;
+    $('#heroBadge').textContent = f.text.heroBadge;
+    $('#heroTitle').innerHTML = f.html.heroTitle;
+    $('#heroSub').textContent = f.text.heroSub;
+    $('#heroBtns').innerHTML = f.html.heroBtns;
+    const ticker = $('#ticker');
+    const tickerText = $('#tickerText');
+    if (f.text.tickerText) {
+      ticker.hidden = false;
+      tickerText.textContent = f.text.tickerText;
+    } else {
+      ticker.hidden = true;
+      tickerText.textContent = '';
     }
-    return `<span class="${cls}">${esc(val)}</span>`;
-  }
-
-  function sectionHTML(s) {
-    const st = SITE.settings;
-    const head = `<div class="sec-head reveal">
-        <span class="sec-icon">${esc(s.icon || '✦')}</span>
-        <h2 class="grad-text">${esc(s.title)}</h2>
-        ${s.subtitle ? `<p class="sec-sub">${esc(s.subtitle)}</p>` : ''}
-      </div>`;
-    let body = '';
-    const items = s.items || [];
-    switch (s.type) {
-      case 'services':
-        body = `<div class="price-list">${items.map(priceRow).join('')}</div>
-          ${s.tip ? `<p class="sec-tip reveal">${esc(s.tip)}</p>` : ''}`;
-        break;
-      case 'cards':
-        body = `<div class="card-grid">${items.map((it, i) => `
-          <div class="f-card tilt reveal" style="--i:${i}">
-            <span class="ic">${gfx(it.icon, '✨', 'ic-gfx')}</span>
-            <h3>${esc(it.title)}</h3><p>${esc(it.desc)}</p>
-          </div>`).join('')}</div>`;
-        break;
-      case 'testimonials':
-        body = `<div class="review-grid">${items.map((it, i) => `
-          <div class="r-card tilt reveal" style="--i:${i}"><span class="quote">”</span>
-            <div class="r-stars">${stars(it.rating)}</div>
-            <p class="r-text">${esc(it.text)}</p>
-            <div class="r-who"><span class="r-avatar">${gfx(it.emoji, '🙂', 'r-avatar-gfx')}</span><b>${esc(it.who)}</b></div>
-          </div>`).join('')}</div>`;
-        break;
-      case 'notice':
-        body = `<div class="notice-list">${items.map((it, i) => `
-          <div class="n-item reveal" style="--i:${i}"><span class="ni">${gfx(it.icon, '•', 'ni-gfx')}</span><span>${esc(it.text)}</span></div>`).join('')}</div>`;
-        break;
-      case 'faq':
-        body = `<div class="faq-list">${items.map((it, i) => `
-          <details class="faq-item reveal" style="--i:${i}">
-            <summary><span><span class="q-mark">Q.</span>${esc(it.q)}</span><span class="arrow">▼</span></summary>
-            <div class="faq-a">${esc(it.a)}</div>
-          </details>`).join('')}</div>`;
-        break;
-      case 'gallery':
-        body = `<div class="gallery-grid">${items.map((it, i) => `
-          <figure class="g-item reveal" style="--i:${i}">
-            <img src="${esc(it.url)}" alt="${esc(it.caption || '')}" loading="lazy">
-            ${it.caption ? `<figcaption>${esc(it.caption)}</figcaption>` : ''}
-          </figure>`).join('')}</div>`;
-        break;
-      case 'text':
-        body = `<div class="text-wrap reveal">${esc(s.content)}</div>`;
-        break;
-      case 'custom':
-        body = `<div class="text-wrap custom-wrap reveal">${esc(interp(s.content, st.custom))}</div>`;
-        break;
-      default: body = '';
+    $('#app').innerHTML = f.html.sections;
+    $('#ctaCard').innerHTML = f.html.cta;
+    $('#footerInner').innerHTML = f.html.footer;
+    $('#copyright').textContent = f.text.copyright;
+    document.title = f.text.title;
+    // SEO / 社交卡片随内容更新：后台改站点名或简介后，分享预览不应继续显示旧文案。
+    setMeta('description', f.text.description);
+    setMeta('og:title', f.text.title, 'property');
+    setMeta('og:description', f.text.description, 'property');
+    setMeta('og:site_name', f.text.brandName, 'property');
+    setMeta('twitter:title', f.text.title);
+    setMeta('twitter:description', f.text.description);
+    if (f.meta.ogImage) {
+      setMeta('og:image', f.meta.ogImage, 'property');
+      setMeta('twitter:image', f.meta.ogImage);
     }
-    return `<section class="section" id="sec-${esc(s.id)}">${head}${body}</section>`;
   }
 
-  function renderSections() {
-    const list = (SITE.sections || []).filter(s => s.visible !== false);
-    $('#app').innerHTML = list.map(sectionHTML).join('');
+  // 只改已存在的标签，不凭空注入（避免与预渲染结果重复）。
+  function setMeta(name, value, kind) {
+    if (!value) return;
+    const sel = kind === 'property' ? `meta[property="${name}"]` : `meta[name="${name}"]`;
+    const el = document.querySelector(sel);
+    if (el) el.setAttribute('content', value);
   }
 
-  function renderCTA() {
-    const st = SITE.settings;
-    $('#ctaCard').innerHTML = `
-      <h2 class="grad-text">准备好开启陪伴了吗？</h2>
-      <p>${esc(st.slogan || '')} ${esc(st.qrNote || '')}</p>
-      ${st.wechat ? `<div class="cta-wx">💚 微信号：<b>${esc(st.wechat)}</b></div>` : ''}
-      <div class="cta-btns">
-        <button class="btn btn-gold btn-lg" data-order>💌 立即下单</button>
-        ${st.wechat ? `<button class="btn btn-ghost btn-lg" data-copy="${esc(st.wechat)}">📋 复制微信号</button>` : ''}
-      </div>
-      ${st.qrImage ? `<img class="cta-qr" src="${esc(st.qrImage)}" alt="客服二维码">` : ''}`;
-  }
-
-  function renderFooter() {
-    const st = SITE.settings;
-    const cols = SITE.sections.filter(s => s.visible !== false).slice(0, 5)
-      .map(s => `<a href="#sec-${esc(s.id)}">${esc(s.title)}</a>`).join('');
-    $('#footerInner').innerHTML = `
-      <div class="f-brand">
-        <span class="brand-logo">${esc(st.logoEmoji || '💎')}</span>
-        <h3 class="grad-text">${esc(st.siteName || '')}</h3>
-        <p>${esc(st.footer || '')}</p>
-      </div>
-      <div class="f-col"><h4>快速导航</h4>${cols}</div>
-      <div class="f-col"><h4>联系方式</h4>
-        ${st.wechat ? `<span>微信：${esc(st.wechat)}</span>` : ''}
-        ${st.qq ? `<span>QQ：${esc(st.qq)}</span>` : ''}
-        ${st.phone ? `<span>电话：${esc(st.phone)}</span>` : ''}
-        ${st.email ? `<span>邮箱：${esc(st.email)}</span>` : ''}
-        <a href="javascript:void(0)" data-order>📩 联系下单</a>
-      </div>`;
-    $('#copyright').textContent = `© ${new Date().getFullYear()} ${st.siteName || '俱乐部'} · ${st.slogan || ''}`;
-  }
 
   /* ================= 弹窗 / 复制 / Toast ================= */
-  function toast(msg) {
+  // ms 可调：错误提示需要更长的阅读时间（调用方已在传，早期版本被静默忽略）。
+  function toast(msg, ms) {
     const t = $('#toast');
     t.textContent = msg;
     t.classList.add('show');
     clearTimeout(t._tm);
-    t._tm = setTimeout(() => t.classList.remove('show'), 2200);
+    t._tm = setTimeout(() => t.classList.remove('show'), ms || 2200);
   }
   function copyText(text) {
     const done = () => toast('✅ 已复制：' + text);
@@ -291,10 +154,16 @@
     if (modalReturnFocus && typeof modalReturnFocus.focus === 'function') modalReturnFocus.focus();
   }
 
-  /* ================= 微交互 ================= */
+  /* ================= 微交互 =================
+   * 幂等约定：renderAll() 会在切换案例时重复调用，因此所有「挂全局监听」的绑定
+   * 只允许生效一次（flag 守卫）；「按 DOM 挂监听」的绑定每次先清理旧实例，
+   * 否则切几次案例就叠几份回调（v1.10.x 的滚动/观察者泄漏）。
+   */
+  let spotBound = false;
   // 1) 玻璃卡片跟随光标的高光
   function bindSpotlight() {
-    if (!fine) return;
+    if (!fine || spotBound) return;
+    spotBound = true;
     document.addEventListener('pointermove', (e) => {
       const el = e.target.closest && e.target.closest('.glass');
       if (!el) return;
@@ -304,10 +173,12 @@
     }, { passive: true });
   }
 
-  // 2) 卡片 3D 微倾斜
+  // 2) 卡片 3D 微倾斜（元素级标记，重复绑定同一元素只生效一次）
   function bindTilt() {
     if (!fine || reduced) return;
     document.querySelectorAll('.tilt').forEach(el => {
+      if (el.dataset.tiltBound) return;
+      el.dataset.tiltBound = '1';
       el.addEventListener('pointermove', (e) => {
         const r = el.getBoundingClientRect();
         const px = (e.clientX - r.left) / r.width - 0.5;
@@ -319,8 +190,11 @@
     });
   }
 
+  let rippleBound = false;
   // 3) 按钮点击涟漪
   function bindRipple() {
+    if (rippleBound) return;
+    rippleBound = true;
     document.addEventListener('pointerdown', (e) => {
       const btn = e.target.closest && e.target.closest('.btn');
       if (!btn) return;
@@ -336,15 +210,17 @@
     }, { passive: true });
   }
 
-  // 4) 数字滚动
+  // 4) 数字滚动（旧观察者先断开，避免重复触发）
+  let countIO = null;
   function bindCountUp() {
     const els = document.querySelectorAll('.count-up');
     if (reduced) { els.forEach(el => { el.textContent = el.dataset.val; }); return; }
-    const io = new IntersectionObserver((entries) => {
+    if (countIO) countIO.disconnect();
+    countIO = new IntersectionObserver((entries) => {
       entries.forEach(en => {
         if (!en.isIntersecting) return;
         const el = en.target;
-        io.unobserve(el);
+        countIO.unobserve(el);
         const target = parseFloat(el.dataset.val) || 0;
         const dec = +el.dataset.dec || 0;
         const dur = 1400, t0 = performance.now();
@@ -358,10 +234,11 @@
         requestAnimationFrame(step);
       });
     }, { threshold: 0.4 });
-    els.forEach(el => io.observe(el));
+    els.forEach(el => countIO.observe(el));
   }
 
-  // 5) 滚动：进度条 / 导航压缩 / 返回顶部 / 背景视差
+  // 5) 滚动：进度条 / 导航压缩 / 返回顶部 / 背景视差（全局只绑一次）
+  let scrollBound = false;
   function bindScroll() {
     const nav = $('#navbar'), prog = $('#scrollProg'), toTop = $('#toTop'), aurora = $('.aurora');
     let raf = null;
@@ -377,35 +254,43 @@
         if (aurora) aurora.style.transform = `translate3d(${(-y * 0.02).toFixed(1)}px, ${(-y * 0.04).toFixed(1)}px, 0)`;
       });
     };
-    addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+    if (scrollBound) return;
+    scrollBound = true;
+    addEventListener('scroll', onScroll, { passive: true });
     toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
 
-  // 6) 滚动渐显 + 导航高亮
+  // 6) 滚动渐显 + 导航高亮（重绑前断开旧观察者）
+  let revealIO = null, navIO = null;
   function bindReveal() {
-    const io = new IntersectionObserver((entries) => {
+    if (revealIO) revealIO.disconnect();
+    if (navIO) navIO.disconnect();
+    revealIO = new IntersectionObserver((entries) => {
       entries.forEach(en => {
-        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+        if (en.isIntersecting) { en.target.classList.add('in'); revealIO.unobserve(en.target); }
       });
     }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+    document.querySelectorAll('.reveal').forEach(el => revealIO.observe(el));
 
     const links = document.querySelectorAll('#navLinks a');
     if (!links.length) return;
     const secs = document.querySelectorAll('.section');
-    const sio = new IntersectionObserver((entries) => {
+    navIO = new IntersectionObserver((entries) => {
       entries.forEach(en => {
         if (!en.isIntersecting) return;
         const id = en.target.id;
         links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
-    secs.forEach(s => sio.observe(s));
+    secs.forEach(s => navIO.observe(s));
   }
 
   /* ================= 全局事件 ================= */
+  let globalBound = false;
   function bindGlobal() {
+    if (globalBound) return;
+    globalBound = true;
     document.addEventListener('click', (e) => {
       const t = e.target;
       if (t.closest('[data-order]')) { openModal(); return; }
@@ -426,17 +311,21 @@
 
   /* ================= P5：图片加载失败降级 ================= */
   // 本地图片虽稳，但部署漏传 / 文件损坏时 <img> 会显示裂图图标。
-  // 监听 load 失败的图片（capture 阶段可捕获 img 的 error 事件），替换为占位块。
+  // 用**一次性** capture 监听统一处理（error 事件不冒泡，但 capture 阶段能拿到），
+  // 而不是每次渲染后给每张新图挂 listener —— 案例切换时图片会被整批重建。
+  let imageFallbackBound = false;
   function bindImageFallback() {
-    document.querySelectorAll('.g-item img, .cta-qr, .modal-qr').forEach((img) => {
-      img.addEventListener('error', () => {
-        const ph = document.createElement('div');
-        ph.className = 'img-fallback';
-        ph.textContent = '🖼';
-        ph.setAttribute('aria-label', '图片加载失败');
-        if (img.parentNode) img.parentNode.replaceChild(ph, img);
-      }, { once: true });
-    });
+    if (imageFallbackBound) return;
+    imageFallbackBound = true;
+    document.addEventListener('error', (e) => {
+      const img = e.target;
+      if (!img || img.tagName !== 'IMG') return;
+      const ph = document.createElement('div');
+      ph.className = 'img-fallback';
+      ph.textContent = (img.dataset && img.dataset.gfx) || '🖼';
+      ph.setAttribute('aria-label', '图片加载失败');
+      if (img.parentNode) img.parentNode.replaceChild(ph, img);
+    }, true);
   }
 
   /* ================= 页脚/页眉的演示声明（静态模式） ================= */
@@ -468,9 +357,10 @@
    */
   function renderAll() {
     applyTheme();
-    renderNav(); renderHero(); renderTicker(); renderSections(); renderCTA(); renderFooter();
+    applyFragments(fragments(SITE));
     bindImageFallback();
     renderDemoNotice();
+    if (!reduced) requestAnimationFrame(() => { const c = $('#heroCard'); if (c) c.classList.add('enter'); });
   }
 
   /**

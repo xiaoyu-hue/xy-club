@@ -34,6 +34,15 @@ A **reusable club website template**: liquid-glass visuals + micro-interactions,
 
 ---
 
+### 📣 Latest release v1.11.0 (2026-10-28)
+
+- **Prerendering + SEO**: page content, title/description and Open Graph tags are written into the HTML — crawlers, WeChat and social share cards finally see it
+- **Media library**: manage uploads in one place, see quota, see what references each image, delete unused ones
+- **Content version history**: automatic snapshots before every save and reset (up to 30), preview and roll back when you break something
+- **Persistent sessions + Docker**: logins survive restarts; `docker compose up -d` brings the site up with data on named volumes
+
+Full changelog: [CHANGELOG.en.md](CHANGELOG.en.md).
+
 ## 🎯 Overview
 
 A club that wants a website usually gets stuck on one of two things: hiring a developer costs money, or a site builder locks you into its templates. This template addresses exactly that — **one codebase, reusable for any club by changing only the content**.
@@ -63,7 +72,7 @@ The site and the admin panel share a single JSON document. Whatever you edit in 
 
 In one sentence: **this template is not club-only.**
 
-The preview site has a case dropdown in the header that switches between 5 websites across different industries instantly — no page reload, browser back/forward works, and links are shareable:
+The preview site has a case dropdown in the header that switches between 8 websites across different industries instantly — no page reload, browser back/forward works, and links are shareable:
 
 | Case | Industry | Theme | Notes |
 |------|----------|-------|-------|
@@ -72,12 +81,15 @@ The preview site has a case dropdown in the header that switches between 5 websi
 | ⚖️ **Henghe Law Firm** | Legal services | Classic Navy | Fictional demo |
 | ☁️ **Cloudpivot** | SaaS product | Cloud Gray | Fictional demo |
 | 📷 **Linjie Photo** | Natural-light photography | Mist | Fictional demo |
+| 🏋️ **Ironwood Gym** | Fitness studio | Sunset | Fictional demo |
+| 🧠 **Starseed Coding** | Kids coding school | Ocean | Fictional demo |
+| 🐾 **Pawcare Vet** | Veterinary clinic | Neutral Morning | Fictional demo |
 
-**How to see it**: open the [live preview](https://xiaoyu-hue.github.io/xy-club/) and use the case dropdown in the top right, or go straight to the [case overview page](https://xiaoyu-hue.github.io/xy-club/themes-demo.html) to see all 5 cases and 8 themes at a glance.
+**How to see it**: open the [live preview](https://xiaoyu-hue.github.io/xy-club/) and use the case dropdown in the top right, or go straight to the [case overview page](https://xiaoyu-hue.github.io/xy-club/themes-demo.html) to see all 8 cases and 8 themes at a glance.
 
 **How it works**: each case is a plain static JSON file (`public/cases/<id>.json`) shaped exactly like `content.json`, assembled from the existing 8 section types — so **you can add a new case without writing code, and without a server**. Switching uses the query parameter `?case=<id>`, which means purely static hosting (GitHub Pages) works too. See [ADR-005](docs/adr/ADR-005.md) for the full decision record.
 
-> ⚠️ **About the demo cases**: the organisation names, contact details and addresses in the four non-club cases are **fictional** and exist only to show the template's industry range — they are not real businesses. Case images are **original photography owned by the project author**, with licensing documented in [public/cases/CREDITS.md](public/cases/CREDITS.md).
+> ⚠️ **About the demo cases**: the organisation names, contact details and addresses in the seven non-club cases are **fictional** and exist only to show the template's industry range — they are not real businesses. Case images are **original photography owned by the project author**, with licensing documented in [public/cases/CREDITS.md](public/cases/CREDITS.md).
 
 ---
 
@@ -263,6 +275,9 @@ xy-club/
 | POST | `/api/password` | Change the admin password (auth + CSRF required) |
 | POST | `/api/upload` | Upload an image, ≤8MB (auth + CSRF required) |
 | POST | `/api/reset` | Restore default content (auth + CSRF required) |
+| GET | `/api/history` | List content versions (requires login) |
+| POST | `/api/history/restore` | Roll back to a version (auth + CSRF) |
+| GET | `/api/media` | List uploaded media and quota usage (requires login) |
 | GET | `/api/health` | Health check (public, for probes) |
 
 ---
@@ -328,7 +343,27 @@ Once the site is up, members' own intro cards can be made with the sibling proje
 Two routes are available: **Node server** (full admin) or **static-only hosting** (site only, admin entry auto-hidden).
 See [docs/DEPLOY.md](docs/DEPLOY.md) for platform notes, volume requirements, and troubleshooting.
 
-A single-port HTTP app with no database — any Node.js-capable platform works:
+A single-port HTTP app with no database — any Node.js-capable platform works.
+
+### Option 1: Docker (recommended)
+
+```bash
+docker compose up -d          # starts the site; the generated admin password is printed in the logs
+docker compose logs -f        # read the password / troubleshoot
+```
+
+Or on any machine:
+
+```bash
+docker run -d -p 3000:3000 \
+  -e ADMIN_PASSWORD='pick-a-strong-one' \
+  -v xy-data:/app/data -v xy-uploads:/app/public/uploads \
+  --name xy-club xy-club
+```
+
+The image runs as non-root with an `/api/health` check; `data/` (content + sessions + version history) and `public/uploads/` (images) live in named volumes.
+
+### Option 2: plain Node
 
 ```bash
 PORT=8080 node server.js     # the platform injects PORT; already listening on 0.0.0.0
@@ -364,12 +399,20 @@ Static assets and the API share one port, so there is no CORS setup.
 - CSRF protection: write operations require a session-bound token
 - HTTP security headers (nosniff / X-Frame-Options / CSP) and input-validation hardening (field allowlists, prototype-pollution defense)
 
+- **Prerendering + SEO / Open Graph**: baked into the HTML by the static build, and injected per request on Node — crawlers and share cards always see current content (v1.11.0)
+- **Media library**: lists every upload with size and reference count, multi-select upload, warns before deleting a used image (v1.11.0)
+- **Content version history**: snapshots before each save (last 30), one-click rollback that can itself be undone (v1.11.0)
+- **Docker one-liner deploy**: `docker compose up -d`, data in named volumes (v1.11.0)
+- **Persistent sessions**: restarting the server no longer logs everyone out (v1.11.0)
+- **E2E in CI**: Chromium smoke test on every push (v1.11.0)
+- lint is now a hard gate (`--max-warnings 0`) instead of error-only (v1.11.0)
+
 ### Planned 🚀
 
-- Bulk upload and an image management panel
-- SEO metadata and Open Graph cards
-- Dockerfile and one-click deploy config
-- Content version history and undo
+- Rich text / Markdown editing in the admin (currently plain text with line breaks)
+- Multiple admins and role permissions (still single password, single admin)
+- Image cropping and compression (currently only format validation, no re-encode)
+- `sitemap.xml` and `JSON-LD` structured data
 
 ---
 
@@ -378,7 +421,7 @@ Static assets and the API share one port, so there is no CORS setup.
 ## 🧪 Testing
 
 ```bash
-npm test          # Unit tests: 158 cases, no new dependencies (Node's built-in node --test)
+npm test          # Unit tests: 266 cases / 70 suites, no new dependencies (Node's built-in node --test)
 ```
 
 `npm test` is the only mandatory gate; CI runs it on Node 18 / 20 / 22. It covers the parts that actually carry risk: password hashing and login rate limiting, CSRF tokens, HTTP security headers, input validation and prototype-pollution defense, the upload allowlist, content read/write and data resilience, static snapshots staying credential-free, and whether the docs still match the code.
@@ -386,7 +429,7 @@ npm test          # Unit tests: 158 cases, no new dependencies (Node's built-in 
 | Layer | Command | Dependencies | Notes |
 |-------|---------|--------------|-------|
 | Unit | `npm test` | none | Mandatory gate, `tests/` |
-| E2E | `npm run test:e2e` | requires a local `@playwright/test` | Optional; skipped automatically if absent |
+| E2E | `npm run test:e2e` | `@playwright/test` (dev dependency) | Runs in CI on every push |
 
 E2E drives a real browser at desktop (1280×800) and narrow (375×667) viewports: home rendering, all eight themes, and the admin loop "edit → save → reload and it's still there". See [docs/TESTING.md](docs/TESTING.md).
 
