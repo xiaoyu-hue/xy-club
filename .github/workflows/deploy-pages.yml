@@ -32,8 +32,12 @@ jobs:
       - name: 单元测试（部署质量门：失败则阻断部署）
         run: npm test
 
+      # SITE_URL 让 og:image 与 canonical 变成绝对地址（项目页在 /xy-club/ 子路径下，
+      # 相对路径分享到微信/推特会被解析成错误地址）。
       - name: 生成静态快照
         run: node scripts/build-static.js
+        env:
+          SITE_URL: ${{ vars.SITE_URL || 'https://xiaoyu-hue.github.io/xy-club' }}
 
       - name: 移除后台文件（静态环境没有服务端）
         run: |

@@ -17,6 +17,9 @@ fs.rmSync(DATA_DIR, { recursive: true, force: true });
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
 // 必须在 require server.js 之前设置
+// 固定密码：不设 ADMIN_PASSWORD 时服务会随机生成一个只打印一次的密码，
+// 浏览器用例就拿不到它（首版 E2E 进 CI 时正是因此 8 条登录用例全挂在 10s 超时上）。
+process.env.ADMIN_PASSWORD = process.env.XY_E2E_PASSWORD || 'xy888888';
 process.env.DATA_DIR = DATA_DIR;
 process.env.UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 
