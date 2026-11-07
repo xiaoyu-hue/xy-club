@@ -67,10 +67,8 @@ function replaceHtmlContainers(html, map) {
     if (replacement == null) continue;
 
     // 定位起始标签：<tag ... data-xy-html="key" ...>
-    const openRe = new RegExp(
-      '<([a-zA-Z0-9]+)((?:[^\>"\']|\"[^\"]*\"|\'[^\']*\')*?\\sdata-xy-html="' + key + '"(?:[^\>"\']|\"[^\"]*\"|\'[^\']*\')*)>',
-      'i'
-    );
+    // 属性值内不含 '>'，用 [^>]* 即可安全掠过开标签内的所有属性（无需逐字符处理引号转义）。
+    const openRe = new RegExp('<([a-zA-Z0-9]+)[^>]*data-xy-html="' + key + '"[^>]*>', 'i');
     const m = openRe.exec(result);
     if (!m) continue;
     const tag = m[1];
